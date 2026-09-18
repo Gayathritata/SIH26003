@@ -1,0 +1,31 @@
+services:
+  # 1. Python FastAPI AI/ML Engine Service
+  - type: web
+    name: mindmate-ml-service
+    runtime: python
+    region: singapore
+    plan: free
+    buildCommand: cd ml-service && pip install -r requirements.txt
+    startCommand: cd ml-service && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.11
+
+  # 2. Node.js Express Backend API
+  - type: web
+    name: mindmate-backend
+    runtime: node
+    region: singapore
+    plan: free
+    buildCommand: cd backend && npm install && npm run build
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false # Requires manual entry of your MongoDB Atlas URI on Render dashboard
+      - key: ML_SERVICE_URL
+        fromService:
+          type: web
+          name: mindmate-ml-service
+          property: host
