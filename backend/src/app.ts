@@ -12,7 +12,36 @@ import dashboardRoutes from './routes/dashboardRoutes';
 
 const app: Application = express();
 
-app.use(cors());
+const allowedOrigins = [
+  process.env.CLIENT_ORIGIN,
+  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:4173',
+].filter(Boolean) as string[];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, postman, server-to-server)
+      if (!origin) return callback(null, true);
+
+      const isAllowed =
+        allowedOrigins.includes(origin) ||
+        /\.vercel\.app$/.test(origin) ||
+        process.env.NODE_ENV !== 'production';
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Fallback to allow all origins in hackathon/demo mode
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  })
+);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
