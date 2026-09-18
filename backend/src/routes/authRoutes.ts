@@ -1,20 +1,19 @@
 import { Router } from 'express';
-import { syncUser, registerUser, updateOrCreateProfile, getMyProfile } from '../controllers/authController';
-import { verifyFirebaseToken } from '../middleware/authMiddleware';
+import { registerUser, loginUser, logoutUser, getMyProfile, syncUser, updateOrCreateProfile } from '../controllers/authController';
+import { authenticateToken } from '../middleware/authMiddleware';
 
 const router = Router();
 
-// POST /api/auth/sync - Synchronize Firebase-authenticated user with MongoDB
-router.post('/sync', verifyFirebaseToken, syncUser);
+// Public auth endpoints
+router.post('/register', registerUser);
+router.post('/login', loginUser);
+router.post('/logout', logoutUser);
 
-// Endpoint called after Firebase registration to sync profile to MongoDB
-router.post('/register', verifyFirebaseToken, registerUser);
+// Backwards compatibility endpoint
+router.post('/sync', syncUser);
+router.post('/profile', authenticateToken, updateOrCreateProfile);
 
-// Profile update route
-router.post('/profile', verifyFirebaseToken, updateOrCreateProfile);
-
-// GET /api/auth/me - Verifies token & returns MongoDB user profile + role
-router.get('/me', verifyFirebaseToken, getMyProfile);
+// Protected auth profile endpoint
+router.get('/me', authenticateToken, getMyProfile);
 
 export default router;
-

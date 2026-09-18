@@ -3,9 +3,10 @@ import mongoose, { Schema, Document } from 'mongoose';
 export type UserRole = 'elderly_user' | 'elderly' | 'caregiver' | 'admin';
 
 export interface IUser extends Document {
-  firebaseUid: string;
+  firebaseUid?: string;
   name: string;
   email: string;
+  passwordHash?: string;
   role: UserRole;
   preferredLanguage: string;
   language?: string;
@@ -16,9 +17,10 @@ export interface IUser extends Document {
 
 const UserSchema: Schema = new Schema(
   {
-    firebaseUid: { type: String, required: true, unique: true, index: true },
-    name: { type: String, required: true },
-    email: { type: String, required: true },
+    firebaseUid: { type: String, required: false, sparse: true, index: true },
+    name: { type: String, required: true, trim: true },
+    email: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
+    passwordHash: { type: String, required: false },
     role: {
       type: String,
       enum: ['elderly_user', 'elderly', 'caregiver', 'admin'],
@@ -32,3 +34,4 @@ const UserSchema: Schema = new Schema(
 );
 
 export default mongoose.model<IUser>('User', UserSchema);
+

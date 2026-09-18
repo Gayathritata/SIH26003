@@ -1,78 +1,91 @@
 import { Request, Response, NextFunction } from 'express';
-import { admin, isFirebaseInitialized } from '../config/firebase';
-import User from '../models/User';
+import jwt from 'jsonwebtoken';
 import CaregiverPatient from '../models/CaregiverPatient';
 
-export interface AuthenticatedRequest extends Request {
-  user?: {
-    firebaseUid: string;
-    email: string;
-    name: string;
-    role: 'elderly_user' | 'elderly' | 'caregiver' | 'admin';
-    mongoId?: string;
-  };
+export interface AuthenticatedUserPayload {
+  id: string;
+  mongoId: string;
+  email: string;
+  name: string;
+  role: 'elderly_user' | 'elderly' | 'caregiver' | 'admin';
+  firebaseUid?: string;
 }
 
-export const verifyFirebaseToken = async (
+export interface AuthenticatedRequest extends Request {
+  user?: AuthenticatedUserPayload;
+}
+
+const getJwtSecret = (): string => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('[SECURITY FATAL] JWT_SECRET must be defined in production!');
+    }
+    return 'mindmate_ner_hackathon_jwt_secret_key_2026_safe';
+  }
+  return secret;
+};
+
+/**
+ * JWT Authentication Middleware
+ * Checks for token in HTTP-only cookie 'token' or Authorization 'Bearer <token>' header.
+ */
+export const authenticateToken = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  const authHeader = req.headers.authorization;
+  let token: string | undefined = undefined;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    res.status(401).json({ success: false, error: 'Unauthorized. Authorization header with Bearer token is required.' });
+  // Check HTTP-only cookies first
+  if (req.cookies && req.cookies.token) {
+    token = req.cookies.token;
+  }
+
+  // Fallback to Bearer token header
+  if (!token) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+  }
+
+  if (!token) {
+    res.status(401).json({
+      success: false,
+      error: 'Unauthorized. Access token is required.',
+    });
     return;
   }
 
-  const token = authHeader.split('Bearer ')[1];
-
   try {
-    let firebaseUid = '';
-    let email = '';
-    let name = '';
-
-    if (isFirebaseInitialized) {
-      const decodedToken = await admin.auth().verifyIdToken(token);
-      firebaseUid = decodedToken.uid;
-      email = decodedToken.email || '';
-      name = decodedToken.name || 'User';
-    } else {
-      // Token Verification Mode for Hackathon
-      firebaseUid = token.replace('demo_token_', '');
-      email = `${firebaseUid}@mindmate-ner.org`;
-      name = firebaseUid.includes('caregiver') ? 'Demo Caregiver' : (firebaseUid.includes('admin') ? 'Admin User' : 'Asha Devi');
-    }
-
-    // Lookup user in MongoDB to attach role & metadata securely
-    let dbUser = await User.findOne({ firebaseUid });
-    if (!dbUser) {
-      const defaultRole = firebaseUid.includes('caregiver') ? 'caregiver' : (firebaseUid.includes('admin') ? 'admin' : 'elderly_user');
-      dbUser = await User.create({
-        firebaseUid,
-        email: email || `${firebaseUid}@mindmate-ner.org`,
-        name: name || 'User',
-        role: defaultRole,
-        preferredLanguage: 'en',
-        region: 'South_NER',
-      });
-    }
-
+    const decoded = jwt.verify(token, getJwtSecret()) as AuthenticatedUserPayload;
     req.user = {
-      firebaseUid: dbUser.firebaseUid,
-      email: dbUser.email,
-      name: dbUser.name,
-      role: dbUser.role as any,
-      mongoId: (dbUser._id as any).toString(),
+      id: decoded.id || decoded.mongoId,
+      mongoId: decoded.mongoId || decoded.id,
+      email: decoded.email,
+      name: decoded.name,
+      role: decoded.role,
+      firebaseUid: decoded.firebaseUid,
     };
-
     next();
   } catch (error) {
-    console.error('[AUTH ERROR] Token verification failed:', error);
-    res.status(401).json({ success: false, error: 'Invalid or expired authentication token.' });
+    console.error('[AUTH ERROR] JWT verification failed:', (error as Error).message);
+    res.status(401).json({
+      success: false,
+      error: 'Invalid or expired token.',
+    });
   }
 };
 
+/**
+ * Backwards compatible alias for verifyFirebaseToken
+ */
+export const verifyFirebaseToken = authenticateToken;
+
+/**
+ * Require specific user role(s)
+ */
 export const requireRole = (...allowedRoles: Array<string | string[]>) => {
   const rolesArray = allowedRoles.flat();
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
@@ -81,7 +94,6 @@ export const requireRole = (...allowedRoles: Array<string | string[]>) => {
       return;
     }
 
-    // Map elderly_user and elderly as equivalent roles
     const userRole = req.user.role;
     const isAuthorized = rolesArray.some((role) => {
       if (role === 'elderly_user' || role === 'elderly') {
@@ -93,7 +105,7 @@ export const requireRole = (...allowedRoles: Array<string | string[]>) => {
     if (!isAuthorized) {
       res.status(403).json({
         success: false,
-        error: `Access forbidden. Role '${req.user.role}' is not authorized for this resource.`,
+        error: `Access forbidden. Role '${userRole}' is not authorized for this resource.`,
       });
       return;
     }
@@ -120,29 +132,34 @@ export const requireCaregiverPatientAccess = async (
     return next();
   }
 
-  const patientIdParam = req.params.patientId || req.params.id || req.query.patientId;
+  const patientIdParam = req.params.patientId || req.params.id || (req.query.patientId as string);
 
   if (req.user.role === 'caregiver') {
     if (!patientIdParam) {
       return next();
     }
 
+    const caregiverId = req.user.mongoId || req.user.firebaseUid || req.user.id;
+
     const assignment = await CaregiverPatient.findOne({
-      caregiverId: req.user.firebaseUid,
-      patientId: patientIdParam,
+      $or: [
+        { caregiverId: caregiverId, patientId: patientIdParam },
+        { caregiverId: req.user.firebaseUid, patientId: patientIdParam },
+      ],
     });
 
-    if (!assignment && req.user.firebaseUid !== patientIdParam) {
+    if (!assignment && caregiverId !== patientIdParam && req.user.firebaseUid !== patientIdParam) {
       res.status(403).json({
         success: false,
-        error: `Access forbidden. Patient '${patientIdParam}' is not assigned to caregiver '${req.user.firebaseUid}'.`,
+        error: `Access forbidden. Patient '${patientIdParam}' is not assigned to caregiver '${caregiverId}'.`,
       });
       return;
     }
   }
 
   if (req.user.role === 'elderly_user' || req.user.role === 'elderly') {
-    if (patientIdParam && req.user.firebaseUid !== patientIdParam) {
+    const elderlyId = req.user.mongoId || req.user.firebaseUid || req.user.id;
+    if (patientIdParam && patientIdParam !== elderlyId && patientIdParam !== req.user.firebaseUid) {
       res.status(403).json({
         success: false,
         error: `Access forbidden. Elderly users can only access their own patient profile.`,

@@ -1,5 +1,6 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { isDBConnected } from './config/database';
 import authRoutes from './routes/authRoutes';
 import patientRoutes from './routes/patientRoutes';
@@ -15,6 +16,7 @@ const app: Application = express();
 const allowedOrigins = [
   process.env.CLIENT_ORIGIN,
   process.env.FRONTEND_URL,
+  process.env.CLIENT_URL,
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:4173',
@@ -42,6 +44,7 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   })
 );
+app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -57,6 +60,8 @@ const handleHealthCheck = (req: Request, res: Response) => {
   });
 };
 
+app.get('/', handleHealthCheck);
+app.get('/api', handleHealthCheck);
 app.get('/health', handleHealthCheck);
 app.get('/api/health', handleHealthCheck);
 
