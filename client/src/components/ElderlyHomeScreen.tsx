@@ -1,5 +1,5 @@
 import React from 'react';
-import { Brain, Bell, BarChart2, Mic, Settings, Play, Sparkles, User } from 'lucide-react';
+import { Brain, Bell, BarChart2, Mic, Play, Sparkles, User } from 'lucide-react';
 import { getTranslation, Language } from '../i18n/translations';
 import { UserProfile } from '../services/authService';
 
@@ -218,35 +218,6 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
             </button>
           </div>
 
-          {/* Card 5: ⚙️ Settings */}
-          <div
-            className="glass-panel glass-panel-hover"
-            onClick={() => onNavigate('settings')}
-            style={{
-              cursor: 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              minHeight: '220px',
-              border: '2px solid rgba(139, 92, 246, 0.3)',
-            }}
-            role="button"
-            tabIndex={0}
-            aria-label="Navigate to Settings"
-          >
-            <div>
-              <div style={{ width: '58px', height: '58px', borderRadius: '18px', background: 'rgba(139, 92, 246, 0.2)', border: '1px solid #8B5CF6', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-                <Settings size={32} color="#8B5CF6" />
-              </div>
-              <h4 className="text-card-title">{t('settingsCard')}</h4>
-              <p style={{ fontSize: '15px', color: '#94A3B8', marginTop: '6px' }}>
-                {t('settingsTitle')}
-              </p>
-            </div>
-            <button className="btn-primary btn-glass-subtle" style={{ width: '100%', minHeight: '52px', marginTop: '16px', fontSize: '17px', border: '1px solid #8B5CF6', color: '#C4B5FD' }}>
-              <Settings size={20} /> {t('settingsCard')}
-            </button>
-          </div>
         </div>
       </section>
     </div>
