@@ -6,7 +6,7 @@ interface AuthContextType {
   patientProfile: PatientProfile | null;
   token: string | null;
   loading: boolean;
-  login: (email: string, pass: string) => Promise<void>;
+  login: (email: string, pass: string) => Promise<{ user: UserProfile; token: string }>;
   register: (params: {
     email: string;
     pass: string;
@@ -14,7 +14,7 @@ interface AuthContextType {
     role: 'elderly_user' | 'elderly' | 'caregiver' | 'admin';
     language?: string;
     age?: number;
-  }) => Promise<void>;
+  }) => Promise<{ user: UserProfile; token: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -22,9 +22,17 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(() => {
+    try {
+      const stored = localStorage.getItem('mindmate_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
   const [patientProfile, setPatientProfile] = useState<PatientProfile | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('mindmate_token'));
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('mindmate_token'));
   const [loading, setLoading] = useState<boolean>(true);
 
   const refreshUser = async () => {
@@ -32,33 +40,47 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!savedToken) {
       setUser(null);
       setPatientProfile(null);
+      setToken(null);
       setLoading(false);
       return;
     }
 
     try {
       const data = await authService.getMe();
-      if (data.user) {
+      if (data && data.user) {
         setUser(data.user);
         setPatientProfile(data.patientProfile || null);
         setToken(savedToken);
-      } else {
-        setUser(null);
-        setPatientProfile(null);
+        localStorage.setItem('mindmate_user', JSON.stringify(data.user));
+        setLoading(false);
+        return;
       }
     } catch (err) {
-      console.warn('[AUTH CONTEXT] Failed to fetch current user session:', err);
-      // Keep offline/demo state if user token was saved
-      const savedRole = (localStorage.getItem('mindmate_role') || 'elderly_user') as any;
-      setUser({
-        email: 'user@mindmate-ner.org',
-        name: savedRole === 'caregiver' ? 'Caregiver User' : 'Asha Devi',
-        role: savedRole,
-        preferredLanguage: 'en',
-      });
-    } finally {
-      setLoading(false);
+      console.warn('[AUTH CONTEXT] getMe failed, restoring local cached session:', err);
     }
+
+    // Fallback user restore from localStorage
+    const savedUserStr = localStorage.getItem('mindmate_user');
+    if (savedUserStr) {
+      try {
+        const parsed = JSON.parse(savedUserStr);
+        setUser(parsed);
+        setToken(savedToken);
+        setLoading(false);
+        return;
+      } catch (e) {}
+    }
+
+    const savedRole = (localStorage.getItem('mindmate_role') || 'elderly_user') as any;
+    const defaultUser: UserProfile = {
+      email: 'user@mindmate-ner.org',
+      name: savedRole === 'caregiver' ? 'Caregiver User' : 'Asha Devi',
+      role: savedRole,
+      preferredLanguage: 'en',
+    };
+    setUser(defaultUser);
+    setToken(savedToken);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -71,7 +93,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const res = await authService.login(email, pass);
       setUser(res.user);
       setToken(res.token);
-      await refreshUser();
+      localStorage.setItem('mindmate_token', res.token);
+      localStorage.setItem('mindmate_role', res.user.role);
+      localStorage.setItem('mindmate_user', JSON.stringify(res.user));
+      return res;
     } finally {
       setLoading(false);
     }
@@ -90,7 +115,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const res = await authService.register(params);
       setUser(res.user);
       setToken(res.token);
-      await refreshUser();
+      localStorage.setItem('mindmate_token', res.token);
+      localStorage.setItem('mindmate_role', res.user.role);
+      localStorage.setItem('mindmate_user', JSON.stringify(res.user));
+      return res;
     } finally {
       setLoading(false);
     }
@@ -104,6 +132,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setUser(null);
       setPatientProfile(null);
       setToken(null);
+      localStorage.removeItem('mindmate_token');
+      localStorage.removeItem('mindmate_role');
+      localStorage.removeItem('mindmate_user');
       setLoading(false);
     }
   };

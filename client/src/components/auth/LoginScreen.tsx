@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Brain, LogIn, Key, Mail, AlertCircle } from 'lucide-react';
-import { authService, UserProfile } from '../../services/authService';
+import { UserProfile } from '../../services/authService';
 import { translations, getTranslation, Language } from '../../i18n/translations';
+import { useAuth } from '../../context/AuthContext';
 
 interface Props {
   onSuccess: (user: UserProfile) => void;
@@ -12,6 +13,7 @@ interface Props {
 
 export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, onNavigateForgot, lang }) => {
   const t = (key: keyof typeof translations['en']) => getTranslation(lang, key);
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,7 +30,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
     setError(null);
 
     try {
-      const res = await authService.login(email, password);
+      const res = await login(email, password);
       onSuccess(res.user);
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');
@@ -42,7 +44,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
     setError(null);
     try {
       const demoEmail = role === 'caregiver' ? 'caregiver@demo.mindmate' : (role === 'admin' ? 'admin@demo.mindmate' : 'asha.devi@demo.mindmate');
-      const res = await authService.login(demoEmail, 'MindMate@2026');
+      const res = await login(demoEmail, 'MindMate@2026');
       onSuccess(res.user);
     } catch (err: any) {
       // Fallback demo user profile for fast hackathon demo

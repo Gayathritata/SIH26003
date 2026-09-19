@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { User, Mail, Key, UserCheck, AlertCircle, ArrowLeft } from 'lucide-react';
-import { authService, UserProfile } from '../../services/authService';
+import { UserProfile } from '../../services/authService';
 import { translations, getTranslation, Language } from '../../i18n/translations';
+import { useAuth } from '../../context/AuthContext';
 
 interface Props {
   onSuccess: (user: UserProfile) => void;
@@ -11,6 +12,7 @@ interface Props {
 
 export const RegisterScreen: React.FC<Props> = ({ onSuccess, onNavigateLogin, lang }) => {
   const t = (key: keyof typeof translations['en']) => getTranslation(lang, key);
+  const { register } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,7 +35,7 @@ export const RegisterScreen: React.FC<Props> = ({ onSuccess, onNavigateLogin, la
     setError(null);
 
     try {
-      const res = await authService.register({
+      const res = await register({
         email,
         pass: password,
         name,
