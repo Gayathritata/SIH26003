@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Brain, LogIn, Key, Mail, AlertCircle, Play, Sparkles, UserCheck, Shield, Volume2, Quote, X, Video, ExternalLink } from 'lucide-react';
+import { Brain, LogIn, UserPlus, Key, Mail, AlertCircle, Play, Sparkles, UserCheck, Shield, Volume2, Quote, X, Video, ExternalLink } from 'lucide-react';
 import { UserProfile } from '../../services/authService';
 import { translations, getTranslation, Language } from '../../i18n/translations';
 import { useAuth } from '../../context/AuthContext';
@@ -131,17 +131,15 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
           <button
             type="button"
             onClick={onNavigateRegister}
+            className="btn-primary btn-emerald"
             style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--text-secondary)',
+              minHeight: '42px',
+              padding: '0 20px',
               fontSize: '15px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              padding: '8px 14px',
+              borderRadius: '10px',
             }}
           >
-            Create Account
+            <UserPlus size={17} /> Create Account
           </button>
 
           <button
