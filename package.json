@@ -1,0 +1,10 @@
+{
+  "name": "mindmate-ner-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npm run build --prefix client",
+    "start": "npm start --prefix backend",
+    "dev": "npm run dev --prefix client"
+  }
+}
