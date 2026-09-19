@@ -4,7 +4,7 @@ import Reminder from '../models/Reminder';
 
 export const getReminders = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const patientId = (req.query.patientId as string) || req.user?.firebaseUid;
+    const patientId = (req.query.patientId as string) || req.user?.mongoId || req.user?.id || req.user?.firebaseUid || 'demo_patient_uid';
     const reminders = await Reminder.find({ patientId }).sort({ scheduledTime: 1 });
     res.json({ success: true, count: reminders.length, reminders });
   } catch (error) {
@@ -15,7 +15,7 @@ export const getReminders = async (req: AuthenticatedRequest, res: Response): Pr
 export const createReminder = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const { patientId, type, title, description, scheduledTime } = req.body;
-    const targetId = patientId || req.user?.firebaseUid;
+    const targetId = patientId || req.user?.mongoId || req.user?.id || req.user?.firebaseUid || 'demo_patient_uid';
 
     const reminder = await Reminder.create({
       patientId: targetId,

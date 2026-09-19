@@ -9,7 +9,7 @@ export const connectDB = async (): Promise<void> => {
   const targetUri = connUri || 'mongodb://localhost:27017/mindmate_ner';
 
   try {
-    await mongoose.connect(targetUri);
+    await mongoose.connect(targetUri, { serverSelectionTimeoutMS: 5000 });
     console.log(`[DATABASE SUCCESS] MongoDB Connected successfully! Host: ${mongoose.connection.host}, Database: ${mongoose.connection.name}`);
   } catch (error) {
     console.error(`[DATABASE ERROR] MongoDB connection failed: ${(error as Error).message}`);

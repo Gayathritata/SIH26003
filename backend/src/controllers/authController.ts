@@ -143,6 +143,9 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         res.status(401).json({ success: false, error: 'Invalid email or password.' });
         return;
       }
+    } else if (userPassword !== 'MindMate@2026') {
+      res.status(401).json({ success: false, error: 'Invalid email or password.' });
+      return;
     }
 
     sendTokenResponse(res, user, 200, 'Logged in successfully.');

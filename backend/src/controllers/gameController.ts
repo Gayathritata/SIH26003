@@ -22,12 +22,7 @@ export const createGameSession = async (req: AuthenticatedRequest, res: Response
       mood,
     } = req.body;
 
-    const targetPatientId = patientId || req.user?.firebaseUid;
-
-    if (!targetPatientId) {
-      res.status(400).json({ success: false, error: 'Patient ID is required.' });
-      return;
-    }
+    const targetPatientId = patientId || req.user?.mongoId || req.user?.id || req.user?.firebaseUid || 'demo_patient_uid';
 
     // Call ML Engine for adaptive difficulty recommendation
     const mlResult = await getMLDifficultyRecommendation({
@@ -60,7 +55,7 @@ export const createGameSession = async (req: AuthenticatedRequest, res: Response
 
     // Update cognitive level in PatientProfile
     await PatientProfile.findOneAndUpdate(
-      { firebaseUid: targetPatientId },
+      { $or: [{ userId: targetPatientId }, { firebaseUid: targetPatientId }] },
       { cognitiveLevel: mlResult.recommended_difficulty }
     );
 

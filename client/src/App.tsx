@@ -254,16 +254,18 @@ export const App: React.FC = () => {
             ))}
           </div>
 
-          {/* Screen Quick Switches */}
-          <button
-            className="btn-primary btn-glass-subtle"
-            onClick={() => setActiveScreen(activeScreen === 'caregiver_home' ? 'elderly_home' : 'caregiver_home')}
-            style={{ minHeight: '44px', padding: '0 14px', fontSize: '14px' }}
-            aria-label="Toggle Dashboard View"
-          >
-            <UserCheck size={18} color="#10B981" />
-            {activeScreen === 'caregiver_home' ? t('elderlyMode') : t('caregiverDashboard')}
-          </button>
+          {/* Screen Quick Switches (Available for Caregivers & Admins) */}
+          {(currentUser?.role === 'caregiver' || currentUser?.role === 'admin') && (
+            <button
+              className="btn-primary btn-glass-subtle"
+              onClick={() => setActiveScreen(activeScreen === 'caregiver_home' ? 'elderly_home' : 'caregiver_home')}
+              style={{ minHeight: '44px', padding: '0 14px', fontSize: '14px' }}
+              aria-label="Toggle Dashboard View"
+            >
+              <UserCheck size={18} color="#10B981" />
+              {activeScreen === 'caregiver_home' ? t('elderlyMode') : t('caregiverDashboard')}
+            </button>
+          )}
 
           <button
             className="btn-primary btn-glass-subtle"

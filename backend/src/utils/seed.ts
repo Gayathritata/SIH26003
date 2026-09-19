@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+import bcrypt from 'bcryptjs';
 import { connectDB } from '../config/database';
 import User from '../models/User';
 import PatientProfile from '../models/PatientProfile';
@@ -25,11 +26,14 @@ export const seedDatabase = async () => {
   await MoodLog.deleteMany({});
   await Alert.deleteMany({});
 
+  const defaultPasswordHash = await bcrypt.hash('MindMate@2026', 10);
+
   // 1. Create Demo Elderly User ("Asha Devi")
   const patientUser = await User.create({
     firebaseUid: 'demo_patient_uid',
     name: 'Asha Devi',
-    email: 'asha.devi@mindmate-ner.org',
+    email: 'asha.devi@demo.mindmate',
+    passwordHash: defaultPasswordHash,
     role: 'elderly',
     language: 'te',
     region: 'South_NER',
@@ -54,7 +58,8 @@ export const seedDatabase = async () => {
   const caregiverUser = await User.create({
     firebaseUid: 'demo_caregiver_uid',
     name: 'Demo Caregiver',
-    email: 'caregiver@mindmate-ner.org',
+    email: 'caregiver@demo.mindmate',
+    passwordHash: defaultPasswordHash,
     role: 'caregiver',
     language: 'en',
     region: 'Assam_NER',
