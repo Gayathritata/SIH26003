@@ -3,6 +3,7 @@ import { Brain, LogIn, Key, Mail, AlertCircle, Play, Sparkles, UserCheck, Shield
 import { UserProfile } from '../../services/authService';
 import { translations, getTranslation, Language } from '../../i18n/translations';
 import { useAuth } from '../../context/AuthContext';
+import { VantaBackground } from '../VantaBackground';
 
 interface Props {
   onSuccess: (user: UserProfile) => void;
@@ -83,8 +84,10 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'radial-gradient(circle at 50% 20%, rgba(16, 185, 129, 0.08), transparent 60%), #070A12', color: '#FFFFFF' }}>
-      
+    <div style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'radial-gradient(circle at 50% 20%, rgba(16, 185, 129, 0.08), transparent 60%), #070A12', color: '#FFFFFF' }}>
+      {/* Vanta 3D NET Background Animation */}
+      <VantaBackground />
+
       {/* 1. TOP NAVBAR WITH SIGN IN BUTTON */}
       <header
         style={{
@@ -174,7 +177,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
             width: '100%',
           }}
         >
-          {/* LEFT COLUMN: Title, Impressive Quotation, Highlights & Quick Demo */}
+          {/* LEFT COLUMN: Title, Impressive Quotation & Quick Demo */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', width: 'fit-content' }}>
               <span className="badge-pill badge-emerald" style={{ fontSize: '14px', padding: '8px 16px' }}>
@@ -215,41 +218,6 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                 <span style={{ fontSize: '13px', fontWeight: '700', color: '#6EE7B7', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                   MindMate Cognitive Care Philosophy
                 </span>
-              </div>
-            </div>
-
-            <p style={{ fontSize: '16px', color: '#CBD5E1', lineHeight: '1.6', margin: 0 }}>
-              MINDMATE NER provides adaptive cognitive exercises, multilingual voice guidance (Assamese, Hindi, English), and real-time clinical monitoring dashboards for family caregivers and doctors.
-            </p>
-
-            {/* Feature Highlights Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
-              <div style={{ background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(255, 255, 255, 0.15)', padding: '14px 16px', borderRadius: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#10B981', fontWeight: '700', fontSize: '15px' }}>
-                  <Brain size={18} /> Adaptive ML Engine
-                </div>
-                <p style={{ fontSize: '13px', color: '#E2E8F0', margin: '4px 0 0 0' }}>XGBoost dynamic difficulty scaling</p>
-              </div>
-
-              <div style={{ background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(255, 255, 255, 0.15)', padding: '14px 16px', borderRadius: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#F59E0B', fontWeight: '700', fontSize: '15px' }}>
-                  <Volume2 size={18} /> Multilingual Voice
-                </div>
-                <p style={{ fontSize: '13px', color: '#E2E8F0', margin: '4px 0 0 0' }}>Assamese, Hindi & English guidance</p>
-              </div>
-
-              <div style={{ background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(255, 255, 255, 0.15)', padding: '14px 16px', borderRadius: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#818CF8', fontWeight: '700', fontSize: '15px' }}>
-                  <UserCheck size={18} /> Caregiver Portal
-                </div>
-                <p style={{ fontSize: '13px', color: '#E2E8F0', margin: '4px 0 0 0' }}>Performance change alerts & trends</p>
-              </div>
-
-              <div style={{ background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(255, 255, 255, 0.15)', padding: '14px 16px', borderRadius: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#2DD4BF', fontWeight: '700', fontSize: '15px' }}>
-                  <Shield size={18} /> JWT Auth Security
-                </div>
-                <p style={{ fontSize: '13px', color: '#E2E8F0', margin: '4px 0 0 0' }}>Role isolation & session storage</p>
               </div>
             </div>
 
