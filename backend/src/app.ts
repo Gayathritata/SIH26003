@@ -67,11 +67,15 @@ app.get('/health', handleHealthCheck);
 app.get('/api/health', handleHealthCheck);
 
 
+import caregiverRoutes from './routes/caregiverRoutes';
+
 // API Routes (supports both /auth and /api/auth)
 app.use('/auth', authRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/patients', patientRoutes);
 app.use('/api/patients', patientRoutes);
+app.use('/caregiver', caregiverRoutes);
+app.use('/api/caregiver', caregiverRoutes);
 app.use('/games', gameRoutes);
 app.use('/api/games', gameRoutes);
 app.use('/game-sessions', gameRoutes);
