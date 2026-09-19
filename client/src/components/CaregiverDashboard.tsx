@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { UserCheck, Trophy, Target, Clock, Activity, RotateCcw, Brain, Calendar, Search, Sparkles, AlertCircle } from 'lucide-react';
+import { UserCheck, Trophy, Target, Clock, Activity, RotateCcw, Brain, Calendar, Search, Sparkles, AlertCircle, Bell, BarChart2 } from 'lucide-react';
 import { apiClient } from '../services/api';
 import { PerformanceCharts } from './caregiver/PerformanceCharts';
 import { UserProfile } from '../services/authService';
 import { Language } from '../utils/i18n';
+import { RemindersScreen } from './RemindersScreen';
 
 interface CaregiverDashboardProps {
   user?: UserProfile | null;
@@ -18,9 +19,11 @@ export const CaregiverDashboard: React.FC<CaregiverDashboardProps> = ({
   onNavigateSettings,
   lang,
 }) => {
+  const [activeTab, setActiveTab] = useState<'analytics' | 'reminders'>('analytics');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [dashboardData, setDashboardData] = useState<any>(null);
+
 
   const fetchCaregiverDashboardData = async () => {
     setLoading(true);
@@ -145,9 +148,56 @@ export const CaregiverDashboard: React.FC<CaregiverDashboardProps> = ({
             </button>
           </div>
         </div>
+
+        {/* CAREGIVER DASHBOARD TABS */}
+        <div style={{ display: 'flex', gap: '12px', marginTop: '20px', borderTop: '1px solid var(--border-glass-subtle)', paddingTop: '16px' }}>
+          <button
+            onClick={() => setActiveTab('analytics')}
+            style={{
+              padding: '12px 24px',
+              borderRadius: '14px',
+              background: activeTab === 'analytics' ? 'linear-gradient(135deg, #10B981, #059669)' : 'rgba(255, 255, 255, 0.05)',
+              border: activeTab === 'analytics' ? 'none' : '1px solid var(--border-glass-bright)',
+              color: '#FFFFFF',
+              fontWeight: '800',
+              fontSize: '16px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: activeTab === 'analytics' ? '0 4px 16px rgba(16, 185, 129, 0.4)' : 'none',
+            }}
+          >
+            <BarChart2 size={20} /> Performance Analytics
+          </button>
+
+          <button
+            onClick={() => setActiveTab('reminders')}
+            style={{
+              padding: '12px 24px',
+              borderRadius: '14px',
+              background: activeTab === 'reminders' ? 'linear-gradient(135deg, #F59E0B, #D97706)' : 'rgba(255, 255, 255, 0.05)',
+              border: activeTab === 'reminders' ? 'none' : '1px solid var(--border-glass-bright)',
+              color: '#FFFFFF',
+              fontWeight: '800',
+              fontSize: '16px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: activeTab === 'reminders' ? '0 4px 16px rgba(245, 158, 11, 0.4)' : 'none',
+            }}
+          >
+            <Bell size={20} /> Patient Reminders & Schedule
+          </button>
+        </div>
       </div>
 
-      {/* 2. SUMMARY METRIC CARDS */}
+      {activeTab === 'reminders' ? (
+        <RemindersScreen lang={lang} onBack={() => setActiveTab('analytics')} />
+      ) : (
+        <>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
         <div className="glass-panel" style={{ padding: '20px', textAlign: 'center' }}>
           <Trophy size={26} color="#EC4899" style={{ margin: '0 auto 8px' }} />
@@ -330,6 +380,9 @@ export const CaregiverDashboard: React.FC<CaregiverDashboardProps> = ({
           </div>
         </>
       )}
+      </>
+      )}
     </div>
   );
 };
+

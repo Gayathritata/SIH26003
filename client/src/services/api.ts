@@ -120,3 +120,95 @@ export const fetchAiDifficultyRecommendation = async (gameType: string = 'memory
     }
   }
 };
+
+// ==================== REMINDERS API ====================
+
+export interface ReminderData {
+  _id?: string;
+  id?: string;
+  userId?: string;
+  caregiverId?: string;
+  title: string;
+  description?: string;
+  type: 'medicine' | 'hydration' | 'activity' | 'appointment' | 'general';
+  date: string;
+  time: string;
+  repeat: 'none' | 'daily' | 'weekly';
+  isActive: boolean;
+  completed: boolean;
+  completedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export const fetchRemindersApi = async (patientId?: string) => {
+  try {
+    const url = patientId ? `/api/reminders?patientId=${patientId}` : '/api/reminders';
+    const response = await apiClient.get(url);
+    return response.data;
+  } catch (err: any) {
+    console.error('[FETCH REMINDERS ERROR]', err?.response?.data || err.message);
+    return { success: false, reminders: [], error: err?.response?.data?.error || err.message };
+  }
+};
+
+export const fetchReminderByIdApi = async (id: string) => {
+  try {
+    const response = await apiClient.get(`/api/reminders/${id}`);
+    return response.data;
+  } catch (err: any) {
+    console.error('[FETCH REMINDER BY ID ERROR]', err?.response?.data || err.message);
+    return { success: false, error: err?.response?.data?.error || err.message };
+  }
+};
+
+export const createReminderApi = async (reminder: Partial<ReminderData>) => {
+  try {
+    const response = await apiClient.post('/api/reminders', reminder);
+    return response.data;
+  } catch (err: any) {
+    console.error('[CREATE REMINDER ERROR]', err?.response?.data || err.message);
+    return { success: false, error: err?.response?.data?.error || err.message };
+  }
+};
+
+export const updateReminderApi = async (id: string, updates: Partial<ReminderData>) => {
+  try {
+    const response = await apiClient.put(`/api/reminders/${id}`, updates);
+    return response.data;
+  } catch (err: any) {
+    console.error('[UPDATE REMINDER ERROR]', err?.response?.data || err.message);
+    return { success: false, error: err?.response?.data?.error || err.message };
+  }
+};
+
+export const deleteReminderApi = async (id: string) => {
+  try {
+    const response = await apiClient.delete(`/api/reminders/${id}`);
+    return response.data;
+  } catch (err: any) {
+    console.error('[DELETE REMINDER ERROR]', err?.response?.data || err.message);
+    return { success: false, error: err?.response?.data?.error || err.message };
+  }
+};
+
+export const toggleReminderCompleteApi = async (id: string, completed?: boolean) => {
+  try {
+    const response = await apiClient.patch(`/api/reminders/${id}/complete`, { completed });
+    return response.data;
+  } catch (err: any) {
+    console.error('[TOGGLE REMINDER COMPLETE ERROR]', err?.response?.data || err.message);
+    return { success: false, error: err?.response?.data?.error || err.message };
+  }
+};
+
+export const toggleReminderActiveApi = async (id: string, isActive?: boolean) => {
+  try {
+    const response = await apiClient.patch(`/api/reminders/${id}/toggle`, { isActive });
+    return response.data;
+  } catch (err: any) {
+    console.error('[TOGGLE REMINDER ACTIVE ERROR]', err?.response?.data || err.message);
+    return { success: false, error: err?.response?.data?.error || err.message };
+  }
+};
+
