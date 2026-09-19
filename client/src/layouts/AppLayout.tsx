@@ -1,0 +1,191 @@
+import React, { ReactNode } from 'react';
+import { Brain, Wifi, WifiOff, UserCheck, User, Settings as SettingsIcon, LogOut, Mic } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
+import { getTranslation, Language } from '../utils/i18n';
+import { offlineService } from '../services/offlineService';
+
+interface AppLayoutProps {
+  children: ReactNode;
+  currentPath: string;
+  onNavigate: (path: string) => void;
+  lang: Language;
+  onLangChange: (lang: Language) => void;
+  voiceEnabled?: boolean;
+  onTriggerVoice?: () => void;
+  textSize?: 'normal' | 'large' | 'xlarge';
+}
+
+export const AppLayout: React.FC<AppLayoutProps> = ({
+  children,
+  currentPath,
+  onNavigate,
+  lang,
+  onLangChange,
+  voiceEnabled = true,
+  onTriggerVoice,
+  textSize = 'normal',
+}) => {
+  const { user, logout } = useAuth();
+  const isOffline = offlineService.isOffline();
+  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(lang, key);
+
+  const isCaregiverOrAdmin = user?.role === 'caregiver' || user?.role === 'admin';
+
+  return (
+    <div className={`font-scale-${textSize}`} style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#070A12' }}>
+      {/* Top Navbar */}
+      <header className="app-header" role="banner" style={{ borderBottom: '1px solid var(--border-glass)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }} onClick={() => onNavigate(isCaregiverOrAdmin ? '/caregiver' : '/dashboard')}>
+          <div
+            style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '14px',
+              background: 'linear-gradient(135deg, #10B981, #059669)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 0 16px rgba(16, 185, 129, 0.4)',
+            }}
+          >
+            <Brain size={26} color="#FFFFFF" />
+          </div>
+          <div>
+            <h1 style={{ fontSize: '20px', fontWeight: '800', color: '#FFFFFF', letterSpacing: '-0.3px' }}>
+              {t('appTitle')}
+            </h1>
+            <p style={{ fontSize: '12px', color: '#94A3B8', fontWeight: '500' }}>{t('tagline')}</p>
+          </div>
+        </div>
+
+        {/* Action Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <span className={`badge-pill ${isOffline ? 'badge-coral' : 'badge-emerald'}`}>
+            {isOffline ? <WifiOff size={15} /> : <Wifi size={15} />}
+            {isOffline ? t('offlineBanner') : t('onlineBanner')}
+          </span>
+
+          {/* Language Selector Pills */}
+          <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '12px' }}>
+            {(['en', 'hi', 'as'] as Language[]).map((l) => (
+              <button
+                key={l}
+                onClick={() => onLangChange(l)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '9px',
+                  border: 'none',
+                  background: lang === l ? '#10B981' : 'transparent',
+                  color: '#FFFFFF',
+                  fontWeight: '700',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+                aria-pressed={lang === l}
+              >
+                {l === 'as' ? 'অসমীয়া' : l === 'hi' ? 'हिन्दी' : 'ENG'}
+              </button>
+            ))}
+          </div>
+
+          {/* Role Dashboard Toggle for Caregiver & Admin */}
+          {isCaregiverOrAdmin && (
+            <button
+              className="btn-primary btn-glass-subtle"
+              onClick={() => onNavigate(currentPath.startsWith('/caregiver') ? '/dashboard' : '/caregiver')}
+              style={{ minHeight: '44px', padding: '0 14px', fontSize: '14px' }}
+              aria-label="Toggle Dashboard View"
+            >
+              <UserCheck size={18} color="#10B981" />
+              {currentPath.startsWith('/caregiver') ? t('elderlyMode') : t('caregiverDashboard')}
+            </button>
+          )}
+
+          <button
+            className="btn-primary btn-glass-subtle"
+            onClick={() => onNavigate('/profile')}
+            style={{ minHeight: '44px', padding: '0 12px' }}
+            title={t('profileTitle')}
+            aria-label={t('profileTitle')}
+          >
+            <User size={18} color="#6EE7B7" />
+          </button>
+
+          <button
+            className="btn-primary btn-glass-subtle"
+            onClick={() => onNavigate('/settings')}
+            style={{ minHeight: '44px', padding: '0 12px' }}
+            title={t('settingsTitle')}
+            aria-label={t('settingsTitle')}
+          >
+            <SettingsIcon size={18} color="#C4B5FD" />
+          </button>
+
+          <button
+            onClick={logout}
+            title={t('logoutButton')}
+            aria-label={t('logoutButton')}
+            style={{
+              background: 'rgba(244, 63, 94, 0.15)',
+              border: '1px solid rgba(244, 63, 94, 0.3)',
+              borderRadius: '12px',
+              color: '#FDA4AF',
+              padding: '10px 14px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '14px',
+              fontWeight: '700',
+            }}
+          >
+            <LogOut size={16} /> Logout
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="main-content" role="main" style={{ flex: 1, padding: '24px 16px', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+        {children}
+      </main>
+
+      {/* Floating Voice Assistant Bar */}
+      <div className="voice-footer-bar" role="navigation" aria-label="Voice Dock">
+        <button
+          onClick={onTriggerVoice}
+          className="pulse-mic"
+          style={{
+            width: '54px',
+            height: '54px',
+            borderRadius: '50%',
+            background: voiceEnabled ? 'linear-gradient(135deg, #10B981, #059669)' : 'rgba(255,255,255,0.2)',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+          title={voiceEnabled ? 'Speak' : 'Voice Assistance Muted'}
+          aria-label={t('voicePrompt')}
+        >
+          <Mic size={26} color="#FFFFFF" />
+        </button>
+
+        <span style={{ fontSize: '15px', fontWeight: '600', color: '#E2E8F0' }}>
+          {t('voicePrompt')}
+        </span>
+
+        {currentPath !== '/dashboard' && currentPath !== '/caregiver' && (
+          <button
+            className="btn-primary btn-glass-subtle"
+            onClick={() => onNavigate(isCaregiverOrAdmin ? '/caregiver' : '/dashboard')}
+            style={{ minHeight: '38px', padding: '0 14px', fontSize: '13px' }}
+          >
+            Home
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
