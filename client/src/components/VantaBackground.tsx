@@ -16,10 +16,10 @@ interface VantaBackgroundProps {
 }
 
 export const VantaBackground: React.FC<VantaBackgroundProps> = ({
-  color = 0x473b3f,
-  backgroundColor = 0x070a12,
-  points = 10.00,
-  maxDistance = 20.00,
+  color = 0x10B981,
+  backgroundColor = 0x060913,
+  points = 12.00,
+  maxDistance = 24.00,
   spacing = 16.00,
 }) => {
   const vantaRef = useRef<HTMLDivElement>(null);
