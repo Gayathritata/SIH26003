@@ -3,6 +3,7 @@ import { Brain, LogIn, Key, Mail, AlertCircle, Play, Sparkles, UserCheck, Shield
 import { UserProfile } from '../../services/authService';
 import { translations, getTranslation, Language } from '../../i18n/translations';
 import { useAuth } from '../../context/AuthContext';
+import { VantaBackground } from '../VantaBackground';
 
 interface Props {
   onSuccess: (user: UserProfile) => void;
@@ -82,7 +83,10 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
   };
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>
+    <div style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-dark)', color: 'var(--text-primary)', overflow: 'hidden' }}>
+      {/* Vanta HALO Background (Landing Page Hero Only) */}
+      <VantaBackground />
+
       {/* 1. TOP NAVBAR */}
       <header
         style={{
