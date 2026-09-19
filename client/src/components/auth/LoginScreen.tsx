@@ -273,25 +273,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                     MindMate Video Presentation
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowVideoInput(!showVideoInput)}
-                  style={{
-                    background: 'var(--accent-primary-glow)',
-                    border: 'none',
-                    color: 'var(--accent-primary)',
-                    padding: '6px 12px',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                  }}
-                >
-                  <ExternalLink size={13} /> Update Video Link
-                </button>
+        
               </div>
 
               {/* Dynamic Video Link Input */}
