@@ -41,54 +41,61 @@ apiClient.interceptors.response.use(
 export const submitGameSession = async (sessionData: {
   gameType: string;
   difficulty: number;
-  score: number;
+  totalPairs?: number;
+  attempts?: number;
+  correctMatches?: number;
+  incorrectAttempts?: number;
   accuracy: number;
-  reactionTime: number;
-  mistakes: number;
+  completionTime?: number;
+  completionRate?: number;
+  score: number;
+  startedAt?: string;
+  completedAt?: string;
+  reactionTime?: number;
+  mistakes?: number;
   mood?: string;
 }) => {
   if (offlineService.isOffline()) {
     console.log('[API OFFLINE] Saving session to local sync queue...');
     offlineService.enqueue('game_session', sessionData);
-    
-    // Provide instant local AI difficulty prediction fallback when offline
-    const nextDiff = sessionData.accuracy > 0.8 ? Math.min(5, sessionData.difficulty + 1) : (
-      sessionData.accuracy < 0.5 ? Math.max(1, sessionData.difficulty - 1) : sessionData.difficulty
-    );
-
     return {
       offline: true,
       success: true,
       message: 'Progress saved locally in offline mode.',
-      aiRecommendation: {
-        recommended_difficulty: nextDiff,
-        confidence: 0.85,
-        reason: 'Offline Adaptive Engine: Local difficulty evaluation completed.',
-        engine_used: 'Offline Local Rule Engine',
-        previous_difficulty: sessionData.difficulty,
-        performance_trend: nextDiff > sessionData.difficulty ? 'improving' : 'stable',
-      },
     };
   }
 
   try {
-    const response = await apiClient.post('/games/sessions', sessionData);
+    const response = await apiClient.post('/game-sessions', sessionData);
     return { offline: false, ...response.data };
   } catch (err: any) {
-    console.warn('[API ERROR] Server request failed. Falling back to offline queue:', err.message);
-    offlineService.enqueue('game_session', sessionData);
-    return {
-      offline: true,
-      success: true,
-      message: 'Network error. Session saved to offline queue.',
-      aiRecommendation: {
-        recommended_difficulty: sessionData.difficulty,
-        confidence: 0.8,
-        reason: 'Offline Fallback Engine: Session cached safely.',
-        engine_used: 'Offline Fallback Engine',
-        previous_difficulty: sessionData.difficulty,
-        performance_trend: 'stable',
-      },
-    };
+    // Fallback to /games/sessions if /game-sessions fails
+    try {
+      const fbResponse = await apiClient.post('/games/sessions', sessionData);
+      return { offline: false, ...fbResponse.data };
+    } catch (fbErr: any) {
+      console.warn('[API ERROR] Server request failed. Falling back to offline queue:', fbErr.message);
+      offlineService.enqueue('game_session', sessionData);
+      return {
+        offline: true,
+        success: true,
+        message: 'Network error. Session saved to offline queue.',
+      };
+    }
+  }
+};
+
+export const fetchMyGameSessions = async () => {
+  try {
+    const response = await apiClient.get('/game-sessions/my-sessions');
+    return response.data;
+  } catch (err: any) {
+    try {
+      const fbResponse = await apiClient.get('/games/my-sessions');
+      return fbResponse.data;
+    } catch (fbErr: any) {
+      console.warn('[FETCH GAME SESSIONS ERROR]', fbErr.message);
+      return { success: false, sessions: [] };
+    }
   }
 };

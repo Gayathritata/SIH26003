@@ -22,60 +22,170 @@ export const GamesPage: React.FC<GamesPageProps> = ({ lang, difficulty, onNaviga
         >
           <ArrowLeft size={20} /> {t('backToHome')}
         </button>
-        <h2 className="text-section-title">{t('cognitiveGames')}</h2>
-        <span className="badge-pill badge-emerald">Level {difficulty}</span>
+        <h2 className="text-section-title">Cognitive Games</h2>
+        <span className="badge-pill badge-emerald">Difficulty Level {difficulty}</span>
       </div>
 
       <div className="activities-grid">
-        <div className="glass-panel glass-panel-hover" onClick={() => onStartGame('memory')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '210px' }}>
+        {/* Active Game: 🧠 Memory Match */}
+        <div
+          className="glass-panel glass-panel-hover"
+          onClick={() => onStartGame('memory')}
+          style={{
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            minHeight: '230px',
+            border: '2px solid rgba(236, 72, 153, 0.5)',
+          }}
+        >
           <div>
-            <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid #10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-              <Brain size={28} color="#10B981" />
+            <div
+              style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '18px',
+                background: 'linear-gradient(135deg, #EC4899, #8B5CF6)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '16px',
+                boxShadow: '0 0 20px rgba(236, 72, 153, 0.4)',
+              }}
+            >
+              <Brain size={30} color="#FFFFFF" />
             </div>
-            <h4 className="text-card-title">{t('memoryGameTitle')}</h4>
-            <p style={{ fontSize: '14px', color: '#94A3B8', marginTop: '4px' }}>{t('memoryGameDesc')}</p>
+            <h3 className="text-card-title" style={{ fontSize: '22px' }}>🧠 Memory Match</h3>
+            <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '6px', fontWeight: '500' }}>
+              Match the same objects and exercise your memory.
+            </p>
           </div>
-          <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '48px', marginTop: '16px', fontSize: '16px' }}>
-            <Play size={18} /> {t('startActivity')}
+          <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '50px', marginTop: '16px', fontSize: '17px' }}>
+            <Play size={20} /> Start Game
           </button>
         </div>
 
-        <div className="glass-panel glass-panel-hover" onClick={() => onStartGame('pattern')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '210px' }}>
+        {/* Future Game 1: Pattern Recognition — Coming Soon */}
+        <div
+          className="glass-panel"
+          style={{
+            opacity: 0.75,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            minHeight: '230px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          }}
+        >
           <div>
-            <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'rgba(245, 158, 11, 0.15)', border: '1px solid #F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-              <Target size={28} color="#F59E0B" />
+            <div
+              style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '18px',
+                background: 'rgba(245, 158, 11, 0.15)',
+                border: '1px solid #F59E0B',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '16px',
+              }}
+            >
+              <Target size={30} color="#F59E0B" />
             </div>
-            <h4 className="text-card-title">{t('patternGameTitle')}</h4>
-            <p style={{ fontSize: '14px', color: '#94A3B8', marginTop: '4px' }}>{t('patternGameDesc')}</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h3 className="text-card-title" style={{ fontSize: '20px' }}>Pattern Recognition</h3>
+              <span className="badge-pill badge-amber" style={{ fontSize: '11px', padding: '4px 8px' }}>Coming Soon</span>
+            </div>
+            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '6px' }}>
+              Identify visual sequence patterns and shapes.
+            </p>
           </div>
-          <button className="btn-primary btn-amber" style={{ width: '100%', minHeight: '48px', marginTop: '16px', fontSize: '16px' }}>
-            <Play size={18} /> {t('startActivity')}
+          <button disabled className="btn-primary btn-glass-subtle" style={{ width: '100%', minHeight: '48px', marginTop: '16px', opacity: 0.6, cursor: 'not-allowed', fontSize: '15px' }}>
+            Coming Soon
           </button>
         </div>
 
-        <div className="glass-panel glass-panel-hover" onClick={() => onStartGame('routine')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '210px' }}>
+        {/* Future Game 2: Daily Routine Recall — Coming Soon */}
+        <div
+          className="glass-panel"
+          style={{
+            opacity: 0.75,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            minHeight: '230px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          }}
+        >
           <div>
-            <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'rgba(99, 102, 241, 0.15)', border: '1px solid #6366F1', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-              <Calendar size={28} color="#6366F1" />
+            <div
+              style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '18px',
+                background: 'rgba(99, 102, 241, 0.15)',
+                border: '1px solid #6366F1',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '16px',
+              }}
+            >
+              <Calendar size={30} color="#6366F1" />
             </div>
-            <h4 className="text-card-title">{t('routineGameTitle')}</h4>
-            <p style={{ fontSize: '14px', color: '#94A3B8', marginTop: '4px' }}>{t('routineGameDesc')}</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h3 className="text-card-title" style={{ fontSize: '20px' }}>Daily Routine Recall</h3>
+              <span className="badge-pill badge-amber" style={{ fontSize: '11px', padding: '4px 8px' }}>Coming Soon</span>
+            </div>
+            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '6px' }}>
+              Order daily morning and evening activities correctly.
+            </p>
           </div>
-          <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '48px', marginTop: '16px', fontSize: '16px', background: 'linear-gradient(135deg, #6366F1, #4F46E5)' }}>
-            <Play size={18} /> {t('startActivity')}
+          <button disabled className="btn-primary btn-glass-subtle" style={{ width: '100%', minHeight: '48px', marginTop: '16px', opacity: 0.6, cursor: 'not-allowed', fontSize: '15px' }}>
+            Coming Soon
           </button>
         </div>
 
-        <div className="glass-panel glass-panel-hover" onClick={() => onStartGame('object_rec')} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '210px' }}>
+        {/* Future Game 3: Object Recognition — Coming Soon */}
+        <div
+          className="glass-panel"
+          style={{
+            opacity: 0.75,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            minHeight: '230px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          }}
+        >
           <div>
-            <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'rgba(20, 184, 166, 0.15)', border: '1px solid #14B8A6', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-              <Search size={28} color="#14B8A6" />
+            <div
+              style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '18px',
+                background: 'rgba(20, 184, 166, 0.15)',
+                border: '1px solid #14B8A6',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '16px',
+              }}
+            >
+              <Search size={30} color="#14B8A6" />
             </div>
-            <h4 className="text-card-title">{t('objectGameTitle')}</h4>
-            <p style={{ fontSize: '14px', color: '#94A3B8', marginTop: '4px' }}>{t('objectGameDesc')}</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <h3 className="text-card-title" style={{ fontSize: '20px' }}>Object Recognition</h3>
+              <span className="badge-pill badge-amber" style={{ fontSize: '11px', padding: '4px 8px' }}>Coming Soon</span>
+            </div>
+            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '6px' }}>
+              Recognize everyday objects from pictures and names.
+            </p>
           </div>
-          <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '48px', marginTop: '16px', fontSize: '16px', background: 'linear-gradient(135deg, #14B8A6, #0D9488)' }}>
-            <Play size={18} /> {t('startActivity')}
+          <button disabled className="btn-primary btn-glass-subtle" style={{ width: '100%', minHeight: '48px', marginTop: '16px', opacity: 0.6, cursor: 'not-allowed', fontSize: '15px' }}>
+            Coming Soon
           </button>
         </div>
       </div>

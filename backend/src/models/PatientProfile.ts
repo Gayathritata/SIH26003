@@ -21,7 +21,7 @@ export interface IPatientProfile extends Document {
 const PatientProfileSchema: Schema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    firebaseUid: { type: String, required: true, index: true },
+    firebaseUid: { type: String, required: false, index: true },
     age: { type: Number, default: 74 },
     preferredLanguage: { type: String, default: 'en' },
     emergencyContact: {

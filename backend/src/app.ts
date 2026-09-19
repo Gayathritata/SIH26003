@@ -74,6 +74,8 @@ app.use('/patients', patientRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/games', gameRoutes);
 app.use('/api/games', gameRoutes);
+app.use('/game-sessions', gameRoutes);
+app.use('/api/game-sessions', gameRoutes);
 app.use('/reminders', reminderRoutes);
 app.use('/api/reminders', reminderRoutes);
 app.use('/mood', moodRoutes);

@@ -99,6 +99,7 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
     if (userRole === 'elderly_user' || userRole === 'elderly') {
       await PatientProfile.create({
         userId: newUser._id,
+        firebaseUid: newUser._id.toString(),
         age: age || 74,
         preferredLanguage: lang,
         emergencyContact: req.body.emergencyContact || { name: '', phone: '' },

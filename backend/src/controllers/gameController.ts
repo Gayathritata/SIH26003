@@ -8,69 +8,136 @@ import { checkAndUpdatePatientAlerts } from '../services/alertService';
 
 export const createGameSession = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Authentication required. Verified JWT token missing.' });
+      return;
+    }
+
+    // Always obtain user ID strictly from verified JWT
+    const authenticatedUserId = req.user.mongoId || req.user.id || req.user.firebaseUid;
+    if (!authenticatedUserId) {
+      res.status(401).json({ success: false, error: 'Invalid user token payload.' });
+      return;
+    }
+
     const {
-      patientId,
       gameType,
       difficulty,
-      score,
-      accuracy,
-      reactionTime,
-      mistakes,
-      completionRate,
-      duration,
+      totalPairs,
       attempts,
-      mood,
+      correctMatches,
+      incorrectAttempts,
+      accuracy,
+      completionTime,
+      completionRate,
+      score,
+      startedAt,
+      completedAt,
     } = req.body;
 
-    const targetPatientId = patientId || req.user?.mongoId || req.user?.id || req.user?.firebaseUid || 'demo_patient_uid';
+    // Validation: gameType
+    const validGameType = gameType || 'memory_match';
+    if (typeof validGameType !== 'string' || !validGameType.trim()) {
+      res.status(400).json({ success: false, error: 'Invalid or missing gameType.' });
+      return;
+    }
 
-    // Call ML Engine for adaptive difficulty recommendation
-    const mlResult = await getMLDifficultyRecommendation({
-      accuracy: accuracy !== undefined ? accuracy : score / 100,
-      reaction_time: reactionTime || 4.5,
-      mistakes: mistakes || 0,
-      previous_score: score,
-      previous_difficulty: difficulty || 2,
-      game_type: gameType || 'memory',
-      mood: mood || 'good',
-      completion_rate: completionRate || 1.0,
-    });
+    // Validation: difficulty
+    const numDifficulty = Number(difficulty);
+    if (isNaN(numDifficulty) || numDifficulty < 1 || numDifficulty > 10) {
+      res.status(400).json({ success: false, error: 'Invalid difficulty level. Must be a number between 1 and 10.' });
+      return;
+    }
+
+    // Validation: numeric metrics
+    const numAttempts = Number(attempts ?? 0);
+    const numCorrect = Number(correctMatches ?? 0);
+    const numIncorrect = Number(incorrectAttempts ?? 0);
+    const numAccuracy = Number(accuracy ?? 0);
+    const numCompletionTime = Number(completionTime ?? 0);
+    const numCompletionRate = Number(completionRate ?? 100);
+    const numScore = Number(score ?? 0);
+    const numTotalPairs = Number(totalPairs ?? (numDifficulty === 1 ? 3 : numDifficulty === 2 ? 4 : 6));
+
+    if (
+      isNaN(numAttempts) || numAttempts < 0 ||
+      isNaN(numCorrect) || numCorrect < 0 ||
+      isNaN(numIncorrect) || numIncorrect < 0 ||
+      isNaN(numAccuracy) || numAccuracy < 0 || numAccuracy > 100 ||
+      isNaN(numCompletionTime) || numCompletionTime < 0 ||
+      isNaN(numCompletionRate) || numCompletionRate < 0 || numCompletionRate > 100 ||
+      isNaN(numScore) || numScore < 0
+    ) {
+      res.status(400).json({ success: false, error: 'Malformed request: Numeric game metrics are out of valid range.' });
+      return;
+    }
 
     const session = await GameSession.create({
-      patientId: targetPatientId,
-      gameType: gameType || 'memory',
-      difficulty: difficulty || 2,
-      score: score || 80,
-      accuracy: accuracy !== undefined ? accuracy : score / 100,
-      reactionTime: reactionTime || 4.5,
-      mistakes: mistakes || 0,
-      completionRate: completionRate || 1.0,
-      duration: duration || 45,
-      attempts: attempts || 1,
-      mood: mood || 'good',
-      aiRecommendedDifficulty: mlResult.recommended_difficulty,
-      aiConfidence: mlResult.confidence,
-      aiReason: mlResult.reason,
+      userId: authenticatedUserId,
+      patientId: authenticatedUserId,
+      gameType: validGameType,
+      difficulty: numDifficulty,
+      totalPairs: numTotalPairs,
+      attempts: numAttempts,
+      correctMatches: numCorrect,
+      incorrectAttempts: numIncorrect,
+      accuracy: numAccuracy,
+      completionTime: numCompletionTime,
+      completionRate: numCompletionRate,
+      score: numScore,
+      startedAt: startedAt ? new Date(startedAt) : new Date(Date.now() - numCompletionTime * 1000),
+      completedAt: completedAt ? new Date(completedAt) : new Date(),
+      reactionTime: numCompletionTime > 0 && numAttempts > 0 ? Number((numCompletionTime / numAttempts).toFixed(2)) : 0,
+      mistakes: numIncorrect,
+      duration: numCompletionTime,
+      aiRecommendedDifficulty: numDifficulty,
+      aiConfidence: 1.0,
+      aiReason: 'STEP 5 Initial Game Logic',
     });
 
-    // Update cognitive level in PatientProfile
+    // Update cognitive level in PatientProfile if available
     await PatientProfile.findOneAndUpdate(
-      { $or: [{ userId: targetPatientId }, { firebaseUid: targetPatientId }] },
-      { cognitiveLevel: mlResult.recommended_difficulty }
-    );
+      { $or: [{ userId: authenticatedUserId }, { firebaseUid: authenticatedUserId }] },
+      { cognitiveLevel: numDifficulty }
+    ).catch(() => {});
 
-    // Trigger alert evaluation asynchronously
-    checkAndUpdatePatientAlerts(targetPatientId).catch((err) =>
+    // Evaluate caregiver alerts
+    checkAndUpdatePatientAlerts(authenticatedUserId).catch((err) =>
       console.error('[ALERT EVALUATION ERROR]', err)
     );
 
     res.status(201).json({
       success: true,
       session,
-      aiRecommendation: mlResult,
     });
   } catch (error) {
     console.error('[CREATE GAME SESSION ERROR]', error);
+    res.status(500).json({ success: false, error: (error as Error).message });
+  }
+};
+
+export const getUserGameSessions = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Authentication required.' });
+      return;
+    }
+
+    const userId = req.user.mongoId || req.user.id || req.user.firebaseUid;
+
+    const sessions = await GameSession.find({
+      $or: [{ userId }, { patientId: userId }],
+    })
+      .sort({ completedAt: -1, createdAt: -1 })
+      .limit(50);
+
+    res.json({
+      success: true,
+      count: sessions.length,
+      sessions,
+    });
+  } catch (error) {
+    console.error('[GET GAME SESSIONS ERROR]', error);
     res.status(500).json({ success: false, error: (error as Error).message });
   }
 };
@@ -87,7 +154,6 @@ export const getGameContent = async (req: AuthenticatedRequest, res: Response): 
 
     let content = await GameContent.find(filter);
 
-    // If empty for specific language/region, fallback to English / general content
     if (content.length === 0 && (language || region)) {
       content = await GameContent.find({
         gameType: gameType || 'memory',

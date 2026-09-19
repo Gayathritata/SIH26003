@@ -29,9 +29,9 @@ export const calculatePatientAnalytics = async (patientId: string) => {
   }
 
   // Calculate real performance metrics
-  const totalScore = sessions.reduce((acc, s) => acc + s.score, 0);
-  const totalAccuracy = sessions.reduce((acc, s) => acc + s.accuracy, 0);
-  const totalRT = sessions.reduce((acc, s) => acc + s.reactionTime, 0);
+  const totalScore = sessions.reduce((acc, s) => acc + (s.score || 0), 0);
+  const totalAccuracy = sessions.reduce((acc, s) => acc + (s.accuracy || 0), 0);
+  const totalRT = sessions.reduce((acc, s) => acc + (s.reactionTime || s.completionTime || 0), 0);
 
   const avgScore = Math.round(totalScore / sessions.length);
   const avgAccuracy = Math.round((totalAccuracy / sessions.length) * 100) / 100;
