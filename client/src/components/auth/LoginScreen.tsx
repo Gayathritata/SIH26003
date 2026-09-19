@@ -95,12 +95,13 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '16px 36px',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-          background: 'rgba(7, 10, 18, 0.90)',
-          backdropFilter: 'blur(16px)',
+          borderBottom: '1.5px solid rgba(236, 72, 153, 0.35)',
+          background: 'rgba(26, 15, 33, 0.92)',
+          backdropFilter: 'blur(20px)',
           position: 'sticky',
           top: 0,
           zIndex: 100,
+          boxShadow: '0 4px 24px rgba(236, 72, 153, 0.18)',
         }}
       >
         {/* Left: Branding & Title */}
@@ -110,11 +111,11 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
               width: '46px',
               height: '46px',
               borderRadius: '14px',
-              background: 'linear-gradient(135deg, #10B981, #059669)',
+              background: 'linear-gradient(135deg, #EC4899, #8B5CF6)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)',
+              boxShadow: '0 0 20px rgba(236, 72, 153, 0.45)',
             }}
           >
             <Brain size={28} color="#FFFFFF" />
@@ -123,7 +124,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
             <h1 style={{ fontSize: '22px', fontWeight: '800', color: '#FFFFFF', letterSpacing: '-0.3px', margin: 0 }}>
               {t('appTitle')}
             </h1>
-            <p style={{ fontSize: '13px', color: '#94A3B8', fontWeight: '500', margin: 0 }}>{t('tagline')}</p>
+            <p style={{ fontSize: '13px', color: '#D8B4FE', fontWeight: '500', margin: 0 }}>{t('tagline')}</p>
           </div>
         </div>
 
@@ -135,7 +136,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
             style={{
               background: 'transparent',
               border: 'none',
-              color: '#94A3B8',
+              color: '#F3E8FF',
               fontSize: '15px',
               fontWeight: '600',
               cursor: 'pointer',
@@ -158,7 +159,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              boxShadow: '0 0 20px rgba(16, 185, 129, 0.35)',
+              boxShadow: '0 0 24px rgba(236, 72, 153, 0.45)',
             }}
           >
             <LogIn size={18} /> Sign In
@@ -193,20 +194,20 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
             <div
               style={{
                 position: 'relative',
-                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(99, 102, 241, 0.08))',
-                border: '1px solid rgba(16, 185, 129, 0.3)',
+                background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.16), rgba(168, 85, 247, 0.12))',
+                border: '1.5px solid rgba(236, 72, 153, 0.4)',
                 borderRadius: '20px',
                 padding: '24px 28px',
-                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
+                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)',
               }}
             >
-              <Quote size={32} color="#10B981" style={{ position: 'absolute', top: '16px', right: '20px', opacity: 0.3 }} />
+              <Quote size={32} color="#EC4899" style={{ position: 'absolute', top: '16px', right: '20px', opacity: 0.35 }} />
               <blockquote
                 style={{
                   margin: 0,
                   fontSize: '18px',
                   fontStyle: 'italic',
-                  color: '#F1F5F9',
+                  color: '#FFFFFF',
                   lineHeight: '1.6',
                   fontWeight: '500',
                 }}
@@ -214,20 +215,20 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                 "Memory is the treasury and guardian of all human experience. In honoring and supporting the cognitive journey of our elders, we preserve the heartbeat of our heritage."
               </blockquote>
               <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '30px', height: '2px', background: '#10B981' }} />
-                <span style={{ fontSize: '13px', fontWeight: '700', color: '#6EE7B7', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                <div style={{ width: '30px', height: '2px', background: '#EC4899' }} />
+                <span style={{ fontSize: '13px', fontWeight: '700', color: '#F472B6', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                   MindMate Cognitive Care Philosophy
                 </span>
               </div>
             </div>
 
             {/* Quick Demo Access Bar */}
-            <div style={{ background: 'rgba(15, 23, 42, 0.9)', border: '1.5px solid rgba(16, 185, 129, 0.4)', borderRadius: '18px', padding: '16px' }}>
+            <div style={{ background: 'rgba(26, 15, 33, 0.92)', border: '1.5px solid rgba(236, 72, 153, 0.45)', borderRadius: '18px', padding: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <span style={{ fontSize: '13px', fontWeight: '700', color: '#6EE7B7', letterSpacing: '0.5px' }}>
+                <span style={{ fontSize: '13px', fontWeight: '700', color: '#F472B6', letterSpacing: '0.5px' }}>
                   ⚡ QUICK DEMO ACCESS
                 </span>
-                <span style={{ fontSize: '12px', color: '#CBD5E1' }}>No registration required</span>
+                <span style={{ fontSize: '12px', color: '#D8B4FE' }}>No registration required</span>
               </div>
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 <button
@@ -242,7 +243,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                   type="button"
                   onClick={() => handleQuickDemoLogin('caregiver')}
                   className="btn-primary btn-glass-subtle"
-                  style={{ flex: 1, minHeight: '44px', fontSize: '14px', border: '1px solid #10B981' }}
+                  style={{ flex: 1, minHeight: '44px', fontSize: '14px', border: '1px solid #EC4899' }}
                 >
                   Caregiver Portal (Demo 👨‍⚕️)
                 </button>
@@ -258,9 +259,9 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                 position: 'relative',
                 borderRadius: '24px',
                 overflow: 'hidden',
-                border: '2px solid rgba(16, 185, 129, 0.35)',
-                background: '#0B0F19',
-                boxShadow: '0 25px 50px rgba(0, 0, 0, 0.7)',
+                border: '2px solid rgba(236, 72, 153, 0.45)',
+                background: '#120A1A',
+                boxShadow: '0 25px 50px rgba(0, 0, 0, 0.8)',
                 display: 'flex',
                 flexDirection: 'column',
               }}
@@ -272,12 +273,12 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '14px 20px',
-                  background: 'rgba(15, 23, 42, 0.95)',
+                  background: 'rgba(27, 15, 39, 0.95)',
                   borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Video size={20} color="#10B981" />
+                  <Video size={20} color="#EC4899" />
                   <span style={{ fontSize: '15px', fontWeight: '700', color: '#FFFFFF' }}>
                     MindMate Video Presentation
                   </span>
@@ -286,9 +287,9 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                   type="button"
                   onClick={() => setShowVideoInput(!showVideoInput)}
                   style={{
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    border: '1px solid rgba(16, 185, 129, 0.3)',
-                    color: '#6EE7B7',
+                    background: 'rgba(236, 72, 153, 0.18)',
+                    border: '1px solid rgba(236, 72, 153, 0.4)',
+                    color: '#F472B6',
                     padding: '6px 12px',
                     borderRadius: '8px',
                     fontSize: '12px',

@@ -38,18 +38,18 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       <VantaBackground />
 
       {/* Top Navbar */}
-      <header className="app-header" role="banner" style={{ position: 'relative', zIndex: 10, borderBottom: '1px solid var(--border-glass)' }}>
+      <header className="app-header" role="banner" style={{ position: 'relative', zIndex: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }} onClick={() => onNavigate(isCaregiverOrAdmin ? '/caregiver' : '/dashboard')}>
           <div
             style={{
               width: '44px',
               height: '44px',
               borderRadius: '14px',
-              background: 'linear-gradient(135deg, #10B981, #059669)',
+              background: 'linear-gradient(135deg, #EC4899, #8B5CF6)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 0 16px rgba(16, 185, 129, 0.4)',
+              boxShadow: '0 0 18px rgba(236, 72, 153, 0.45)',
             }}
           >
             <Brain size={26} color="#FFFFFF" />
@@ -58,7 +58,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             <h1 style={{ fontSize: '20px', fontWeight: '800', color: '#FFFFFF', letterSpacing: '-0.3px' }}>
               {t('appTitle')}
             </h1>
-            <p style={{ fontSize: '12px', color: '#94A3B8', fontWeight: '500' }}>{t('tagline')}</p>
+            <p style={{ fontSize: '12px', color: '#D8B4FE', fontWeight: '500' }}>{t('tagline')}</p>
           </div>
         </div>
 
@@ -70,7 +70,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           </span>
 
           {/* Language Selector Pills */}
-          <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '12px' }}>
+          <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.06)', padding: '4px', borderRadius: '12px' }}>
             {(['en', 'hi', 'as'] as Language[]).map((l) => (
               <button
                 key={l}
@@ -79,7 +79,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                   padding: '6px 12px',
                   borderRadius: '9px',
                   border: 'none',
-                  background: lang === l ? '#10B981' : 'transparent',
+                  background: lang === l ? 'linear-gradient(135deg, #EC4899, #8B5CF6)' : 'transparent',
                   color: '#FFFFFF',
                   fontWeight: '700',
                   fontSize: '13px',
@@ -101,7 +101,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               style={{ minHeight: '44px', padding: '0 14px', fontSize: '14px' }}
               aria-label="Toggle Dashboard View"
             >
-              <UserCheck size={18} color="#10B981" />
+              <UserCheck size={18} color="#EC4899" />
               {currentPath.startsWith('/caregiver') ? t('elderlyMode') : t('caregiverDashboard')}
             </button>
           )}
