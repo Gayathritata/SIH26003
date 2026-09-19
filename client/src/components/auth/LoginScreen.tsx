@@ -227,42 +227,42 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
 
             {/* Feature Highlights Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
-              <div style={{ background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--border-glass)', padding: '14px 16px', borderRadius: '16px' }}>
+              <div style={{ background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(255, 255, 255, 0.15)', padding: '14px 16px', borderRadius: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#10B981', fontWeight: '700', fontSize: '15px' }}>
                   <Brain size={18} /> Adaptive ML Engine
                 </div>
-                <p style={{ fontSize: '12px', color: '#94A3B8', margin: '4px 0 0 0' }}>XGBoost dynamic difficulty scaling</p>
+                <p style={{ fontSize: '13px', color: '#E2E8F0', margin: '4px 0 0 0' }}>XGBoost dynamic difficulty scaling</p>
               </div>
 
-              <div style={{ background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--border-glass)', padding: '14px 16px', borderRadius: '16px' }}>
+              <div style={{ background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(255, 255, 255, 0.15)', padding: '14px 16px', borderRadius: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#F59E0B', fontWeight: '700', fontSize: '15px' }}>
                   <Volume2 size={18} /> Multilingual Voice
                 </div>
-                <p style={{ fontSize: '12px', color: '#94A3B8', margin: '4px 0 0 0' }}>Assamese, Hindi & English guidance</p>
+                <p style={{ fontSize: '13px', color: '#E2E8F0', margin: '4px 0 0 0' }}>Assamese, Hindi & English guidance</p>
               </div>
 
-              <div style={{ background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--border-glass)', padding: '14px 16px', borderRadius: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#6366F1', fontWeight: '700', fontSize: '15px' }}>
+              <div style={{ background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(255, 255, 255, 0.15)', padding: '14px 16px', borderRadius: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#818CF8', fontWeight: '700', fontSize: '15px' }}>
                   <UserCheck size={18} /> Caregiver Portal
                 </div>
-                <p style={{ fontSize: '12px', color: '#94A3B8', margin: '4px 0 0 0' }}>Performance change alerts & trends</p>
+                <p style={{ fontSize: '13px', color: '#E2E8F0', margin: '4px 0 0 0' }}>Performance change alerts & trends</p>
               </div>
 
-              <div style={{ background: 'rgba(255, 255, 255, 0.04)', border: '1px solid var(--border-glass)', padding: '14px 16px', borderRadius: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#14B8A6', fontWeight: '700', fontSize: '15px' }}>
+              <div style={{ background: 'rgba(15, 23, 42, 0.85)', border: '1px solid rgba(255, 255, 255, 0.15)', padding: '14px 16px', borderRadius: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#2DD4BF', fontWeight: '700', fontSize: '15px' }}>
                   <Shield size={18} /> JWT Auth Security
                 </div>
-                <p style={{ fontSize: '12px', color: '#94A3B8', margin: '4px 0 0 0' }}>Role isolation & session storage</p>
+                <p style={{ fontSize: '13px', color: '#E2E8F0', margin: '4px 0 0 0' }}>Role isolation & session storage</p>
               </div>
             </div>
 
             {/* Quick Demo Access Bar */}
-            <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '18px', padding: '16px' }}>
+            <div style={{ background: 'rgba(15, 23, 42, 0.9)', border: '1.5px solid rgba(16, 185, 129, 0.4)', borderRadius: '18px', padding: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                 <span style={{ fontSize: '13px', fontWeight: '700', color: '#6EE7B7', letterSpacing: '0.5px' }}>
                   ⚡ QUICK DEMO ACCESS
                 </span>
-                <span style={{ fontSize: '12px', color: '#94A3B8' }}>No registration required</span>
+                <span style={{ fontSize: '12px', color: '#CBD5E1' }}>No registration required</span>
               </div>
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 <button

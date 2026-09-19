@@ -89,7 +89,7 @@ export const VantaBackground: React.FC<VantaBackgroundProps> = ({
         height: '100vh',
         zIndex: 0,
         pointerEvents: 'none',
-        opacity: 0.85,
+        opacity: 0.3,
       }}
     />
   );
