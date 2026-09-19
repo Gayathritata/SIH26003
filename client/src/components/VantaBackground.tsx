@@ -21,33 +21,36 @@ export const VantaBackground: React.FC = () => {
     let timer: any = null;
 
     const initVanta = () => {
-      if (vantaRef.current && window.VANTA && window.VANTA.HALO && window.THREE) {
+      if (vantaRef.current && window.VANTA && window.VANTA.NET && window.THREE) {
         try {
           if (!vantaEffectRef.current) {
-            vantaEffectRef.current = window.VANTA.HALO({
+            vantaEffectRef.current = window.VANTA.NET({
               el: vantaRef.current,
               mouseControls: true,
               touchControls: true,
               gyroControls: false,
               minHeight: 200.00,
               minWidth: 200.00,
-              baseColor: 0x0284c7, // Calm medical blue
-              backgroundColor: 0x0f172a, // Soft slate dark background
-              amplitudeFactor: 0.8,
-              size: 1.0,
+              scale: 1.00,
+              scaleMobile: 1.00,
+              color: 0x0284c7, // MindMate primary calm blue
+              backgroundColor: 0x0f172a, // MindMate dark slate background
+              points: 10.00,
+              maxDistance: 20.00,
+              spacing: 16.00,
             });
           }
         } catch (e) {
-          console.warn('[VANTA HALO INIT NOTICE]', e);
+          console.warn('[VANTA NET INIT NOTICE]', e);
         }
       }
     };
 
-    if (window.VANTA && window.VANTA.HALO && window.THREE) {
+    if (window.VANTA && window.VANTA.NET && window.THREE) {
       initVanta();
     } else {
       timer = setInterval(() => {
-        if (window.VANTA && window.VANTA.HALO && window.THREE) {
+        if (window.VANTA && window.VANTA.NET && window.THREE) {
           clearInterval(timer);
           timer = null;
           initVanta();
