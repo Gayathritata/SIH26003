@@ -3,6 +3,7 @@ import { Brain, Wifi, WifiOff, UserCheck, User, Settings as SettingsIcon, LogOut
 import { useAuth } from '../hooks/useAuth';
 import { getTranslation, Language } from '../utils/i18n';
 import { offlineService } from '../services/offlineService';
+import { VantaBackground } from '../components/VantaBackground';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -32,9 +33,12 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   const isCaregiverOrAdmin = user?.role === 'caregiver' || user?.role === 'admin';
 
   return (
-    <div className={`font-scale-${textSize}`} style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#070A12' }}>
+    <div className={`font-scale-${textSize}`} style={{ position: 'relative', display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#070A12' }}>
+      {/* Vanta 3D NET Background Animation */}
+      <VantaBackground color={0x473b3f} backgroundColor={0x070a12} />
+
       {/* Top Navbar */}
-      <header className="app-header" role="banner" style={{ borderBottom: '1px solid var(--border-glass)' }}>
+      <header className="app-header" role="banner" style={{ position: 'relative', zIndex: 10, borderBottom: '1px solid var(--border-glass)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }} onClick={() => onNavigate(isCaregiverOrAdmin ? '/caregiver' : '/dashboard')}>
           <div
             style={{
@@ -146,7 +150,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       </header>
 
       {/* Main Content Area */}
-      <main className="main-content" role="main" style={{ flex: 1, padding: '24px 16px', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+      <main className="main-content" role="main" style={{ position: 'relative', zIndex: 1, flex: 1, padding: '24px 16px', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
         {children}
       </main>
     </div>
