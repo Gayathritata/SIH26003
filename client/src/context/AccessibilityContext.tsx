@@ -38,7 +38,7 @@ export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ child
 
   const [highContrast, setHighContrastState] = useState<boolean>(() => {
     const stored = localStorage.getItem('mindmate_high_contrast');
-    return stored !== null ? stored === 'true' : true;
+    return stored !== null ? stored === 'true' : false;
   });
 
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
