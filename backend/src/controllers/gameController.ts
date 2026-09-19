@@ -167,6 +167,83 @@ export const getUserGameSessions = async (req: AuthenticatedRequest, res: Respon
   }
 };
 
+export const recommendDifficultyController = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Authentication required. Verified JWT token missing.' });
+      return;
+    }
+
+    // Identify user strictly from authenticated JWT
+    const authenticatedUserId = req.user.mongoId || req.user.id || req.user.firebaseUid;
+    const requestedGameType = (req.body.gameType || req.query.gameType || 'memory_match').toString().toLowerCase().trim();
+
+    // Query recent completed sessions for this user from MongoDB Atlas
+    const recentSessions = await GameSession.find({
+      $or: [{ userId: authenticatedUserId }, { patientId: authenticatedUserId }],
+    })
+      .sort({ completedAt: -1, createdAt: -1 })
+      .limit(5);
+
+    if (recentSessions.length === 0) {
+      // Insufficient history handling
+      res.json({
+        success: true,
+        recommendedDifficulty: 'easy',
+        numericDifficulty: 1,
+        confidence: 1.0,
+        probabilities: { easy: 1.0, medium: 0.0, hard: 0.0 },
+        insufficientHistory: true,
+        message: 'Insufficient game history. Recommending baseline difficulty.',
+        explanation: 'No previous completed game history found. Starting at Easy difficulty.',
+      });
+      return;
+    }
+
+    // Aggregate performance metrics from actual MongoDB session records
+    const avgAccuracy = recentSessions.reduce((sum, s) => sum + (s.accuracy || 0), 0) / recentSessions.length;
+    const avgScore = Math.round(recentSessions.reduce((sum, s) => sum + (s.score || 0), 0) / recentSessions.length);
+    const avgCompletionTime = Math.round(recentSessions.reduce((sum, s) => sum + (s.completionTime || s.duration || 30), 0) / recentSessions.length);
+    const avgAttempts = Math.round(recentSessions.reduce((sum, s) => sum + (s.attempts || 5), 0) / recentSessions.length);
+    const avgIncorrect = Math.round(recentSessions.reduce((sum, s) => sum + (s.incorrectAttempts || s.mistakes || 0), 0) / recentSessions.length);
+    const avgCorrect = Math.round(recentSessions.reduce((sum, s) => sum + (s.correctMatches || 5), 0) / recentSessions.length);
+    const avgCompletionRate = recentSessions.reduce((sum, s) => sum + (s.completionRate || 100), 0) / recentSessions.length;
+
+    const mostRecentDiffNum = recentSessions[0]?.difficulty || 1;
+    const previousDifficultyStr = mostRecentDiffNum === 1 ? 'easy' : (mostRecentDiffNum === 2 ? 'medium' : 'hard');
+
+    const { predictDifficultyFromML } = require('../services/mlClient');
+
+    // Call FastAPI Python ML service
+    const mlResult = await predictDifficultyFromML({
+      accuracy: avgAccuracy > 1.0 ? avgAccuracy / 100.0 : avgAccuracy,
+      score: avgScore,
+      completionTime: avgCompletionTime,
+      attempts: avgAttempts,
+      incorrectAttempts: avgIncorrect,
+      correctAnswers: avgCorrect,
+      completionRate: avgCompletionRate > 1.0 ? avgCompletionRate / 100.0 : avgCompletionRate,
+      previousDifficulty: previousDifficultyStr,
+      gameType: requestedGameType,
+    });
+
+    const numDiff = mlResult.recommendedDifficulty === 'easy' ? 1 : (mlResult.recommendedDifficulty === 'medium' ? 2 : 3);
+
+    res.json({
+      success: true,
+      recommendedDifficulty: mlResult.recommendedDifficulty,
+      numericDifficulty: numDiff,
+      confidence: mlResult.confidence,
+      probabilities: mlResult.probabilities,
+      explanation: mlResult.explanation,
+      insufficientHistory: false,
+    });
+  } catch (error) {
+    console.error('[AI RECOMMENDATION CONTROLLER ERROR]', error);
+    res.status(500).json({ success: false, error: (error as Error).message });
+  }
+};
+
 export const getGameContent = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const { gameType, language, region, difficulty } = req.query;

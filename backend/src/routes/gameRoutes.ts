@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createGameSession, getUserGameSessions, getGameContent } from '../controllers/gameController';
+import { createGameSession, getUserGameSessions, getGameContent, recommendDifficultyController } from '../controllers/gameController';
 import { authenticateToken } from '../middleware/authMiddleware';
 
 const router = Router();
@@ -12,6 +12,10 @@ router.post('/sessions', authenticateToken, createGameSession);
 router.get('/my-sessions', authenticateToken, getUserGameSessions);
 router.get('/sessions/my-sessions', authenticateToken, getUserGameSessions);
 router.get('/', authenticateToken, getUserGameSessions);
+
+// AI Recommendation route
+router.post('/recommend-difficulty', authenticateToken, recommendDifficultyController);
+router.post('/ai/recommend-difficulty', authenticateToken, recommendDifficultyController);
 
 // Fetch game content
 router.get('/content', getGameContent);

@@ -38,10 +38,12 @@ def health_check():
         "disclaimer": "Supportive cognitive assistance engine. NOT a medical diagnostic tool."
     }
 
-@app.post("/ai/recommend-difficulty", response_model=RecommendationResponse)
-def recommend_difficulty(request: RecommendationRequest):
+@app.post("/predict-difficulty")
+@app.post("/ai/recommend-difficulty")
+def recommend_difficulty(request: dict):
     try:
-        return ml_service.recommend(request)
+        from src.predict import predict_recommended_difficulty
+        return predict_recommended_difficulty(request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"ML Recommendation engine error: {str(e)}")
 

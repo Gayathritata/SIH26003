@@ -22,6 +22,66 @@ export interface MLRecommendationResult {
   performance_trend: string;
 }
 
+export interface MLPredictDifficultyParams {
+  accuracy: number;
+  score: number;
+  completionTime: number;
+  attempts: number;
+  incorrectAttempts: number;
+  correctAnswers: number;
+  completionRate: number;
+  previousDifficulty: string;
+  gameType?: string;
+}
+
+export interface MLPredictDifficultyResponse {
+  recommendedDifficulty: 'easy' | 'medium' | 'hard';
+  confidence: number;
+  probabilities: { easy: number; medium: number; hard: number };
+  explanation?: string;
+}
+
+export const predictDifficultyFromML = async (
+  params: MLPredictDifficultyParams
+): Promise<MLPredictDifficultyResponse> => {
+  try {
+    const response = await axios.post<MLPredictDifficultyResponse>(
+      `${ML_SERVICE_URL}/predict-difficulty`,
+      params,
+      { timeout: 4000 }
+    );
+    return response.data;
+  } catch (error: any) {
+    console.warn(`[ML CLIENT WARNING] FastAPI ML service unreachable at ${ML_SERVICE_URL}/predict-difficulty: ${error.message}. Using deterministic fallback.`);
+    
+    // Deterministic fallback rule when ML server is unreachable
+    const accuracy = params.accuracy > 1.0 ? params.accuracy / 100.0 : params.accuracy;
+    let recDiff: 'easy' | 'medium' | 'hard' = 'medium';
+    let conf = 0.85;
+
+    if (accuracy >= 0.80 && params.incorrectAttempts <= 1) {
+      recDiff = 'hard';
+      conf = 0.88;
+    } else if (accuracy < 0.55 || params.incorrectAttempts >= 3 || params.completionTime > 60) {
+      recDiff = 'easy';
+      conf = 0.82;
+    }
+
+    const probs = {
+      easy: recDiff === 'easy' ? 0.82 : 0.09,
+      medium: recDiff === 'medium' ? 0.85 : 0.08,
+      hard: recDiff === 'hard' ? 0.88 : 0.07,
+    };
+
+    return {
+      recommendedDifficulty: recDiff,
+      confidence: conf,
+      probabilities: probs,
+      explanation: `Rule Fallback: Recommended ${recDiff} based on recent accuracy (${Math.round(accuracy * 100)}%).`,
+    };
+  }
+};
+
 export const getMLDifficultyRecommendation = async (
   params: MLRecommendationParams
 ): Promise<MLRecommendationResult> => {

@@ -99,3 +99,24 @@ export const fetchMyGameSessions = async () => {
     }
   }
 };
+
+export const fetchAiDifficultyRecommendation = async (gameType: string = 'memory_match') => {
+  try {
+    const response = await apiClient.post('/ai/recommend-difficulty', { gameType });
+    return response.data;
+  } catch (err: any) {
+    try {
+      const fbResponse = await apiClient.post('/game-sessions/recommend-difficulty', { gameType });
+      return fbResponse.data;
+    } catch (fbErr: any) {
+      console.warn('[AI DIFFICULTY RECOMMENDATION ERROR]', fbErr.message);
+      return {
+        success: false,
+        recommendedDifficulty: 'easy',
+        numericDifficulty: 1,
+        insufficientHistory: true,
+        message: 'Your next activity has been adjusted based on your recent game performance.',
+      };
+    }
+  }
+};

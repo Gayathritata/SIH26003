@@ -28,9 +28,9 @@ import { ObjectRecognitionGame } from './components/games/ObjectRecognitionGame'
 import { GameResultModal } from './components/GameResultModal';
 
 import { voiceService } from './services/voiceService';
-import { submitGameSession } from './services/api';
+import { submitGameSession, fetchAiDifficultyRecommendation } from './services/api';
 import { Language, getTranslation } from './utils/i18n';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Sparkles } from 'lucide-react';
 
 export const App: React.FC = () => {
   const { user, token, loading, login, register, logout } = useAuth();
@@ -42,10 +42,11 @@ export const App: React.FC = () => {
 
   // Active game gameplay state
   const [activeGameType, setActiveGameType] = useState<'memory' | 'pattern' | 'routine' | 'object_rec'>('memory');
-  const [difficulty, setDifficulty] = useState<number>(2);
+  const [difficulty, setDifficulty] = useState<number>(1);
   const [selectedMood, setSelectedMood] = useState<string | null>('good');
   const [gameResult, setGameResult] = useState<any>(null);
   const [aiRecommendation, setAiRecommendation] = useState<any>(null);
+  const [aiBannerMessage, setAiBannerMessage] = useState<string | null>(null);
 
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(lang, key);
 
@@ -87,9 +88,26 @@ export const App: React.FC = () => {
     setCurrentPath(path);
   };
 
-  const handleStartGame = (gameType: 'memory' | 'pattern' | 'routine' | 'object_rec') => {
+  const handleStartGame = async (gameType: 'memory' | 'pattern' | 'routine' | 'object_rec') => {
     setActiveGameType(gameType);
     setCurrentPath('/gameplay');
+
+    // Call AI Adaptive Difficulty Recommendation Engine (Node.js -> FastAPI -> XGBoost)
+    try {
+      const fullGameType = gameType === 'memory' ? 'memory_match' : (gameType === 'pattern' ? 'pattern_recognition' : (gameType === 'routine' ? 'daily_routine_recall' : 'object_recognition'));
+      const aiRes = await fetchAiDifficultyRecommendation(fullGameType);
+
+      if (aiRes && aiRes.numericDifficulty) {
+        setDifficulty(aiRes.numericDifficulty);
+      } else if (aiRes && aiRes.recommendedDifficulty) {
+        const num = aiRes.recommendedDifficulty === 'easy' ? 1 : (aiRes.recommendedDifficulty === 'medium' ? 2 : 3);
+        setDifficulty(num);
+      }
+
+      setAiBannerMessage('Your next activity has been adjusted based on your recent game performance.');
+    } catch (e) {
+      console.warn('[AI ADAPTIVE START ERROR]', e);
+    }
   };
 
   const handleGameFinish = async (resultData: any) => {
@@ -211,6 +229,27 @@ export const App: React.FC = () => {
       {/* Route: /gameplay */}
       {currentPath === '/gameplay' && (
         <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+          {aiBannerMessage && (
+            <div
+              style={{
+                background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(139, 92, 246, 0.2))',
+                border: '1px solid rgba(236, 72, 153, 0.4)',
+                borderRadius: '16px',
+                padding: '12px 18px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                color: '#FFFFFF',
+                fontSize: '15px',
+                fontWeight: '600',
+              }}
+            >
+              <Sparkles size={20} color="#EC4899" />
+              <span>{aiBannerMessage}</span>
+            </div>
+          )}
+
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
             <button
               onClick={() => handleNavigate('/games')}
