@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, RotateCcw } from 'lucide-react';
+import { Search, RotateCcw, Mic, Volume2, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { calculateObjectRecognitionScore, CalculatedGameMetrics } from '../../utils/gameScoring';
 import { submitGameSession } from '../../services/api';
-import { GameHeader } from './common/GameHeader';
 import { GameCompletionScreen } from './common/GameCompletionScreen';
-import { Language } from '../../utils/i18n';
+import { useAccessibility } from '../../context/AccessibilityContext';
+import { voiceService } from '../../services/voiceService';
 
 interface ObjectQuestion {
   objectName: string;
   emoji: string;
   category: string;
-  prompt: string;
+  promptKey: string;
   options: string[];
 }
 
@@ -19,21 +19,21 @@ const EASY_QUESTIONS: ObjectQuestion[] = [
     objectName: 'Mango',
     emoji: '🥭',
     category: 'Fresh Fruit',
-    prompt: 'What fruit is shown above?',
+    promptKey: 'objectInstructions',
     options: ['Mango', 'Apple', 'Cup'],
   },
   {
     objectName: 'Cup',
     emoji: '☕',
     category: 'Kitchenware',
-    prompt: 'What container is shown above?',
+    promptKey: 'objectInstructions',
     options: ['Book', 'Cup', 'Chair'],
   },
   {
     objectName: 'Clock',
     emoji: '⏰',
     category: 'Household Item',
-    prompt: 'What device tells time?',
+    promptKey: 'objectInstructions',
     options: ['Clock', 'Umbrella', 'Flower'],
   },
 ];
@@ -43,53 +43,21 @@ const MEDIUM_QUESTIONS: ObjectQuestion[] = [
     objectName: 'Book',
     emoji: '📖',
     category: 'Reading Item',
-    prompt: 'What reading item is shown above?',
+    promptKey: 'objectInstructions',
     options: ['Book', 'Paper', 'Magazine', 'Notebook'],
   },
   {
     objectName: 'Umbrella',
     emoji: '☂️',
     category: 'Weather Gear',
-    prompt: 'What object protects you from rain?',
+    promptKey: 'objectInstructions',
     options: ['Hat', 'Raincoat', 'Umbrella', 'Towel'],
-  },
-  {
-    objectName: 'Flower',
-    emoji: '🌸',
-    category: 'Garden Plant',
-    prompt: 'What beautiful plant is shown above?',
-    options: ['Leaf', 'Tree', 'Flower', 'Grass'],
-  },
-];
-
-const HARD_QUESTIONS: ObjectQuestion[] = [
-  {
-    objectName: 'Chair',
-    emoji: '🪑',
-    category: 'Furniture',
-    prompt: 'What furniture piece is shown above?',
-    options: ['Chair', 'Table', 'Stool', 'Bench', 'Couch'],
-  },
-  {
-    objectName: 'Tea Cup',
-    emoji: '🍵',
-    category: 'Beverage Vessel',
-    prompt: 'What cup used for hot tea is shown above?',
-    options: ['Glass', 'Bottle', 'Tea Cup', 'Jug', 'Vase'],
-  },
-  {
-    objectName: 'Traditional Basket',
-    emoji: '🧺',
-    category: 'Woven Craft',
-    prompt: 'What traditional woven container is shown above?',
-    options: ['Bag', 'Traditional Basket', 'Box', 'Pot', 'Tray'],
   },
 ];
 
 interface ObjectRecognitionGameProps {
   difficulty?: number;
   initialDifficulty?: number;
-  lang?: Language | string;
   onNavigateBack?: () => void;
   onSessionSaved?: () => void;
   onFinish?: (resultData: any) => void;
@@ -98,20 +66,22 @@ interface ObjectRecognitionGameProps {
 export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
   difficulty: propDiff,
   initialDifficulty = 1,
-  lang = 'en',
   onNavigateBack,
   onSessionSaved,
   onFinish,
 }) => {
+  const { t, speak, voiceEnabled, lang } = useAccessibility();
+
   const [difficulty, setDifficulty] = useState<number>(propDiff || initialDifficulty);
   const [questionIndex, setQuestionIndex] = useState<number>(0);
 
-  // Performance tracking
   const [correctAnswers, setCorrectAnswers] = useState<number>(0);
   const [incorrectAnswers, setIncorrectAnswers] = useState<number>(0);
   const [feedback, setFeedback] = useState<{ isCorrect: boolean; text: string } | null>(null);
 
-  // Timer & completion states
+  const [isListeningSTT, setIsListeningSTT] = useState<boolean>(false);
+  const [sttNotice, setSttNotice] = useState<string | null>(null);
+
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
   const [isGameActive, setIsGameActive] = useState<boolean>(false);
   const [isGameComplete, setIsGameComplete] = useState<boolean>(false);
@@ -121,7 +91,7 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
   const startTimeRef = useRef<number>(Date.now());
   const timerIntervalRef = useRef<any>(null);
 
-  const questionsList = difficulty === 1 ? EASY_QUESTIONS : (difficulty === 2 ? MEDIUM_QUESTIONS : HARD_QUESTIONS);
+  const questionsList = difficulty === 1 ? EASY_QUESTIONS : MEDIUM_QUESTIONS;
   const currentQuestion = questionsList[questionIndex % questionsList.length];
   const totalQuestions = questionsList.length;
 
@@ -133,6 +103,7 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
     setCorrectAnswers(0);
     setIncorrectAnswers(0);
     setFeedback(null);
+    setSttNotice(null);
     setElapsedSeconds(0);
     setIsGameComplete(false);
     setMetrics(null);
@@ -142,6 +113,10 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
     timerIntervalRef.current = setInterval(() => {
       setElapsedSeconds((prev) => prev + 1);
     }, 1000);
+
+    if (voiceEnabled) {
+      speak(t('objectInstructions'), true);
+    }
   };
 
   useEffect(() => {
@@ -159,7 +134,11 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
     if (isCorrect) {
       const nextCorrect = correctAnswers + 1;
       setCorrectAnswers(nextCorrect);
-      setFeedback({ isCorrect: true, text: `Correct! 🎉 It's a ${currentQuestion.objectName}!` });
+      setFeedback({ isCorrect: true, text: `${t('correctAnswer')} 🎉 (${currentQuestion.objectName})` });
+
+      if (voiceEnabled) {
+        speak(t('correctAnswer'), true);
+      }
 
       setTimeout(() => {
         setFeedback(null);
@@ -172,7 +151,11 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
     } else {
       const nextIncorrect = incorrectAnswers + 1;
       setIncorrectAnswers(nextIncorrect);
-      setFeedback({ isCorrect: false, text: 'Try again.' });
+      setFeedback({ isCorrect: false, text: t('tryAgain') });
+
+      if (voiceEnabled) {
+        speak(t('tryAgain'), true);
+      }
 
       setTimeout(() => {
         setFeedback(null);
@@ -180,10 +163,51 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
     }
   };
 
+  const handleStartSTT = () => {
+    if (!voiceService.isSTTSupported()) {
+      setSttNotice(t('voiceInputUnavailable'));
+      return;
+    }
+
+    setIsListeningSTT(true);
+    setSttNotice('Listening... Speak object name.');
+
+    voiceService.listen(
+      (transcript) => {
+        setIsListeningSTT(false);
+        setSttNotice(`Heard: "${transcript}"`);
+        
+        // Find matching option
+        const match = currentQuestion.options.find(
+          (opt) => transcript.toLowerCase().includes(opt.toLowerCase()) || opt.toLowerCase().includes(transcript.toLowerCase())
+        );
+        if (match) {
+          handleSelectOption(match);
+        } else {
+          handleSelectOption(transcript);
+        }
+      },
+      (err) => {
+        setIsListeningSTT(false);
+        if (err === 'unsupported') {
+          setSttNotice(t('voiceInputUnavailable'));
+        } else {
+          setSttNotice(t('tryAgain'));
+        }
+      },
+      lang
+    );
+  };
+
   const handleGameCompletion = async (finalCorrect: number, finalIncorrect: number) => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
 
     setIsGameActive(false);
+
+    if (voiceEnabled) {
+      speak(t('gameComplete'), true);
+    }
+
     const completedAtISO = new Date().toISOString();
     const startedAtISO = new Date(startTimeRef.current).toISOString();
     const finalCompletionTime = Math.max(1, elapsedSeconds);
@@ -228,50 +252,87 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
 
   return (
     <div style={{ maxWidth: '850px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <GameHeader
-        title="👀 Object Recognition"
-        subtitle="Identify familiar everyday objects."
-        icon={<Search size={30} color="#14B8A6" />}
-        difficulty={difficulty}
-        elapsedSeconds={elapsedSeconds}
-        correctCount={correctAnswers}
-        totalCount={totalQuestions}
-        attemptsCount={correctAnswers + incorrectAnswers}
-        onNavigateBack={onNavigateBack}
-        onChangeDifficulty={(d) => startNewGame(d)}
-      />
+      
+      {/* Header */}
+      <div className="glass-panel" style={{ padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          {onNavigateBack && (
+            <button
+              type="button"
+              onClick={onNavigateBack}
+              className="btn-primary btn-glass-subtle"
+              style={{ minHeight: '44px', padding: '0 16px', fontSize: '15px' }}
+              aria-label={t('backToGames')}
+            >
+              <ArrowLeft size={20} /> {t('backToGames')}
+            </button>
+          )}
+          <div>
+            <h2 className="text-hero-title" style={{ fontSize: '26px', margin: 0 }}>
+              👀 {t('objectGameTitle')}
+            </h2>
+            <p style={{ fontSize: '16px', color: 'var(--text-secondary)', margin: '4px 0 0 0', fontWeight: '600' }}>
+              {t('objectInstructions')}
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => speak(t('objectInstructions'), true)}
+          className="btn-primary btn-glass-subtle"
+          style={{ minHeight: '44px', padding: '0 14px', fontSize: '14px', color: '#5EEAD4', border: '1px solid #14B8A6' }}
+          title={t('listenInstructions')}
+          aria-label={t('listenInstructions')}
+        >
+          <Volume2 size={18} /> {t('listenInstructions')}
+        </button>
+      </div>
 
       {/* Main Object Visualizer */}
       <div className="glass-panel" style={{ padding: '32px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
-        <span style={{ fontSize: '15px', color: 'var(--text-secondary)', fontWeight: '600' }}>
-          Question {questionIndex + 1} of {totalQuestions}
-        </span>
-
         {/* Object Large Icon */}
         <div
           style={{
-            width: '120px',
-            height: '120px',
-            borderRadius: '28px',
+            width: '130px',
+            height: '130px',
+            borderRadius: '32px',
             background: 'rgba(20, 184, 166, 0.15)',
-            border: '2px solid #14B8A6',
+            border: '3px solid #14B8A6',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '64px',
-            boxShadow: '0 0 30px rgba(20, 184, 166, 0.35)',
+            fontSize: '72px',
+            boxShadow: '0 0 35px rgba(20, 184, 166, 0.35)',
           }}
         >
           {currentQuestion.emoji}
         </div>
 
-        <span className="badge-pill badge-emerald" style={{ fontSize: '13px' }}>
-          {currentQuestion.category}
-        </span>
-
         <h3 style={{ fontSize: '24px', fontWeight: '800', color: '#FFFFFF', margin: 0 }}>
-          {currentQuestion.prompt}
+          {t('objectInstructions')}
         </h3>
+
+        {/* Speech Recognition Trigger Button */}
+        <button
+          onClick={handleStartSTT}
+          className={`btn-primary ${isListeningSTT ? 'btn-emerald pulse-mic' : 'btn-glass-subtle'}`}
+          style={{
+            minHeight: '52px',
+            padding: '0 24px',
+            fontSize: '16px',
+            border: '2px solid #14B8A6',
+            color: '#5EEAD4',
+          }}
+          aria-label={t('listenPrompt')}
+        >
+          <Mic size={20} /> {isListeningSTT ? t('speaking') : t('listenPrompt')}
+        </button>
+
+        {sttNotice && (
+          <p style={{ fontSize: '14px', color: '#FCD34D', margin: 0, fontWeight: '600' }}>
+            {sttNotice}
+          </p>
+        )}
 
         {/* Feedback Display */}
         {feedback && (
@@ -279,12 +340,17 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
             style={{
               fontSize: '20px',
               fontWeight: '800',
-              color: feedback.isCorrect ? '#10B981' : '#F43F5E',
-              padding: '10px 20px',
-              borderRadius: '14px',
-              background: feedback.isCorrect ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
+              color: feedback.isCorrect ? '#6EE7B7' : '#FDA4AF',
+              padding: '12px 24px',
+              borderRadius: '16px',
+              background: feedback.isCorrect ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)',
+              border: feedback.isCorrect ? '2px solid #10B981' : '2px solid #F43F5E',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
             }}
           >
+            {feedback.isCorrect ? <CheckCircle2 size={24} /> : null}
             {feedback.text}
           </div>
         )}
@@ -300,16 +366,16 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
             disabled={!isGameActive || feedback !== null}
             className="glass-panel-hover"
             style={{
-              minHeight: '75px',
-              borderRadius: '20px',
-              background: 'rgba(30, 41, 59, 0.9)',
-              border: '2px solid var(--border-glass-bright)',
+              minHeight: '80px',
+              borderRadius: '22px',
+              background: 'rgba(30, 41, 59, 0.95)',
+              border: '3px solid var(--border-glass-bright)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
               padding: '16px',
-              fontSize: '20px',
+              fontSize: '22px',
               fontWeight: '800',
               color: '#FFFFFF',
             }}
@@ -327,7 +393,7 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
           className="btn-primary btn-glass-subtle"
           style={{ minHeight: '48px', padding: '0 24px', fontSize: '16px', borderRadius: '14px' }}
         >
-          <RotateCcw size={18} /> Restart Game
+          <RotateCcw size={18} /> {t('startGame')}
         </button>
       </div>
 

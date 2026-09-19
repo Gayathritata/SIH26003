@@ -194,7 +194,7 @@ export const CaregiverDashboard: React.FC<CaregiverDashboardProps> = ({
       </div>
 
       {activeTab === 'reminders' ? (
-        <RemindersScreen lang={lang} onBack={() => setActiveTab('analytics')} />
+        <RemindersScreen onBack={() => setActiveTab('analytics')} />
       ) : (
         <>
 

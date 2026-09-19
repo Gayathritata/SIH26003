@@ -8,6 +8,7 @@ from typing import Optional, Dict
 # Ensure src/ is in python path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))
 
+# pyrefly: ignore [missing-import]
 from predict import predict_recommended_difficulty, load_model_package
 
 app = FastAPI(

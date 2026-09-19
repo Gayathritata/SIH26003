@@ -1,16 +1,15 @@
 import React from 'react';
 import { ArrowLeft, Brain, Target, Calendar, Search, Play } from 'lucide-react';
-import { getTranslation, Language } from '../utils/i18n';
+import { useAccessibility } from '../context/AccessibilityContext';
 
 interface GamesPageProps {
-  lang: Language;
   difficulty: number;
   onNavigate: (path: string) => void;
   onStartGame: (gameType: 'memory' | 'pattern' | 'routine' | 'object_rec') => void;
 }
 
-export const GamesPage: React.FC<GamesPageProps> = ({ lang, difficulty, onNavigate, onStartGame }) => {
-  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(lang, key);
+export const GamesPage: React.FC<GamesPageProps> = ({ difficulty, onNavigate, onStartGame }) => {
+  const { t } = useAccessibility();
 
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -22,7 +21,7 @@ export const GamesPage: React.FC<GamesPageProps> = ({ lang, difficulty, onNaviga
         >
           <ArrowLeft size={20} /> {t('backToHome')}
         </button>
-        <h2 className="text-section-title">Cognitive Games</h2>
+        <h2 className="text-section-title">{t('cognitiveGames')}</h2>
         <span className="badge-pill badge-emerald">Difficulty Level {difficulty}</span>
       </div>
 
@@ -56,13 +55,13 @@ export const GamesPage: React.FC<GamesPageProps> = ({ lang, difficulty, onNaviga
             >
               <Brain size={30} color="#FFFFFF" />
             </div>
-            <h3 className="text-card-title" style={{ fontSize: '22px' }}>🧠 Memory Match</h3>
+            <h3 className="text-card-title" style={{ fontSize: '22px' }}>🧠 {t('memoryGameTitle')}</h3>
             <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '6px', fontWeight: '500' }}>
-              Match the same objects and exercise your memory.
+              {t('memoryGameDesc')}
             </p>
           </div>
           <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '50px', marginTop: '16px', fontSize: '17px' }}>
-            <Play size={20} /> Start Game
+            <Play size={20} /> {t('startGame')}
           </button>
         </div>
 
@@ -95,13 +94,13 @@ export const GamesPage: React.FC<GamesPageProps> = ({ lang, difficulty, onNaviga
             >
               <Target size={30} color="#FFFFFF" />
             </div>
-            <h3 className="text-card-title" style={{ fontSize: '22px' }}>🔷 Pattern Recognition</h3>
+            <h3 className="text-card-title" style={{ fontSize: '22px' }}>🔷 {t('patternGameTitle')}</h3>
             <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '6px', fontWeight: '500' }}>
-              Find the missing part of a pattern.
+              {t('patternGameDesc')}
             </p>
           </div>
           <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '50px', marginTop: '16px', fontSize: '17px' }}>
-            <Play size={20} /> Start Game
+            <Play size={20} /> {t('startGame')}
           </button>
         </div>
 
@@ -134,13 +133,13 @@ export const GamesPage: React.FC<GamesPageProps> = ({ lang, difficulty, onNaviga
             >
               <Calendar size={30} color="#FFFFFF" />
             </div>
-            <h3 className="text-card-title" style={{ fontSize: '22px' }}>📅 Daily Routine Recall</h3>
+            <h3 className="text-card-title" style={{ fontSize: '22px' }}>📅 {t('routineGameTitle')}</h3>
             <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '6px', fontWeight: '500' }}>
-              Remember the correct order of daily activities.
+              {t('routineGameDesc')}
             </p>
           </div>
           <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '50px', marginTop: '16px', fontSize: '17px' }}>
-            <Play size={20} /> Start Game
+            <Play size={20} /> {t('startGame')}
           </button>
         </div>
 
@@ -173,13 +172,13 @@ export const GamesPage: React.FC<GamesPageProps> = ({ lang, difficulty, onNaviga
             >
               <Search size={30} color="#FFFFFF" />
             </div>
-            <h3 className="text-card-title" style={{ fontSize: '22px' }}>👀 Object Recognition</h3>
+            <h3 className="text-card-title" style={{ fontSize: '22px' }}>👀 {t('objectGameTitle')}</h3>
             <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '6px', fontWeight: '500' }}>
-              Identify familiar objects.
+              {t('objectGameDesc')}
             </p>
           </div>
           <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '50px', marginTop: '16px', fontSize: '17px' }}>
-            <Play size={20} /> Start Game
+            <Play size={20} /> {t('startGame')}
           </button>
         </div>
       </div>

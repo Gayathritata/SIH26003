@@ -1,10 +1,4 @@
-import { translations, getTranslation, Language } from '../i18n/translations';
+import { translations, getTranslation, Language, TranslationKey, supportedLanguages } from '../i18n';
 
-export { translations, getTranslation };
-export type { Language };
-
-export const supportedLanguages: { code: Language; label: string; nativeName: string }[] = [
-  { code: 'en', label: 'English', nativeName: 'English' },
-  { code: 'hi', label: 'Hindi', nativeName: 'हिन्दी' },
-  { code: 'as', label: 'Assamese', nativeName: 'অসমীয়া' },
-];
+export { translations, getTranslation, supportedLanguages };
+export type { Language, TranslationKey };

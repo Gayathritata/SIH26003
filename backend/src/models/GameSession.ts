@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IGameSession extends Document {
+  clientSessionId?: string;
   userId: string;
   patientId: string;
   gameType: string;
@@ -27,6 +28,7 @@ export interface IGameSession extends Document {
 
 const GameSessionSchema: Schema = new Schema(
   {
+    clientSessionId: { type: String, sparse: true, index: true },
     userId: { type: String, required: true, index: true },
     patientId: { type: String, index: true },
     gameType: { type: String, required: true, default: 'memory_match' },

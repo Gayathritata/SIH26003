@@ -16,10 +16,9 @@ import {
   Repeat,
   BellOff,
   Check,
-  X,
   Volume2,
 } from 'lucide-react';
-import { Language, getTranslation } from '../i18n/translations';
+import { useAccessibility } from '../context/AccessibilityContext';
 import {
   ReminderData,
   fetchRemindersApi,
@@ -32,20 +31,18 @@ import {
 import { notificationService } from '../services/notificationService';
 
 interface Props {
-  lang: Language;
   onBack: () => void;
-  patientId?: string; // Optional patientId for caregiver context
+  patientId?: string;
 }
 
-export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) => {
-  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(lang, key);
+export const RemindersScreen: React.FC<Props> = ({ onBack, patientId }) => {
+  const { t, speak, voiceEnabled } = useAccessibility();
 
   const [reminders, setReminders] = useState<ReminderData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<{ text: string; type: 'success' | 'info' | 'error' } | null>(null);
 
-  // Active filter tab: 'today' | 'upcoming' | 'completed' | 'all'
   const [activeTab, setActiveTab] = useState<'today' | 'upcoming' | 'completed' | 'all'>('today');
 
   // Modal state
@@ -59,12 +56,10 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
   const [formRepeat, setFormRepeat] = useState<ReminderData['repeat']>('none');
   const [submitting, setSubmitting] = useState<boolean>(false);
 
-  // Notification permission state
   const [notificationPermission, setNotificationPermission] = useState<string>(
     notificationService.getPermissionStatus()
   );
 
-  // Due Reminder Alert Modal state
   const [dueAlertReminder, setDueAlertReminder] = useState<ReminderData | null>(null);
 
   const showToast = (text: string, type: 'success' | 'info' | 'error' = 'success') => {
@@ -96,13 +91,14 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
     loadReminders();
   }, [loadReminders]);
 
-  // Subscribe to live background notifications
   useEffect(() => {
     const unsubscribe = notificationService.subscribeInApp((reminder) => {
       setDueAlertReminder(reminder);
+      if (voiceEnabled) {
+        speak(`${t('reminderSpokenPrefix')} ${reminder.title}`, true);
+      }
     });
 
-    // Start background checking loop
     notificationService.startChecking(async () => {
       const res = await fetchRemindersApi(patientId);
       return res.success && Array.isArray(res.reminders) ? res.reminders : [];
@@ -112,15 +108,15 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
       unsubscribe();
       notificationService.stopChecking();
     };
-  }, [patientId]);
+  }, [patientId, voiceEnabled]);
 
   const handleEnableNotifications = async () => {
     const granted = await notificationService.requestPermission();
     setNotificationPermission(notificationService.getPermissionStatus());
     if (granted) {
-      showToast('Browser notifications enabled! You will be alerted when tasks are due.', 'success');
+      showToast('Browser notifications enabled!', 'success');
     } else {
-      showToast('Notification permission denied. In-app alerts will still work when open.', 'info');
+      showToast('Notification permission denied.', 'info');
     }
   };
 
@@ -150,10 +146,6 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
     e.preventDefault();
     if (!formTitle.trim()) {
       showToast('Please enter a title for your reminder.', 'error');
-      return;
-    }
-    if (!formDate || !formTime) {
-      showToast('Please specify a valid date and time.', 'error');
       return;
     }
 
@@ -200,14 +192,13 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
     if (!id) return;
 
     const newCompleted = !r.completed;
-    // Optimistic update
     setReminders((prev) =>
       prev.map((item) => ((item._id === id || item.id === id) ? { ...item, completed: newCompleted } : item))
     );
 
     const res = await toggleReminderCompleteApi(id, newCompleted);
     if (res.success) {
-      showToast(newCompleted ? 'Task marked completed! Great job 🎉' : 'Task marked incomplete.', 'success');
+      showToast(newCompleted ? 'Task completed! 🎉' : 'Task marked incomplete.', 'success');
       loadReminders();
     } else {
       showToast(res.error || 'Failed to update reminder status.', 'error');
@@ -237,7 +228,7 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
 
   const handleDelete = async (id: string, title: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    if (!window.confirm(`Are you sure you want to delete "${title}"?`)) {
+    if (!window.confirm(`Delete "${title}"?`)) {
       return;
     }
 
@@ -250,7 +241,6 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
     }
   };
 
-  // Helper functions for formatting & icons
   const getTypeBadge = (type: ReminderData['type']) => {
     switch (type) {
       case 'medicine':
@@ -276,7 +266,6 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
     return `${h}:${m} ${ampm}`;
   };
 
-  // Filtering reminders for tabs
   const todayStr = new Date().toISOString().split('T')[0];
 
   const filteredReminders = reminders.filter((r) => {
@@ -289,7 +278,7 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
     if (activeTab === 'upcoming') {
       return !r.completed && r.date > todayStr;
     }
-    return true; // 'all'
+    return true;
   });
 
   const completedCount = reminders.filter((r) => r.completed).length;
@@ -364,7 +353,7 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
                 justifyContent: 'center',
               }}
             >
-              <Bell size={40} color="#F59E0B" className="pulse-anim" />
+              <Bell size={40} color="#F59E0B" className="pulse-mic" />
             </div>
 
             <span style={{ fontSize: '14px', color: '#FCD34D', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>
@@ -415,7 +404,7 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
           onClick={onBack}
           className="btn-primary btn-glass-subtle"
           style={{ minHeight: '52px', padding: '0 20px', fontSize: '18px' }}
-          aria-label="Back to Home"
+          aria-label={t('backToHome')}
         >
           <ArrowLeft size={22} /> {t('backToHome')}
         </button>
@@ -452,7 +441,7 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
             className="btn-primary btn-emerald"
             style={{ minHeight: '52px', padding: '0 24px', fontSize: '18px', fontWeight: '800' }}
           >
-            <Plus size={24} /> Add Reminder
+            <Plus size={24} /> {t('addReminder')}
           </button>
         </div>
       </div>
@@ -473,7 +462,7 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
       >
         <AlertCircle size={22} color="#F59E0B" style={{ flexShrink: 0 }} />
         <span>
-          <strong>Reminder Utility Disclaimer:</strong> MindMate is a personal daily task and activity reminder tool. It does not provide medical advice or adjust health/medication schedules.
+          <strong>Disclaimer:</strong> {t('disclaimer')}
         </span>
       </div>
 
@@ -501,9 +490,6 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
               <h2 style={{ fontSize: '26px', fontWeight: '800', color: '#FFFFFF', margin: 0 }}>
                 {t('remindersTitle')}
               </h2>
-              <p style={{ fontSize: '15px', color: '#94A3B8', margin: '2px 0 0 0' }}>
-                Keep track of daily tasks, medicine, and appointments
-              </p>
             </div>
           </div>
 
@@ -537,8 +523,8 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
                 style={{
                   padding: '12px 20px',
                   borderRadius: '14px',
-                  border: isActive ? '2px solid #10B981' : '1px solid transparent',
-                  background: isActive ? 'rgba(16, 185, 129, 0.18)' : 'rgba(255, 255, 255, 0.04)',
+                  border: isActive ? '2px solid #EC4899' : '1px solid transparent',
+                  background: isActive ? 'rgba(236, 72, 153, 0.18)' : 'rgba(255, 255, 255, 0.04)',
                   color: isActive ? '#FFFFFF' : '#94A3B8',
                   fontSize: '16px',
                   fontWeight: isActive ? '800' : '600',
@@ -550,64 +536,12 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
                   whiteSpace: 'nowrap',
                 }}
               >
-                <Icon size={18} color={isActive ? '#10B981' : '#94A3B8'} />
+                <Icon size={18} color={isActive ? '#EC4899' : '#94A3B8'} />
                 {tab.label}
               </button>
             );
           })}
         </div>
-
-        {/* Loading / Error States */}
-        {loading && (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#94A3B8' }}>
-            <Clock size={36} className="pulse-anim" color="#10B981" style={{ margin: '0 auto 12px' }} />
-            <p style={{ fontSize: '18px' }}>Loading reminders...</p>
-          </div>
-        )}
-
-        {error && !loading && (
-          <div style={{ padding: '24px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #EF4444', borderRadius: '16px', color: '#FCA5A5' }}>
-            {error}
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!loading && !error && filteredReminders.length === 0 && (
-          <div
-            style={{
-              padding: '48px 24px',
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '16px',
-              background: 'rgba(255, 255, 255, 0.02)',
-              borderRadius: '20px',
-              border: '1px dashed var(--border-glass-bright)',
-            }}
-          >
-            <BellOff size={48} color="#64748B" />
-            <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#FFFFFF', margin: 0 }}>
-              No Reminders Found
-            </h3>
-            <p style={{ fontSize: '16px', color: '#94A3B8', maxWidth: '400px', margin: 0 }}>
-              {activeTab === 'today'
-                ? "You have no pending reminders scheduled for today. Take a break or add a new one!"
-                : activeTab === 'upcoming'
-                ? 'No upcoming reminders scheduled for future dates.'
-                : activeTab === 'completed'
-                ? 'No completed tasks yet. Mark tasks done as you finish them!'
-                : 'Your reminder list is empty. Click "+ Add Reminder" above to get started!'}
-            </p>
-            <button
-              onClick={handleOpenAddModal}
-              className="btn-primary btn-emerald"
-              style={{ minHeight: '48px', padding: '0 24px', fontSize: '16px', marginTop: '8px' }}
-            >
-              <Plus size={20} /> Create First Reminder
-            </button>
-          </div>
-        )}
 
         {/* Reminders List */}
         {!loading && !error && filteredReminders.length > 0 && (
@@ -633,7 +567,6 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
                       : !r.isActive
                       ? '1px dashed #475569'
                       : '1px solid var(--border-glass-bright)',
-                    opacity: !r.isActive ? 0.6 : 1,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
@@ -643,8 +576,6 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
                   }}
                 >
                   <div style={{ flex: 1, minWidth: '240px', display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-                    
-                    {/* Completion Checkbox */}
                     <button
                       onClick={(e) => handleToggleComplete(r, e)}
                       style={{
@@ -665,14 +596,12 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
                             height: '32px',
                             borderRadius: '50%',
                             border: '3px solid #64748B',
-                            transition: 'all 0.2s ease',
                           }}
                         />
                       )}
                     </button>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      {/* Type Badge & Repeat Tag */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                         <span
                           style={{
@@ -707,15 +636,8 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
                             <Repeat size={12} /> Repeats {r.repeat}
                           </span>
                         )}
-
-                        {!r.isActive && (
-                          <span style={{ fontSize: '12px', color: '#F59E0B', fontWeight: '700' }}>
-                            [PAUSED]
-                          </span>
-                        )}
                       </div>
 
-                      {/* Title */}
                       <h3
                         style={{
                           fontSize: '22px',
@@ -728,14 +650,6 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
                         {r.title}
                       </h3>
 
-                      {/* Description */}
-                      {r.description && (
-                        <p style={{ fontSize: '15px', color: '#94A3B8', margin: 0 }}>
-                          {r.description}
-                        </p>
-                      )}
-
-                      {/* Date & Time info */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '14px', color: '#6EE7B7', marginTop: '4px' }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <Clock size={16} color="#10B981" />
@@ -750,8 +664,18 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
                     </div>
                   </div>
 
-                  {/* Actions Column */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {voiceEnabled && (
+                      <button
+                        onClick={() => speak(`${t('reminderSpokenPrefix')} ${r.title}`, true)}
+                        className="btn-primary btn-glass-subtle"
+                        style={{ minHeight: '44px', padding: '0 12px', color: '#F472B6', border: '1px solid #EC4899' }}
+                        title={t('listenInstructions')}
+                      >
+                        <Volume2 size={18} />
+                      </button>
+                    )}
+
                     <button
                       onClick={(e) => handleToggleActive(r, e)}
                       className="btn-primary btn-glass-subtle"
@@ -799,7 +723,7 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
             inset: 0,
             background: 'rgba(0,0,0,0.75)',
             backdropFilter: 'blur(8px)',
-            zIndex: 9999,
+            zIndex: 9990,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -809,109 +733,49 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
           <div
             className="glass-panel"
             style={{
-              maxWidth: '560px',
+              maxWidth: '520px',
               width: '100%',
               padding: '32px',
+              borderRadius: '24px',
+              border: '2px solid rgba(236, 72, 153, 0.4)',
               display: 'flex',
               flexDirection: 'column',
               gap: '20px',
-              maxHeight: '90vh',
-              overflowY: 'auto',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#FFFFFF', margin: 0 }}>
-                {editingId ? '✏️ Edit Reminder' : '➕ Create New Reminder'}
-              </h2>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}
-              >
-                <X size={26} />
-              </button>
-            </div>
+            <h3 style={{ fontSize: '24px', fontWeight: '800', color: '#FFFFFF', margin: 0 }}>
+              {editingId ? 'Edit Reminder' : t('addReminder')}
+            </h3>
 
-            <form onSubmit={handleSaveReminder} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-              
-              {/* Title Input */}
+            <form onSubmit={handleSaveReminder} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '16px', fontWeight: '700', color: '#FFFFFF', marginBottom: '8px' }}>
-                  Reminder Title *
+                <label style={{ fontSize: '14px', color: '#CBD5E1', display: 'block', marginBottom: '6px', fontWeight: '700' }}>
+                  {t('reminderTitleLabel')}
                 </label>
                 <input
                   type="text"
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
-                  placeholder="e.g. Drink Water, Take Blood Pressure Pill"
+                  placeholder="e.g. Morning Medication"
                   style={{
                     width: '100%',
-                    padding: '16px',
+                    minHeight: '48px',
+                    padding: '12px 16px',
                     borderRadius: '14px',
                     background: 'rgba(15, 23, 42, 0.8)',
-                    border: '1px solid var(--border-glass-bright)',
+                    border: '1px solid var(--border-glass)',
                     color: '#FFFFFF',
-                    fontSize: '18px',
+                    fontSize: '16px',
                     fontWeight: '600',
                   }}
                   required
                 />
               </div>
 
-              {/* Description Input */}
-              <div>
-                <label style={{ display: 'block', fontSize: '16px', fontWeight: '700', color: '#FFFFFF', marginBottom: '8px' }}>
-                  Description / Notes (Optional)
-                </label>
-                <textarea
-                  value={formDescription}
-                  onChange={(e) => setFormDescription(e.target.value)}
-                  placeholder="e.g. Take 1 tablet with a full glass of warm water after breakfast"
-                  rows={3}
-                  style={{
-                    width: '100%',
-                    padding: '16px',
-                    borderRadius: '14px',
-                    background: 'rgba(15, 23, 42, 0.8)',
-                    border: '1px solid var(--border-glass-bright)',
-                    color: '#FFFFFF',
-                    fontSize: '16px',
-                    resize: 'none',
-                  }}
-                />
-              </div>
-
-              {/* Reminder Type Select */}
-              <div>
-                <label style={{ display: 'block', fontSize: '16px', fontWeight: '700', color: '#FFFFFF', marginBottom: '8px' }}>
-                  Category / Type
-                </label>
-                <select
-                  value={formType}
-                  onChange={(e) => setFormType(e.target.value as any)}
-                  style={{
-                    width: '100%',
-                    padding: '16px',
-                    borderRadius: '14px',
-                    background: 'rgba(15, 23, 42, 0.9)',
-                    border: '1px solid var(--border-glass-bright)',
-                    color: '#FFFFFF',
-                    fontSize: '16px',
-                    fontWeight: '700',
-                  }}
-                >
-                  <option value="medicine">💊 Medicine</option>
-                  <option value="hydration">💧 Hydration / Water</option>
-                  <option value="activity">🧠 Cognitive Activity / Game</option>
-                  <option value="appointment">📅 Appointment / Doctor</option>
-                  <option value="general">📝 General Task</option>
-                </select>
-              </div>
-
-              {/* Date & Time Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '16px', fontWeight: '700', color: '#FFFFFF', marginBottom: '8px' }}>
-                    Date *
+                  <label style={{ fontSize: '14px', color: '#CBD5E1', display: 'block', marginBottom: '6px', fontWeight: '700' }}>
+                    Date
                   </label>
                   <input
                     type="date"
@@ -919,20 +783,21 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
                     onChange={(e) => setFormDate(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '14px',
+                      minHeight: '48px',
+                      padding: '12px 16px',
                       borderRadius: '14px',
                       background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-glass-bright)',
+                      border: '1px solid var(--border-glass)',
                       color: '#FFFFFF',
-                      fontSize: '16px',
+                      fontSize: '15px',
                     }}
                     required
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '16px', fontWeight: '700', color: '#FFFFFF', marginBottom: '8px' }}>
-                    Time *
+                  <label style={{ fontSize: '14px', color: '#CBD5E1', display: 'block', marginBottom: '6px', fontWeight: '700' }}>
+                    {t('reminderTimeLabel')}
                   </label>
                   <input
                     type="time"
@@ -940,58 +805,33 @@ export const RemindersScreen: React.FC<Props> = ({ lang, onBack, patientId }) =>
                     onChange={(e) => setFormTime(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '14px',
+                      minHeight: '48px',
+                      padding: '12px 16px',
                       borderRadius: '14px',
                       background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid var(--border-glass-bright)',
+                      border: '1px solid var(--border-glass)',
                       color: '#FFFFFF',
-                      fontSize: '16px',
+                      fontSize: '15px',
                     }}
                     required
                   />
                 </div>
               </div>
 
-              {/* Repeat Options */}
-              <div>
-                <label style={{ display: 'block', fontSize: '16px', fontWeight: '700', color: '#FFFFFF', marginBottom: '8px' }}>
-                  Repeat Schedule
-                </label>
-                <select
-                  value={formRepeat}
-                  onChange={(e) => setFormRepeat(e.target.value as any)}
-                  style={{
-                    width: '100%',
-                    padding: '16px',
-                    borderRadius: '14px',
-                    background: 'rgba(15, 23, 42, 0.9)',
-                    border: '1px solid var(--border-glass-bright)',
-                    color: '#FFFFFF',
-                    fontSize: '16px',
-                    fontWeight: '700',
-                  }}
-                >
-                  <option value="none">One Time Only (No Repeat)</option>
-                  <option value="daily">Every Day (Daily)</option>
-                  <option value="weekly">Every Week (Weekly)</option>
-                </select>
-              </div>
-
-              {/* Modal Buttons */}
-              <div style={{ display: 'flex', gap: '14px', marginTop: '12px' }}>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
                 <button
                   type="submit"
                   disabled={submitting}
                   className="btn-primary btn-emerald"
-                  style={{ flex: 1, minHeight: '56px', fontSize: '18px', fontWeight: '800' }}
+                  style={{ flex: 1, minHeight: '52px', fontSize: '17px', borderRadius: '14px' }}
                 >
-                  {submitting ? 'Saving...' : editingId ? 'Update Reminder' : 'Create Reminder'}
+                  {submitting ? 'Saving...' : t('saveReminder')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
                   className="btn-primary btn-glass-subtle"
-                  style={{ minHeight: '56px', padding: '0 24px', fontSize: '16px' }}
+                  style={{ minHeight: '52px', padding: '0 20px', fontSize: '16px', borderRadius: '14px' }}
                 >
                   Cancel
                 </button>

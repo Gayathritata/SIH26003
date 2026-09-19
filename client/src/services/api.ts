@@ -31,12 +31,47 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Clear invalid token if unauthorized response occurs
       console.warn('[API 401 UNAUTHORIZED] Clearing token context.');
     }
     return Promise.reject(error);
   }
 );
+
+// Preferences API
+export const fetchUserPreferencesApi = async () => {
+  try {
+    const res = await apiClient.get('/api/profile/preferences');
+    return res.data;
+  } catch (err: any) {
+    try {
+      const fallbackRes = await apiClient.get('/api/auth/preferences');
+      return fallbackRes.data;
+    } catch (fErr: any) {
+      console.warn('[FETCH PREFERENCES WARNING]', fErr.message);
+      return { success: false };
+    }
+  }
+};
+
+export const updateUserPreferencesApi = async (preferences: {
+  preferredLanguage?: string;
+  textSize?: 'normal' | 'large' | 'xlarge';
+  highContrast?: boolean;
+  voiceEnabled?: boolean;
+}) => {
+  try {
+    const res = await apiClient.put('/api/profile/preferences', preferences);
+    return res.data;
+  } catch (err: any) {
+    try {
+      const fallbackRes = await apiClient.put('/api/auth/preferences', preferences);
+      return fallbackRes.data;
+    } catch (fErr: any) {
+      console.warn('[UPDATE PREFERENCES WARNING]', fErr.message);
+      return { success: false };
+    }
+  }
+};
 
 export const submitGameSession = async (sessionData: {
   gameType: string;
@@ -56,12 +91,16 @@ export const submitGameSession = async (sessionData: {
   mood?: string;
 }) => {
   if (offlineService.isOffline()) {
-    console.log('[API OFFLINE] Saving session to local sync queue...');
-    offlineService.enqueue('game_session', sessionData);
+    console.log('[API OFFLINE] Saving session to IndexedDB offline queue...');
+    const offlineRecord = await offlineService.saveOfflineGameSession({
+      ...sessionData,
+      difficultySource: 'local_fallback',
+    });
     return {
       offline: true,
       success: true,
-      message: 'Progress saved locally in offline mode.',
+      clientSessionId: offlineRecord.clientSessionId,
+      message: 'Result saved locally on device. Waiting for connection to sync.',
     };
   }
 
@@ -69,16 +108,19 @@ export const submitGameSession = async (sessionData: {
     const response = await apiClient.post('/game-sessions', sessionData);
     return { offline: false, ...response.data };
   } catch (err: any) {
-    // Fallback to /games/sessions if /game-sessions fails
     try {
       const fbResponse = await apiClient.post('/games/sessions', sessionData);
       return { offline: false, ...fbResponse.data };
     } catch (fbErr: any) {
       console.warn('[API ERROR] Server request failed. Falling back to offline queue:', fbErr.message);
-      offlineService.enqueue('game_session', sessionData);
+      const offlineRecord = await offlineService.saveOfflineGameSession({
+        ...sessionData,
+        difficultySource: 'local_fallback',
+      });
       return {
         offline: true,
         success: true,
+        clientSessionId: offlineRecord.clientSessionId,
         message: 'Network error. Session saved to offline queue.',
       };
     }
@@ -101,21 +143,37 @@ export const fetchMyGameSessions = async () => {
 };
 
 export const fetchAiDifficultyRecommendation = async (gameType: string = 'memory_match') => {
+  if (offlineService.isOffline()) {
+    return {
+      success: true,
+      recommendedDifficulty: 'easy',
+      numericDifficulty: 1,
+      difficultySource: 'local_fallback',
+      message: 'AI Fallback Adjustment (Local): Level set based on your recent accuracy.',
+    };
+  }
+
   try {
     const response = await apiClient.post('/ai/recommend-difficulty', { gameType });
-    return response.data;
+    return {
+      difficultySource: response.data?.engine_used?.includes('XGBoost') ? 'xgboost' : 'local_fallback',
+      ...response.data,
+    };
   } catch (err: any) {
     try {
       const fbResponse = await apiClient.post('/game-sessions/recommend-difficulty', { gameType });
-      return fbResponse.data;
+      return {
+        difficultySource: 'local_fallback',
+        ...fbResponse.data,
+      };
     } catch (fbErr: any) {
       console.warn('[AI DIFFICULTY RECOMMENDATION ERROR]', fbErr.message);
       return {
         success: false,
         recommendedDifficulty: 'easy',
         numericDifficulty: 1,
-        insufficientHistory: true,
-        message: 'Your next activity has been adjusted based on your recent game performance.',
+        difficultySource: 'local_fallback',
+        message: 'AI Fallback Adjustment (Local): Continuing at Level 1.',
       };
     }
   }
@@ -142,13 +200,22 @@ export interface ReminderData {
 }
 
 export const fetchRemindersApi = async (patientId?: string) => {
+  if (offlineService.isOffline()) {
+    const cached = offlineService.getCachedReminders();
+    return { success: true, reminders: cached, offline: true };
+  }
+
   try {
     const url = patientId ? `/api/reminders?patientId=${patientId}` : '/api/reminders';
     const response = await apiClient.get(url);
+    if (response.data && Array.isArray(response.data.reminders)) {
+      offlineService.cacheReminders(response.data.reminders);
+    }
     return response.data;
   } catch (err: any) {
     console.error('[FETCH REMINDERS ERROR]', err?.response?.data || err.message);
-    return { success: false, reminders: [], error: err?.response?.data?.error || err.message };
+    const cached = offlineService.getCachedReminders();
+    return { success: true, reminders: cached, offline: true, error: err?.response?.data?.error || err.message };
   }
 };
 
@@ -211,4 +278,3 @@ export const toggleReminderActiveApi = async (id: string, isActive?: boolean) =>
     return { success: false, error: err?.response?.data?.error || err.message };
   }
 };
-

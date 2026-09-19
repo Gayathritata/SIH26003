@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './hooks/useAuth';
+import { AccessibilityProvider, useAccessibility } from './context/AccessibilityContext';
 import { AppLayout } from './layouts/AppLayout';
 import { SplashLoadingScreen } from './components/auth/SplashLoadingScreen';
 
@@ -27,18 +28,14 @@ import { RoutineRecallGame } from './components/games/RoutineRecallGame';
 import { ObjectRecognitionGame } from './components/games/ObjectRecognitionGame';
 import { GameResultModal } from './components/GameResultModal';
 
-import { voiceService } from './services/voiceService';
 import { submitGameSession, fetchAiDifficultyRecommendation } from './services/api';
-import { Language, getTranslation } from './utils/i18n';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 
-export const App: React.FC = () => {
-  const { user, token, loading, login, register, logout } = useAuth();
+const AppContent: React.FC = () => {
+  const { user, token, loading, logout } = useAuth();
+  const { lang, speak, voiceEnabled, t } = useAccessibility();
 
   const [currentPath, setCurrentPath] = useState<string>('/login');
-  const [lang, setLang] = useState<Language>('en');
-  const [textSize, setTextSize] = useState<'normal' | 'large' | 'xlarge'>('normal');
-  const [voiceEnabled, setVoiceEnabled] = useState<boolean>(true);
 
   // Active game gameplay state
   const [activeGameType, setActiveGameType] = useState<'memory' | 'pattern' | 'routine' | 'object_rec'>('memory');
@@ -47,8 +44,6 @@ export const App: React.FC = () => {
   const [gameResult, setGameResult] = useState<any>(null);
   const [aiRecommendation, setAiRecommendation] = useState<any>(null);
   const [aiBannerMessage, setAiBannerMessage] = useState<string | null>(null);
-
-  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(lang, key);
 
   // Sync route with user authentication status & role protection
   useEffect(() => {
@@ -61,7 +56,6 @@ export const App: React.FC = () => {
       return;
     }
 
-    // Role-based protection: Redirect unauthenticated paths or restricted routes
     const isCaregiverOrAdmin = user.role === 'caregiver' || user.role === 'admin';
 
     if (['/login', '/register', '/forgot'].includes(currentPath)) {
@@ -69,7 +63,6 @@ export const App: React.FC = () => {
       return;
     }
 
-    // Protect Caregiver-only paths from elderly users
     if (!isCaregiverOrAdmin && ['/caregiver', '/patients', '/alerts', '/caregiver/performance'].includes(currentPath)) {
       setCurrentPath('/dashboard');
     }
@@ -92,21 +85,26 @@ export const App: React.FC = () => {
     setActiveGameType(gameType);
     setCurrentPath('/gameplay');
 
-    // Call AI Adaptive Difficulty Recommendation Engine (Node.js -> FastAPI -> XGBoost)
     try {
       const fullGameType = gameType === 'memory' ? 'memory_match' : (gameType === 'pattern' ? 'pattern_recognition' : (gameType === 'routine' ? 'daily_routine_recall' : 'object_recognition'));
       const aiRes = await fetchAiDifficultyRecommendation(fullGameType);
 
+      let selectedLevel = 1;
       if (aiRes && aiRes.numericDifficulty) {
-        setDifficulty(aiRes.numericDifficulty);
+        selectedLevel = aiRes.numericDifficulty;
       } else if (aiRes && aiRes.recommendedDifficulty) {
-        const num = aiRes.recommendedDifficulty === 'easy' ? 1 : (aiRes.recommendedDifficulty === 'medium' ? 2 : 3);
-        setDifficulty(num);
+        selectedLevel = aiRes.recommendedDifficulty === 'easy' ? 1 : (aiRes.recommendedDifficulty === 'medium' ? 2 : 3);
       }
+      setDifficulty(selectedLevel);
 
-      setAiBannerMessage('Your next activity has been adjusted based on your recent game performance.');
+      if (aiRes && aiRes.difficultySource === 'xgboost') {
+        setAiBannerMessage(`XGBoost ML Model Recommended: Level ${selectedLevel} based on performance history.`);
+      } else {
+        setAiBannerMessage(`AI Fallback Adjustment (Local): Level ${selectedLevel} set based on recent accuracy.`);
+      }
     } catch (e) {
       console.warn('[AI ADAPTIVE START ERROR]', e);
+      setAiBannerMessage('AI Fallback Adjustment (Local): Continuing at Level 1.');
     }
   };
 
@@ -136,7 +134,7 @@ export const App: React.FC = () => {
 
   const handleTriggerVoice = () => {
     if (!voiceEnabled) return;
-    voiceService.speak(t('voicePrompt'), lang);
+    speak(t('voicePrompt'), true);
   };
 
   if (loading) {
@@ -197,17 +195,11 @@ export const App: React.FC = () => {
     <AppLayout
       currentPath={currentPath}
       onNavigate={handleNavigate}
-      lang={lang}
-      onLangChange={(newLang) => setLang(newLang)}
-      voiceEnabled={voiceEnabled}
-      onTriggerVoice={handleTriggerVoice}
-      textSize={textSize}
     >
       {/* Route: /dashboard */}
       {currentPath === '/dashboard' && (
         <ElderlyDashboardPage
           user={user}
-          lang={lang}
           difficulty={difficulty}
           selectedMood={selectedMood}
           onSelectMood={setSelectedMood}
@@ -219,7 +211,6 @@ export const App: React.FC = () => {
       {/* Route: /games */}
       {currentPath === '/games' && (
         <GamesPage
-          lang={lang}
           difficulty={difficulty}
           onNavigate={handleNavigate}
           onStartGame={handleStartGame}
@@ -256,15 +247,15 @@ export const App: React.FC = () => {
               className="btn-primary btn-glass-subtle"
               style={{ minHeight: '40px', padding: '0 14px', fontSize: '14px' }}
             >
-              <ArrowLeft size={18} /> Exit Game
+              <ArrowLeft size={18} /> {t('exitGame')}
             </button>
             <span className="badge-pill badge-emerald">Difficulty Level {difficulty}</span>
           </div>
 
-          {activeGameType === 'memory' && <MemoryMatchGame difficulty={difficulty} onFinish={handleGameFinish} lang={lang} />}
-          {activeGameType === 'pattern' && <PatternRecognitionGame difficulty={difficulty} onFinish={handleGameFinish} lang={lang} />}
-          {activeGameType === 'routine' && <RoutineRecallGame difficulty={difficulty} onFinish={handleGameFinish} lang={lang} />}
-          {activeGameType === 'object_rec' && <ObjectRecognitionGame difficulty={difficulty} onFinish={handleGameFinish} lang={lang} />}
+          {activeGameType === 'memory' && <MemoryMatchGame difficulty={difficulty} onFinish={handleGameFinish} onNavigateBack={() => handleNavigate('/games')} />}
+          {activeGameType === 'pattern' && <PatternRecognitionGame difficulty={difficulty} onFinish={handleGameFinish} onNavigateBack={() => handleNavigate('/games')} />}
+          {activeGameType === 'routine' && <RoutineRecallGame difficulty={difficulty} onFinish={handleGameFinish} onNavigateBack={() => handleNavigate('/games')} />}
+          {activeGameType === 'object_rec' && <ObjectRecognitionGame difficulty={difficulty} onFinish={handleGameFinish} onNavigateBack={() => handleNavigate('/games')} />}
         </div>
       )}
 
@@ -275,24 +266,18 @@ export const App: React.FC = () => {
 
       {/* Route: /reminders */}
       {currentPath === '/reminders' && (
-        <RemindersPage lang={lang} onNavigate={handleNavigate} />
+        <RemindersPage onNavigate={handleNavigate} />
       )}
 
       {/* Route: /profile */}
       {currentPath === '/profile' && (
-        <ProfilePage user={user} lang={lang} onNavigate={handleNavigate} onLanguageChange={setLang} />
+        <ProfilePage user={user} onNavigate={handleNavigate} />
       )}
 
       {/* Route: /settings */}
       {currentPath === '/settings' && (
         <SettingsPage
           user={user}
-          lang={lang}
-          onLanguageChange={setLang}
-          textSize={textSize}
-          onTextSizeChange={setTextSize}
-          voiceEnabled={voiceEnabled}
-          onVoiceToggle={setVoiceEnabled}
           onNavigate={handleNavigate}
           onLogout={logout}
         />
@@ -328,5 +313,13 @@ export const App: React.FC = () => {
         />
       )}
     </AppLayout>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <AccessibilityProvider>
+      <AppContent />
+    </AccessibilityProvider>
   );
 };

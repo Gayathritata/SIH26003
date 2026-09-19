@@ -1,39 +1,37 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Brain, RotateCcw, ArrowLeft, Trophy, Clock, CheckCircle2, XCircle, Award, Target, Play } from 'lucide-react';
+import { Brain, RotateCcw, ArrowLeft, Trophy, Clock, CheckCircle2, Award, Target, Play, Volume2 } from 'lucide-react';
 import { calculateMemoryMatchScore, CalculatedGameMetrics } from '../../utils/gameScoring';
 import { submitGameSession } from '../../services/api';
-import { getTranslation, Language } from '../../utils/i18n';
+import { useAccessibility } from '../../context/AccessibilityContext';
 
 export interface ObjectItem {
   id: string;
-  name: string;
+  nameKey: string;
   emoji: string;
 }
 
 const FAMILIAR_OBJECTS: ObjectItem[] = [
-  { id: 'mango', name: 'Mango', emoji: '🥭' },
-  { id: 'cup', name: 'Cup', emoji: '☕' },
-  { id: 'book', name: 'Book', emoji: '📖' },
-  { id: 'flower', name: 'Flower', emoji: '🌸' },
-  { id: 'apple', name: 'Apple', emoji: '🍎' },
-  { id: 'umbrella', name: 'Umbrella', emoji: '☂️' },
-  { id: 'clock', name: 'Clock', emoji: '⏰' },
-  { id: 'chair', name: 'Chair', emoji: '🪑' },
+  { id: 'mango', nameKey: 'objectGameTitle', emoji: '🥭' },
+  { id: 'cup', nameKey: 'objectGameTitle', emoji: '☕' },
+  { id: 'book', nameKey: 'objectGameTitle', emoji: '📖' },
+  { id: 'flower', nameKey: 'objectGameTitle', emoji: '🌸' },
+  { id: 'apple', nameKey: 'objectGameTitle', emoji: '🍎' },
+  { id: 'umbrella', nameKey: 'objectGameTitle', emoji: '☂️' },
+  { id: 'clock', nameKey: 'objectGameTitle', emoji: '⏰' },
+  { id: 'chair', nameKey: 'objectGameTitle', emoji: '🪑' },
 ];
 
 interface CardState {
-  key: string; // Unique card instance key
+  key: string;
   objectId: string;
-  name: string;
   emoji: string;
   isFlipped: boolean;
   isMatched: boolean;
 }
 
 interface MemoryMatchGameProps {
-  initialDifficulty?: number; // 1 = Easy, 2 = Medium, 3 = Hard
+  initialDifficulty?: number;
   difficulty?: number;
-  lang?: Language;
   onNavigateBack?: () => void;
   onSessionSaved?: () => void;
   onFinish?: (resultData: any) => void;
@@ -42,25 +40,23 @@ interface MemoryMatchGameProps {
 export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
   initialDifficulty = 1,
   difficulty: propDifficulty,
-  lang = 'en',
   onNavigateBack,
   onSessionSaved,
   onFinish,
 }) => {
-  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(lang, key);
+  const { t, speak, voiceEnabled } = useAccessibility();
 
-  // Difficulty level state: 1 = Easy (3 pairs/6 cards), 2 = Medium (4 pairs/8 cards), 3 = Hard (6 pairs/12 cards)
   const [difficulty, setDifficulty] = useState<number>(propDifficulty || initialDifficulty);
   const [cards, setCards] = useState<CardState[]>([]);
   const [flippedKeys, setFlippedKeys] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  // Session Performance Tracking Metrics
+  // Metrics
   const [attempts, setAttempts] = useState<number>(0);
   const [correctMatches, setCorrectMatches] = useState<number>(0);
   const [incorrectAttempts, setIncorrectAttempts] = useState<number>(0);
-  
-  // Timer & Game States
+
+  // Timer & States
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
   const [isGameActive, setIsGameActive] = useState<boolean>(false);
   const [isGameComplete, setIsGameComplete] = useState<boolean>(false);
@@ -72,21 +68,17 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
 
   const totalPairs = difficulty === 1 ? 3 : difficulty === 2 ? 4 : 6;
 
-  // Initialize or reset the card grid
   const initializeGame = (selectedDiff: number = difficulty) => {
-    // Clear timer
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
 
     const pairsCount = selectedDiff === 1 ? 3 : selectedDiff === 2 ? 4 : 6;
     const selectedObjects = FAMILIAR_OBJECTS.slice(0, pairsCount);
 
-    // Create 2 cards for each object
     const cardDeck: CardState[] = [];
     selectedObjects.forEach((obj, index) => {
       cardDeck.push({
         key: `${obj.id}-pairA-${index}`,
         objectId: obj.id,
-        name: obj.name,
         emoji: obj.emoji,
         isFlipped: false,
         isMatched: false,
@@ -94,14 +86,12 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
       cardDeck.push({
         key: `${obj.id}-pairB-${index}`,
         objectId: obj.id,
-        name: obj.name,
         emoji: obj.emoji,
         isFlipped: false,
         isMatched: false,
       });
     });
 
-    // Shuffle deck
     const shuffledDeck = cardDeck.sort(() => Math.random() - 0.5);
 
     setCards(shuffledDeck);
@@ -117,13 +107,16 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
 
     startTimeRef.current = Date.now();
 
-    // Start timer interval
     timerIntervalRef.current = setInterval(() => {
       setElapsedSeconds((prev) => prev + 1);
     }, 1000);
+
+    // Speak game instructions if voice enabled
+    if (voiceEnabled) {
+      speak(t('memoryInstructions'), true);
+    }
   };
 
-  // Run initial game setup when mounted or difficulty changes
   useEffect(() => {
     initializeGame(difficulty);
     return () => {
@@ -131,19 +124,16 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
     };
   }, [difficulty]);
 
-  // Card click handler
   const handleCardClick = (card: CardState) => {
     if (!isGameActive || isProcessing || card.isFlipped || card.isMatched) return;
 
-    // Flip clicked card
     const nextFlipped = [...flippedKeys, card.key];
     setFlippedKeys(nextFlipped);
-    
+
     setCards((prevDeck) =>
       prevDeck.map((c) => (c.key === card.key ? { ...c, isFlipped: true } : c))
     );
 
-    // If 2 cards are flipped, compare them
     if (nextFlipped.length === 2) {
       setIsProcessing(true);
       const firstCard = cards.find((c) => c.key === nextFlipped[0]);
@@ -153,7 +143,7 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
       setAttempts(currentAttempts);
 
       if (firstCard && firstCard.objectId === secondCard.objectId) {
-        // MATCH FOUND
+        // MATCH
         const newCorrectCount = correctMatches + 1;
         setCorrectMatches(newCorrectCount);
 
@@ -167,7 +157,10 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
         setFlippedKeys([]);
         setIsProcessing(false);
 
-        // Check game completion condition
+        if (voiceEnabled) {
+          speak(t('correctAnswer'), true);
+        }
+
         if (newCorrectCount === totalPairs) {
           handleGameCompletion(currentAttempts, newCorrectCount, incorrectAttempts);
         }
@@ -175,6 +168,10 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
         // MISMATCH
         const newIncorrectCount = incorrectAttempts + 1;
         setIncorrectAttempts(newIncorrectCount);
+
+        if (voiceEnabled) {
+          speak(t('tryAgain'), true);
+        }
 
         setTimeout(() => {
           setCards((prevDeck) =>
@@ -186,12 +183,11 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
           );
           setFlippedKeys([]);
           setIsProcessing(false);
-        }, 1000);
+        }, 900);
       }
     }
   };
 
-  // Game completion handler
   const handleGameCompletion = async (
     finalAttempts: number,
     finalCorrect: number,
@@ -205,7 +201,10 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
 
     setIsGameActive(false);
 
-    // Calculate actual metrics using gameScoring service
+    if (voiceEnabled) {
+      speak(t('gameComplete'), true);
+    }
+
     const metrics = calculateMemoryMatchScore({
       difficulty,
       attempts: finalAttempts,
@@ -219,7 +218,6 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
     setGameResultMetrics(metrics);
     setIsGameComplete(true);
 
-    // Save game session to Node.js backend & MongoDB Atlas
     setIsSaving(true);
     try {
       await submitGameSession({
@@ -245,7 +243,6 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
     }
   };
 
-  // Format seconds to MM:SS
   const formatTimer = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -265,45 +262,53 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
                 onClick={onNavigateBack}
                 className="btn-primary btn-glass-subtle"
                 style={{ minHeight: '44px', padding: '0 16px', fontSize: '15px' }}
-                aria-label="Back to Games"
+                aria-label={t('backToGames')}
               >
-                <ArrowLeft size={20} /> Back
+                <ArrowLeft size={20} /> {t('backToGames')}
               </button>
             )}
             <div>
               <h2 className="text-hero-title" style={{ fontSize: '26px', margin: 0 }}>
-                🧠 Memory Match Game
+                🧠 {t('memoryGameTitle')}
               </h2>
               <p style={{ fontSize: '16px', color: 'var(--text-secondary)', margin: '4px 0 0 0', fontWeight: '600' }}>
-                Match the same objects.
+                {t('memoryInstructions')}
               </p>
             </div>
           </div>
 
-          {/* Difficulty Level Buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.06)', padding: '6px', borderRadius: '16px' }}>
-            {[
-              { level: 1, label: 'Easy (3 Pairs)' },
-              { level: 2, label: 'Medium (4 Pairs)' },
-              { level: 3, label: 'Hard (6 Pairs)' },
-            ].map((d) => (
-              <button
-                key={d.level}
-                type="button"
-                onClick={() => {
-                  setDifficulty(d.level);
-                  initializeGame(d.level);
-                }}
-                className={`btn-primary ${difficulty === d.level ? 'btn-emerald' : 'btn-glass-subtle'}`}
-                style={{ minHeight: '42px', padding: '0 14px', fontSize: '14px', borderRadius: '12px' }}
-              >
-                {d.label}
-              </button>
-            ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => speak(t('memoryInstructions'), true)}
+              className="btn-primary btn-glass-subtle"
+              style={{ minHeight: '44px', padding: '0 14px', fontSize: '14px', color: '#F472B6', border: '1px solid #EC4899' }}
+              title={t('listenInstructions')}
+              aria-label={t('listenInstructions')}
+            >
+              <Volume2 size={18} /> {t('listenInstructions')}
+            </button>
+
+            {/* Difficulty Level Buttons */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.06)', padding: '6px', borderRadius: '16px' }}>
+              {[1, 2, 3].map((lvl) => (
+                <button
+                  key={lvl}
+                  type="button"
+                  onClick={() => {
+                    setDifficulty(lvl);
+                    initializeGame(lvl);
+                  }}
+                  className={`btn-primary ${difficulty === lvl ? 'btn-emerald' : 'btn-glass-subtle'}`}
+                  style={{ minHeight: '42px', padding: '0 12px', fontSize: '14px', borderRadius: '12px' }}
+                >
+                  L{lvl}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Live Game Scoreboard */}
+        {/* Live Scoreboard */}
         <div
           style={{
             display: 'grid',
@@ -318,9 +323,9 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Target size={22} color="#EC4899" />
             <div>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Difficulty</span>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Level</span>
               <span style={{ fontSize: '16px', fontWeight: '800', color: '#FFFFFF' }}>
-                {difficulty === 1 ? 'Easy' : difficulty === 2 ? 'Medium' : 'Hard'}
+                Level {difficulty}
               </span>
             </div>
           </div>
@@ -328,7 +333,7 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <CheckCircle2 size={22} color="#10B981" />
             <div>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Matches Found</span>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>{t('scoreLabel')}</span>
               <span style={{ fontSize: '16px', fontWeight: '800', color: '#6EE7B7' }}>
                 {correctMatches} / {totalPairs}
               </span>
@@ -338,7 +343,7 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Award size={22} color="#F59E0B" />
             <div>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Attempts</span>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>{t('movesLabel')}</span>
               <span style={{ fontSize: '16px', fontWeight: '800', color: '#FCD34D' }}>
                 {attempts}
               </span>
@@ -348,7 +353,7 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Clock size={22} color="#3B82F6" />
             <div>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Timer</span>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>{t('timeLabel')}</span>
               <span style={{ fontSize: '16px', fontWeight: '800', color: '#93C5FD' }}>
                 {formatTimer(elapsedSeconds)}
               </span>
@@ -361,7 +366,7 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: difficulty === 1 ? 'repeat(3, 1fr)' : difficulty === 2 ? 'repeat(4, 1fr)' : 'repeat(4, 1fr)',
+          gridTemplateColumns: difficulty === 1 ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)',
           gap: '20px',
         }}
       >
@@ -381,9 +386,9 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
                 ? 'linear-gradient(135deg, rgba(236, 72, 153, 0.35), rgba(168, 85, 247, 0.45))'
                 : 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95))',
               border: card.isMatched
-                ? '2px solid #10B981'
+                ? '3px solid #10B981'
                 : card.isFlipped
-                ? '2px solid #EC4899'
+                ? '3px solid #EC4899'
                 : '2px solid var(--border-glass-bright)',
               boxShadow: card.isFlipped || card.isMatched ? '0 0 24px rgba(236, 72, 153, 0.4)' : '0 10px 30px rgba(0,0,0,0.4)',
               display: 'flex',
@@ -395,14 +400,16 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
               padding: '16px',
             }}
-            aria-label={card.isFlipped ? card.name : 'Card hidden'}
+            aria-label={card.isFlipped ? card.objectId : 'Card hidden'}
           >
             {card.isFlipped || card.isMatched ? (
               <>
                 <span style={{ fontSize: '56px', lineHeight: 1 }}>{card.emoji}</span>
-                <span style={{ fontSize: '20px', fontWeight: '800', color: '#FFFFFF', letterSpacing: '-0.3px' }}>
-                  {card.name}
-                </span>
+                {card.isMatched && (
+                  <span className="badge-pill badge-emerald" style={{ fontSize: '13px' }}>
+                    <CheckCircle2 size={14} /> {t('memoryCardMatched')}
+                  </span>
+                )}
               </>
             ) : (
               <div
@@ -432,7 +439,7 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
           className="btn-primary btn-glass-subtle"
           style={{ minHeight: '52px', padding: '0 32px', fontSize: '17px', borderRadius: '16px' }}
         >
-          <RotateCcw size={20} /> Restart Current Level
+          <RotateCcw size={20} /> {t('startGame')}
         </button>
       </div>
 
@@ -467,7 +474,6 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
               textAlign: 'center',
             }}
           >
-            {/* Trophy Icon Header */}
             <div>
               <div
                 style={{
@@ -485,14 +491,13 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
                 <Trophy size={42} color="#FFFFFF" />
               </div>
               <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#FFFFFF', margin: 0 }}>
-                Game Complete 🎉
+                {t('activityCompleted')} 🎉
               </h2>
               <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '6px' }}>
-                Great memory exercise! Session saved to your progress profile.
+                {t('gameComplete')}
               </p>
             </div>
 
-            {/* Performance Stats Metrics */}
             <div
               style={{
                 display: 'grid',
@@ -505,33 +510,22 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
               }}
             >
               <div style={{ textAlign: 'center' }}>
-                <span style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Score</span>
+                <span style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>{t('scoreLabel')}</span>
                 <span style={{ fontSize: '28px', fontWeight: '800', color: '#F472B6' }}>{gameResultMetrics.score}</span>
               </div>
 
               <div style={{ textAlign: 'center' }}>
-                <span style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Accuracy</span>
+                <span style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>{t('accuracy')}</span>
                 <span style={{ fontSize: '28px', fontWeight: '800', color: '#6EE7B7' }}>{gameResultMetrics.accuracy}%</span>
-              </div>
-
-              <div style={{ textAlign: 'center' }}>
-                <span style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Time Taken</span>
-                <span style={{ fontSize: '24px', fontWeight: '800', color: '#93C5FD' }}>{gameResultMetrics.completionTime}s</span>
-              </div>
-
-              <div style={{ textAlign: 'center' }}>
-                <span style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Incorrect Attempts</span>
-                <span style={{ fontSize: '24px', fontWeight: '800', color: '#FCD34D' }}>{gameResultMetrics.incorrectAttempts}</span>
               </div>
             </div>
 
             {isSaving && (
               <p style={{ fontSize: '13px', color: '#F472B6', margin: 0, fontWeight: '600' }}>
-                Saving session data to server...
+                Saving session data...
               </p>
             )}
 
-            {/* Completion Action Buttons */}
             <div style={{ display: 'flex', gap: '14px' }}>
               <button
                 type="button"
@@ -539,7 +533,7 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
                 className="btn-primary btn-emerald"
                 style={{ flex: 1, minHeight: '54px', fontSize: '17px', borderRadius: '16px' }}
               >
-                <Play size={20} /> Play Again
+                <Play size={20} /> {t('startGame')}
               </button>
 
               {onNavigateBack && (
@@ -549,7 +543,7 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
                   className="btn-primary btn-glass-subtle"
                   style={{ flex: 1, minHeight: '54px', fontSize: '17px', borderRadius: '16px' }}
                 >
-                  Back to Games
+                  {t('backToGames')}
                 </button>
               )}
             </div>

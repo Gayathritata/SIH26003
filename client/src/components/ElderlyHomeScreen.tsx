@@ -1,11 +1,10 @@
 import React from 'react';
-import { Brain, Bell, BarChart2, Mic, Play, Sparkles, User } from 'lucide-react';
-import { getTranslation, Language } from '../i18n/translations';
+import { Brain, Bell, BarChart2, Mic, Play, Sparkles, User, Volume2 } from 'lucide-react';
+import { useAccessibility } from '../context/AccessibilityContext';
 import { UserProfile } from '../services/authService';
 
 interface Props {
   user: UserProfile | null;
-  lang: Language;
   difficulty: number;
   selectedMood: string | null;
   onSelectMood: (mood: string) => void;
@@ -15,14 +14,13 @@ interface Props {
 
 export const ElderlyHomeScreen: React.FC<Props> = ({
   user,
-  lang,
   difficulty,
   selectedMood,
   onSelectMood,
   onNavigate,
   onTriggerVoice,
 }) => {
-  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(lang, key);
+  const { t, speak, voiceEnabled } = useAccessibility();
 
   const moodOptions = [
     { key: 'happy', labelKey: 'moodHappy' as const },
@@ -52,15 +50,28 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
           <span className="badge-pill badge-emerald" style={{ fontSize: '14px', padding: '8px 16px' }}>
             <Sparkles size={18} /> Level {difficulty}
           </span>
-          <button
-            onClick={() => onNavigate('profile')}
-            className="btn-primary btn-glass-subtle"
-            style={{ minHeight: '44px', padding: '0 16px', fontSize: '15px' }}
-            aria-label="View Profile"
-          >
-            <User size={18} color="#10B981" />
-            {t('profileTitle')}
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {voiceEnabled && (
+              <button
+                onClick={() => speak(`${t('goodMorning')}. ${t('helloUser')}`)}
+                className="btn-primary btn-glass-subtle"
+                style={{ minHeight: '44px', padding: '0 12px' }}
+                title={t('listenInstructions')}
+                aria-label={t('listenInstructions')}
+              >
+                <Volume2 size={18} color="#F472B6" />
+              </button>
+            )}
+            <button
+              onClick={() => onNavigate('profile')}
+              className="btn-primary btn-glass-subtle"
+              style={{ minHeight: '44px', padding: '0 16px', fontSize: '15px' }}
+              aria-label="View Profile"
+            >
+              <User size={18} color="#EC4899" />
+              {t('profileTitle')}
+            </button>
+          </div>
         </div>
       </section>
 
@@ -73,11 +84,16 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
           {moodOptions.map((m) => (
             <button
               key={m.key}
-              onClick={() => onSelectMood(m.key)}
+              onClick={() => {
+                onSelectMood(m.key);
+                if (voiceEnabled) {
+                  speak(t(m.labelKey), true);
+                }
+              }}
               className={`mood-chip ${selectedMood === m.key ? 'active' : ''}`}
               role="radio"
               aria-checked={selectedMood === m.key}
-              style={{ minHeight: '48px', padding: '12px 20px' }}
+              style={{ minHeight: '52px', padding: '12px 20px', fontSize: '18px' }}
             >
               {t(m.labelKey)}
             </button>
@@ -85,7 +101,7 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
         </div>
       </section>
 
-      {/* Elderly Navigation Cards (5 Large Dashboard Targets) */}
+      {/* Elderly Navigation Cards (4 Large Dashboard Targets) */}
       <section aria-label="Elderly Navigation Options">
         <h3 className="text-section-title" style={{ marginBottom: '18px' }}>
           {t('todaysActivities')}
@@ -108,18 +124,18 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
               flexDirection: 'column',
               justifyContent: 'space-between',
               minHeight: '220px',
-              border: '2px solid rgba(16, 185, 129, 0.3)',
+              border: '2px solid rgba(236, 72, 153, 0.4)',
             }}
             role="button"
             tabIndex={0}
             aria-label="Navigate to Cognitive Games"
           >
             <div>
-              <div style={{ width: '58px', height: '58px', borderRadius: '18px', background: 'rgba(16, 185, 129, 0.2)', border: '1px solid #10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-                <Brain size={32} color="#10B981" />
+              <div style={{ width: '58px', height: '58px', borderRadius: '18px', background: 'rgba(236, 72, 153, 0.2)', border: '1px solid #EC4899', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                <Brain size={32} color="#EC4899" />
               </div>
               <h4 className="text-card-title">{t('cognitiveGames')}</h4>
-              <p style={{ fontSize: '15px', color: '#94A3B8', marginTop: '6px' }}>
+              <p style={{ fontSize: '15px', color: '#D8B4FE', marginTop: '6px' }}>
                 {t('memoryGameDesc')}
               </p>
             </div>
@@ -138,7 +154,7 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
               flexDirection: 'column',
               justifyContent: 'space-between',
               minHeight: '220px',
-              border: '2px solid rgba(245, 158, 11, 0.3)',
+              border: '2px solid rgba(245, 158, 11, 0.4)',
             }}
             role="button"
             tabIndex={0}
@@ -149,7 +165,7 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
                 <Bell size={32} color="#F59E0B" />
               </div>
               <h4 className="text-card-title">{t('remindersCard')}</h4>
-              <p style={{ fontSize: '15px', color: '#94A3B8', marginTop: '6px' }}>
+              <p style={{ fontSize: '15px', color: '#D8B4FE', marginTop: '6px' }}>
                 {t('remindersTitle')}
               </p>
             </div>
@@ -168,22 +184,22 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
               flexDirection: 'column',
               justifyContent: 'space-between',
               minHeight: '220px',
-              border: '2px solid rgba(99, 102, 241, 0.3)',
+              border: '2px solid rgba(168, 85, 247, 0.4)',
             }}
             role="button"
             tabIndex={0}
             aria-label="Navigate to My Progress"
           >
             <div>
-              <div style={{ width: '58px', height: '58px', borderRadius: '18px', background: 'rgba(99, 102, 241, 0.2)', border: '1px solid #6366F1', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-                <BarChart2 size={32} color="#6366F1" />
+              <div style={{ width: '58px', height: '58px', borderRadius: '18px', background: 'rgba(168, 85, 247, 0.2)', border: '1px solid #A855F7', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                <BarChart2 size={32} color="#A855F7" />
               </div>
               <h4 className="text-card-title">{t('myProgress')}</h4>
-              <p style={{ fontSize: '15px', color: '#94A3B8', marginTop: '6px' }}>
-                {t('comingSoonMessage')}
+              <p style={{ fontSize: '15px', color: '#D8B4FE', marginTop: '6px' }}>
+                {t('myProgress')}
               </p>
             </div>
-            <button className="btn-primary btn-glass-subtle" style={{ width: '100%', minHeight: '52px', marginTop: '16px', fontSize: '17px', border: '1px solid #6366F1', color: '#A5B4FC' }}>
+            <button className="btn-primary btn-glass-subtle" style={{ width: '100%', minHeight: '52px', marginTop: '16px', fontSize: '17px', border: '1px solid #A855F7', color: '#C084FC' }}>
               <BarChart2 size={20} /> {t('myProgress')}
             </button>
           </div>
@@ -198,22 +214,22 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
               flexDirection: 'column',
               justifyContent: 'space-between',
               minHeight: '220px',
-              border: '2px solid rgba(20, 184, 166, 0.3)',
+              border: '2px solid rgba(217, 70, 239, 0.4)',
             }}
             role="button"
             tabIndex={0}
             aria-label="Activate Voice Assistance"
           >
             <div>
-              <div style={{ width: '58px', height: '58px', borderRadius: '18px', background: 'rgba(20, 184, 166, 0.2)', border: '1px solid #14B8A6', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-                <Mic size={32} color="#14B8A6" />
+              <div style={{ width: '58px', height: '58px', borderRadius: '18px', background: 'rgba(217, 70, 239, 0.2)', border: '1px solid #D946EF', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                <Mic size={32} color="#D946EF" />
               </div>
               <h4 className="text-card-title">{t('voiceAssistance')}</h4>
-              <p style={{ fontSize: '15px', color: '#94A3B8', marginTop: '6px' }}>
+              <p style={{ fontSize: '15px', color: '#D8B4FE', marginTop: '6px' }}>
                 {t('voicePrompt')}
               </p>
             </div>
-            <button className="btn-primary btn-glass-subtle" style={{ width: '100%', minHeight: '52px', marginTop: '16px', fontSize: '17px', border: '1px solid #14B8A6', color: '#5EEAD4' }}>
+            <button className="btn-primary btn-glass-subtle" style={{ width: '100%', minHeight: '52px', marginTop: '16px', fontSize: '17px', border: '1px solid #D946EF', color: '#F0ABFC' }}>
               <Mic size={20} /> {t('voiceAssistance')}
             </button>
           </div>

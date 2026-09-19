@@ -10,6 +10,8 @@ import moodRoutes from './routes/moodRoutes';
 import syncRoutes from './routes/syncRoutes';
 import alertRoutes from './routes/alertRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
+import caregiverRoutes from './routes/caregiverRoutes';
+import preferencesRoutes from './routes/preferencesRoutes';
 
 const app: Application = express();
 
@@ -26,7 +28,6 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      // Allow requests with no origin (like mobile apps, curl, postman, server-to-server)
       if (!origin) return callback(null, true);
 
       const isAllowed =
@@ -37,7 +38,7 @@ app.use(
       if (isAllowed) {
         callback(null, true);
       } else {
-        callback(null, true); // Fallback to allow all origins in hackathon/demo mode
+        callback(null, true);
       }
     },
     credentials: true,
@@ -66,10 +67,7 @@ app.get('/api', handleHealthCheck);
 app.get('/health', handleHealthCheck);
 app.get('/api/health', handleHealthCheck);
 
-
-import caregiverRoutes from './routes/caregiverRoutes';
-
-// API Routes (supports both /auth and /api/auth)
+// API Routes
 app.use('/auth', authRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/patients', patientRoutes);
@@ -92,6 +90,8 @@ app.use('/alerts', alertRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/profile/preferences', preferencesRoutes);
+app.use('/api/profile/preferences', preferencesRoutes);
 
 // Global Error Handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

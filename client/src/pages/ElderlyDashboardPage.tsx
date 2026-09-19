@@ -1,11 +1,9 @@
 import React from 'react';
 import { ElderlyHomeScreen } from '../components/ElderlyHomeScreen';
 import { UserProfile } from '../services/authService';
-import { Language } from '../utils/i18n';
 
 interface ElderlyDashboardPageProps {
   user: UserProfile | null;
-  lang: Language;
   difficulty: number;
   selectedMood: string | null;
   onSelectMood: (mood: string) => void;
@@ -15,7 +13,6 @@ interface ElderlyDashboardPageProps {
 
 export const ElderlyDashboardPage: React.FC<ElderlyDashboardPageProps> = ({
   user,
-  lang,
   difficulty,
   selectedMood,
   onSelectMood,
@@ -25,7 +22,6 @@ export const ElderlyDashboardPage: React.FC<ElderlyDashboardPageProps> = ({
   return (
     <ElderlyHomeScreen
       user={user}
-      lang={lang}
       difficulty={difficulty}
       selectedMood={selectedMood}
       onSelectMood={onSelectMood}

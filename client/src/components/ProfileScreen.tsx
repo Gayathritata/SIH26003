@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Shield, Globe, ArrowLeft, CheckCircle2, RefreshCw } from 'lucide-react';
-import { getTranslation, Language } from '../i18n/translations';
-import { UserProfile, authService } from '../services/authService';
+import { Mail, Shield, Globe, ArrowLeft, CheckCircle2, RefreshCw } from 'lucide-react';
+import { useAccessibility } from '../context/AccessibilityContext';
+import { Language } from '../i18n';
+import { UserProfile } from '../services/authService';
 import { apiClient } from '../services/api';
 
 interface Props {
   user: UserProfile | null;
-  lang: Language;
   onBack: () => void;
-  onLanguageChange: (newLang: Language) => void;
 }
 
-export const ProfileScreen: React.FC<Props> = ({ user, lang, onBack, onLanguageChange }) => {
-  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(lang, key);
-  
+export const ProfileScreen: React.FC<Props> = ({ user, onBack }) => {
+  const { t, lang, setLang } = useAccessibility();
+
   const [profileData, setProfileData] = useState<UserProfile | null>(user);
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedLanguage, setSelectedLanguage] = useState<Language>(lang);
@@ -44,7 +43,7 @@ export const ProfileScreen: React.FC<Props> = ({ user, lang, onBack, onLanguageC
   };
 
   const handleSavePreferences = async () => {
-    onLanguageChange(selectedLanguage);
+    setLang(selectedLanguage);
     setSaveSuccessMsg(t('profileSavedNotice'));
     setTimeout(() => setSaveSuccessMsg(null), 3000);
 
@@ -107,7 +106,7 @@ export const ProfileScreen: React.FC<Props> = ({ user, lang, onBack, onLanguageC
 
       {loading ? (
         <div className="glass-panel" style={{ padding: '60px', textAlign: 'center' }}>
-          <RefreshCw size={36} className="pulse-mic" color="#10B981" />
+          <RefreshCw size={36} className="pulse-mic" color="#EC4899" />
           <p className="text-body-elderly" style={{ marginTop: '16px' }}>Loading Profile Information...</p>
         </div>
       ) : (
@@ -119,14 +118,14 @@ export const ProfileScreen: React.FC<Props> = ({ user, lang, onBack, onLanguageC
                 width: '72px',
                 height: '72px',
                 borderRadius: '50%',
-                background: 'linear-gradient(135deg, #10B981, #059669)',
+                background: 'linear-gradient(135deg, #EC4899, #8B5CF6)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '32px',
                 fontWeight: '800',
                 color: '#FFFFFF',
-                boxShadow: '0 0 20px rgba(16, 185, 129, 0.3)',
+                boxShadow: '0 0 20px rgba(236, 72, 153, 0.3)',
               }}
             >
               {activeUser?.name ? activeUser.name.charAt(0).toUpperCase() : 'U'}
@@ -143,10 +142,9 @@ export const ProfileScreen: React.FC<Props> = ({ user, lang, onBack, onLanguageC
 
           {/* User Fields */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-            {/* Email Field */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '15px', color: '#94A3B8', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Mail size={18} color="#10B981" /> {t('profileEmail')}
+              <label style={{ fontSize: '15px', color: '#D8B4FE', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Mail size={18} color="#EC4899" /> {t('profileEmail')}
               </label>
               <div
                 style={{
@@ -163,10 +161,9 @@ export const ProfileScreen: React.FC<Props> = ({ user, lang, onBack, onLanguageC
               </div>
             </div>
 
-            {/* Role Field */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '15px', color: '#94A3B8', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Shield size={18} color="#10B981" /> {t('profileRole')}
+              <label style={{ fontSize: '15px', color: '#D8B4FE', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Shield size={18} color="#EC4899" /> {t('profileRole')}
               </label>
               <div
                 style={{
@@ -184,10 +181,9 @@ export const ProfileScreen: React.FC<Props> = ({ user, lang, onBack, onLanguageC
               </div>
             </div>
 
-            {/* Language Selector Field */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '15px', color: '#94A3B8', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Globe size={18} color="#10B981" /> {t('profileLang')}
+              <label style={{ fontSize: '15px', color: '#D8B4FE', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Globe size={18} color="#EC4899" /> {t('profileLang')}
               </label>
 
               <div style={{ display: 'flex', gap: '10px' }}>
@@ -203,9 +199,9 @@ export const ProfileScreen: React.FC<Props> = ({ user, lang, onBack, onLanguageC
                       flex: 1,
                       minHeight: '52px',
                       borderRadius: '14px',
-                      border: selectedLanguage === l.code ? '2px solid #10B981' : '1px solid var(--border-glass)',
-                      background: selectedLanguage === l.code ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 255, 255, 0.04)',
-                      color: selectedLanguage === l.code ? '#6EE7B7' : '#FFFFFF',
+                      border: selectedLanguage === l.code ? '2px solid #EC4899' : '1px solid var(--border-glass)',
+                      background: selectedLanguage === l.code ? 'rgba(236, 72, 153, 0.15)' : 'rgba(255, 255, 255, 0.04)',
+                      color: selectedLanguage === l.code ? '#F472B6' : '#FFFFFF',
                       fontWeight: '700',
                       fontSize: '16px',
                       cursor: 'pointer',
@@ -218,7 +214,6 @@ export const ProfileScreen: React.FC<Props> = ({ user, lang, onBack, onLanguageC
               </div>
             </div>
 
-            {/* Save Button */}
             <button
               className="btn-primary btn-emerald"
               onClick={handleSavePreferences}

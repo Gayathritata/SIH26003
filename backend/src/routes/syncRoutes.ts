@@ -1,9 +1,13 @@
 import { Router } from 'express';
-import { syncOfflineData } from '../controllers/syncController';
-import { verifyFirebaseToken } from '../middleware/authMiddleware';
+import { syncGameSessions, syncOfflineData } from '../controllers/syncController';
+import { authenticateToken } from '../middleware/authMiddleware';
 
 const router = Router();
 
-router.post('/', verifyFirebaseToken, syncOfflineData);
+router.use(authenticateToken);
+
+router.post('/game-sessions', syncGameSessions);
+router.post('/sessions', syncGameSessions);
+router.post('/', syncOfflineData);
 
 export default router;

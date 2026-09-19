@@ -4,80 +4,106 @@ import GameSession from '../models/GameSession';
 import Reminder from '../models/Reminder';
 import MoodLog from '../models/MoodLog';
 
-export const syncOfflineData = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+/**
+ * POST /api/sync/game-sessions
+ * Synchronizes offline completed game sessions with strict idempotency check & authenticated JWT identity
+ */
+export const syncGameSessions = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const { items } = req.body;
-    const defaultPatientId = req.user?.firebaseUid;
-
-    if (!Array.isArray(items) || items.length === 0) {
-      res.json({ success: true, syncedCount: 0, message: 'No sync items received.' });
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Unauthenticated user context.' });
       return;
     }
 
-    let syncedCount = 0;
-    const results = [];
+    const authenticatedUserId = (req.user.mongoId || req.user.id).toString();
+    const sessions = req.body.sessions || req.body.items || [];
 
-    for (const item of items) {
-      const { entityType, payload, localId } = item;
-      const patientId = payload.patientId || defaultPatientId;
+    if (!Array.isArray(sessions) || sessions.length === 0) {
+      res.json({ success: true, synced: 0, duplicates: 0, failed: 0, message: 'No pending sessions to sync.' });
+      return;
+    }
 
-      if (entityType === 'game_session') {
-        // Idempotent duplicate check by patientId, createdAt timestamp / localId
-        const existing = await GameSession.findOne({
-          patientId,
-          gameType: payload.gameType,
-          score: payload.score,
-          createdAt: payload.createdAt ? new Date(payload.createdAt) : { $gt: new Date(Date.now() - 60000) },
-        });
+    let synced = 0;
+    let duplicates = 0;
+    let failed = 0;
+    const details = [];
 
-        if (!existing) {
-          const session = await GameSession.create({
-            patientId,
-            gameType: payload.gameType || 'memory',
-            difficulty: payload.difficulty || 2,
-            score: payload.score || 80,
-            accuracy: payload.accuracy !== undefined ? payload.accuracy : 0.8,
-            reactionTime: payload.reactionTime || 4.0,
-            mistakes: payload.mistakes || 0,
-            completionRate: payload.completionRate || 1.0,
-            duration: payload.duration || 45,
+    for (const item of sessions) {
+      try {
+        const payload = item.payload || item;
+        const clientSessionId = payload.clientSessionId || item.clientSessionId || item.localId;
+
+        // Idempotent duplicate check by clientSessionId OR (userId + gameType + startedAt)
+        let existing = null;
+        if (clientSessionId) {
+          existing = await GameSession.findOne({ clientSessionId });
+        }
+
+        if (!existing && payload.startedAt) {
+          existing = await GameSession.findOne({
+            userId: authenticatedUserId,
+            gameType: payload.gameType || 'memory_match',
+            score: payload.score || 0,
+            startedAt: new Date(payload.startedAt),
+          });
+        }
+
+        if (existing) {
+          duplicates++;
+          details.push({ clientSessionId, status: 'duplicate_skipped', serverId: existing._id });
+        } else {
+          const newSession = await GameSession.create({
+            clientSessionId,
+            userId: authenticatedUserId,
+            patientId: req.user.firebaseUid || authenticatedUserId,
+            gameType: payload.gameType || 'memory_match',
+            difficulty: payload.difficulty || 1,
+            totalPairs: payload.totalPairs || 3,
             attempts: payload.attempts || 1,
+            correctMatches: payload.correctMatches || 0,
+            incorrectAttempts: payload.incorrectAttempts || 0,
+            accuracy: payload.accuracy !== undefined ? payload.accuracy : 100,
+            completionTime: payload.completionTime || payload.duration || 30,
+            completionRate: payload.completionRate || 100,
+            score: payload.score || 0,
+            startedAt: payload.startedAt ? new Date(payload.startedAt) : new Date(),
+            completedAt: payload.completedAt ? new Date(payload.completedAt) : new Date(),
+            reactionTime: payload.reactionTime || 0,
+            mistakes: payload.mistakes || payload.incorrectAttempts || 0,
+            duration: payload.completionTime || payload.duration || 30,
             mood: payload.mood || 'good',
-            aiRecommendedDifficulty: payload.aiRecommendedDifficulty || payload.difficulty || 2,
-            aiConfidence: payload.aiConfidence || 0.85,
-            aiReason: payload.aiReason || 'Synced from offline queue',
+            aiRecommendedDifficulty: payload.difficulty || 1,
+            aiConfidence: 0.85,
+            aiReason: payload.difficultySource === 'local_fallback' ? 'Local Fallback Rule' : 'Offline session synced',
             createdAt: payload.createdAt ? new Date(payload.createdAt) : new Date(),
           });
-          syncedCount++;
-          results.push({ localId, status: 'synced', serverId: session._id });
-        } else {
-          results.push({ localId, status: 'duplicate_skipped', serverId: existing._id });
+
+          synced++;
+          details.push({ clientSessionId, status: 'synced', serverId: newSession._id });
         }
-      } else if (entityType === 'reminder_status') {
-        if (payload.reminderId) {
-          await Reminder.findByIdAndUpdate(payload.reminderId, { status: payload.status });
-          syncedCount++;
-          results.push({ localId, status: 'synced' });
-        }
-      } else if (entityType === 'mood_log') {
-        const log = await MoodLog.create({
-          patientId,
-          mood: payload.mood,
-          createdAt: payload.createdAt ? new Date(payload.createdAt) : new Date(),
-        });
-        syncedCount++;
-        results.push({ localId, status: 'synced', serverId: log._id });
+      } catch (err) {
+        console.warn('[SYNC RECORD ERROR]', err);
+        failed++;
       }
     }
 
     res.json({
       success: true,
-      syncedCount,
-      message: `${syncedCount} records synchronized successfully.`,
-      details: results,
+      synced,
+      duplicates,
+      failed,
+      message: `${synced} sessions synchronized successfully. ${duplicates} duplicates skipped.`,
+      details,
     });
   } catch (error) {
-    console.error('[SYNC CONTROLLER ERROR]', error);
-    res.status(500).json({ success: false, error: (error as Error).message });
+    console.error('[SYNC GAME SESSIONS CONTROLLER ERROR]', error);
+    res.status(500).json({ success: false, error: 'An error occurred during synchronization.' });
   }
+};
+
+/**
+ * POST /api/sync (Legacy multi-entity sync endpoint)
+ */
+export const syncOfflineData = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  return syncGameSessions(req, res);
 };
