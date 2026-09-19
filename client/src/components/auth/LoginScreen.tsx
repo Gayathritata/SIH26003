@@ -23,7 +23,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
   const [error, setError] = useState<string | null>(null);
 
   // Video Link State
-  const [videoUrl, setVideoUrl] = useState<string>('https://www.youtube.com/embed/dQw4w9WgXcQ');
+  const [videoUrl, setVideoUrl] = useState<string>('/Video.mp4');
   const [inputVideoUrl, setInputVideoUrl] = useState<string>('');
   const [showVideoInput, setShowVideoInput] = useState(false);
 
@@ -327,20 +327,39 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
               {/* Responsive Video Container */}
               <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#0F172A' }}>
                 {videoUrl ? (
-                  <iframe
-                    src={videoUrl}
-                    title="MindMate Overview Video"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      border: 'none',
-                    }}
-                  />
+                  videoUrl.endsWith('.mp4') || videoUrl.startsWith('/') || videoUrl.includes('blob:') ? (
+                    <video
+                      src={videoUrl}
+                      controls
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                    />
+                  ) : (
+                    <iframe
+                      src={videoUrl}
+                      title="MindMate Overview Video"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        border: 'none',
+                      }}
+                    />
+                  )
                 ) : (
                   <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', color: '#94A3B8' }}>
                     <Play size={44} color="#0284C7" />
