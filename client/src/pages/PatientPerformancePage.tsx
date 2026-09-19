@@ -35,54 +35,54 @@ export const PatientPerformancePage: React.FC<PatientPerformancePageProps> = ({ 
   };
 
   return (
-    <div style={{ maxWidth: '840px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <button onClick={() => onNavigate('/caregiver')} className="btn-primary btn-glass-subtle" style={{ minHeight: '48px', padding: '0 18px', fontSize: '16px' }}>
-          <ArrowLeft size={20} /> {t('backToHome')}
+    <div style={{ maxWidth: '850px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+        <button onClick={() => onNavigate('/caregiver')} className="btn-primary btn-glass-subtle" style={{ minHeight: '42px', padding: '0 16px', fontSize: '15px' }}>
+          <ArrowLeft size={18} /> {t('backToHome')}
         </button>
         <h2 className="text-section-title">{t('patientPerformance')}</h2>
-        <button onClick={fetchPerformance} className="btn-primary btn-glass-subtle" style={{ minHeight: '44px', width: '44px', padding: 0 }}>
-          <RefreshCw size={18} />
+        <button onClick={fetchPerformance} className="btn-primary btn-glass-subtle" style={{ minHeight: '40px', width: '40px', padding: 0 }}>
+          <RefreshCw size={16} />
         </button>
       </div>
 
-      <div className="glass-panel" style={{ padding: '32px' }}>
+      <div className="glass-panel" style={{ padding: '24px', background: '#FFFFFF' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-            <RefreshCw size={36} className="pulse-mic" color="#10B981" />
-            <p style={{ marginTop: '16px', color: '#94A3B8' }}>Loading performance analytics...</p>
+          <div style={{ textAlign: 'center', padding: '32px' }}>
+            <RefreshCw size={32} className="pulse-mic" color="var(--accent-primary)" />
+            <p style={{ marginTop: '12px', color: 'var(--text-muted)' }}>Loading performance analytics...</p>
           </div>
         ) : !analytics || !analytics.cognitiveIndicators ? (
-          <div style={{ textAlign: 'center', padding: '48px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
-            <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Activity size={32} color="#94A3B8" />
+          <div style={{ textAlign: 'center', padding: '40px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Activity size={28} color="var(--text-muted)" />
             </div>
-            <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#FFFFFF' }}>No patient activity available yet</h3>
-            <p style={{ fontSize: '15px', color: '#94A3B8', maxWidth: '420px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)', margin: 0 }}>No patient activity available yet</h3>
+            <p style={{ fontSize: '14px', color: 'var(--text-muted)', maxWidth: '400px', margin: 0 }}>
               Cognitive performance indicators and activity trends will calculate automatically when game sessions are completed.
             </p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontSize: '22px', fontWeight: '800', color: '#FFFFFF' }}>{t('overallIndex')}</h3>
+              <h3 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--text-primary)', margin: 0 }}>{t('overallIndex')}</h3>
               <span className="badge-pill badge-emerald">{analytics.cognitiveIndicators.overallIndex || 85}%</span>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               {[
-                { label: t('memoryScoreLabel'), val: analytics.cognitiveIndicators.memoryScore || 85, color: '#10B981' },
-                { label: t('attentionScoreLabel'), val: analytics.cognitiveIndicators.attentionScore || 90, color: '#F59E0B' },
-                { label: t('recognitionScoreLabel'), val: analytics.cognitiveIndicators.recognitionScore || 88, color: '#14B8A6' },
-                { label: t('responseScoreLabel'), val: analytics.cognitiveIndicators.responseScore || 78, color: '#6366F1' },
+                { label: t('memoryScoreLabel'), val: analytics.cognitiveIndicators.memoryScore || 85, color: '#16A34A' },
+                { label: t('attentionScoreLabel'), val: analytics.cognitiveIndicators.attentionScore || 90, color: '#D97706' },
+                { label: t('recognitionScoreLabel'), val: analytics.cognitiveIndicators.recognitionScore || 88, color: '#0D9488' },
+                { label: t('responseScoreLabel'), val: analytics.cognitiveIndicators.responseScore || 78, color: '#4F46E5' },
               ].map((item) => (
                 <div key={item.label}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', marginBottom: '6px' }}>
-                    <span style={{ color: '#E2E8F0', fontWeight: '600' }}>{item.label}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', marginBottom: '4px' }}>
+                    <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{item.label}</span>
                     <span style={{ fontWeight: '800', color: item.color }}>{item.val}%</span>
                   </div>
-                  <div style={{ height: '10px', borderRadius: '5px', background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-                    <div style={{ width: `${item.val}%`, height: '100%', background: item.color, borderRadius: '5px', transition: 'width 0.6s ease' }} />
+                  <div style={{ height: '8px', borderRadius: '4px', background: '#F1F5F9', overflow: 'hidden' }}>
+                    <div style={{ width: `${item.val}%`, height: '100%', background: item.color, borderRadius: '4px', transition: 'width 0.6s ease' }} />
                   </div>
                 </div>
               ))}

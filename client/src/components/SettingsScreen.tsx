@@ -22,31 +22,31 @@ export const SettingsScreen: React.FC<Props> = ({ onBack, onLogout }) => {
   } = useAccessibility();
 
   return (
-    <div style={{ maxWidth: '720px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ maxWidth: '720px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Header Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <button
           onClick={onBack}
           className="btn-primary btn-glass-subtle"
-          style={{ minHeight: '48px', padding: '0 18px', fontSize: '16px' }}
+          style={{ minHeight: '42px', padding: '0 16px', fontSize: '15px' }}
           aria-label="Go Back"
         >
-          <ArrowLeft size={20} /> {t('backToHome')}
+          <ArrowLeft size={18} /> {t('backToHome')}
         </button>
 
         <h2 className="text-section-title">{t('settingsTitle')}</h2>
 
-        <div style={{ width: '48px' }} />
+        <div style={{ width: '40px' }} />
       </div>
 
-      <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '28px', padding: '32px' }}>
+      <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '24px', padding: '28px', background: '#FFFFFF' }}>
         {/* Setting 1: Language Selection */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <label style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Globe size={22} color="#EC4899" /> {t('languageSetting')}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <label style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Globe size={18} color="var(--accent-primary)" /> {t('languageSetting')}
           </label>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px' }}>
             {[
               { code: 'en', label: 'English' },
               { code: 'hi', label: 'हिन्दी (Hindi)' },
@@ -56,36 +56,36 @@ export const SettingsScreen: React.FC<Props> = ({ onBack, onLogout }) => {
                 key={l.code}
                 onClick={() => setLang(l.code as Language)}
                 style={{
-                  minHeight: '56px',
-                  padding: '12px 18px',
-                  borderRadius: '16px',
-                  border: lang === l.code ? '2px solid #EC4899' : '1px solid var(--border-glass)',
-                  background: lang === l.code ? 'rgba(236, 72, 153, 0.18)' : 'rgba(255, 255, 255, 0.04)',
-                  color: lang === l.code ? '#F472B6' : '#FFFFFF',
+                  minHeight: '48px',
+                  padding: '10px 14px',
+                  borderRadius: '12px',
+                  border: lang === l.code ? '2px solid var(--accent-primary)' : '1px solid var(--border-glass)',
+                  background: lang === l.code ? 'var(--accent-primary-glow)' : '#F8FAFC',
+                  color: lang === l.code ? 'var(--accent-primary)' : 'var(--text-primary)',
                   fontWeight: '700',
-                  fontSize: '17px',
+                  fontSize: '15px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease',
+                  transition: 'all 0.15s ease',
                 }}
                 aria-pressed={lang === l.code}
               >
                 {l.label}
-                {lang === l.code && <Check size={20} color="#EC4899" />}
+                {lang === l.code && <Check size={18} color="var(--accent-primary)" />}
               </button>
             ))}
           </div>
         </div>
 
         {/* Setting 2: Text Size */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', borderTop: '1px solid var(--border-glass)', paddingTop: '24px' }}>
-          <label style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Type size={22} color="#F59E0B" /> {t('textSizeSetting')}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', borderTop: '1px solid var(--border-glass)', paddingTop: '20px' }}>
+          <label style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Type size={18} color="var(--accent-amber)" /> {t('textSizeSetting')}
           </label>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
             {[
               { key: 'normal', labelKey: 'textSizeNormal' as const },
               { key: 'large', labelKey: 'textSizeLarge' as const },
@@ -95,17 +95,17 @@ export const SettingsScreen: React.FC<Props> = ({ onBack, onLogout }) => {
                 key={ts.key}
                 onClick={() => setTextSize(ts.key as any)}
                 style={{
-                  minHeight: '56px',
-                  padding: '12px',
-                  borderRadius: '16px',
-                  border: textSize === ts.key ? '2px solid #F59E0B' : '1px solid var(--border-glass)',
-                  background: textSize === ts.key ? 'rgba(245, 158, 11, 0.18)' : 'rgba(255, 255, 255, 0.04)',
-                  color: textSize === ts.key ? '#FCD34D' : '#FFFFFF',
+                  minHeight: '48px',
+                  padding: '10px',
+                  borderRadius: '12px',
+                  border: textSize === ts.key ? '2px solid var(--accent-amber)' : '1px solid var(--border-glass)',
+                  background: textSize === ts.key ? 'var(--accent-amber-glow)' : '#F8FAFC',
+                  color: textSize === ts.key ? 'var(--accent-amber)' : 'var(--text-primary)',
                   fontWeight: '700',
-                  fontSize: '17px',
+                  fontSize: '15px',
                   cursor: 'pointer',
                   textAlign: 'center',
-                  transition: 'all 0.2s ease',
+                  transition: 'all 0.15s ease',
                 }}
                 aria-pressed={textSize === ts.key}
               >
@@ -116,12 +116,12 @@ export const SettingsScreen: React.FC<Props> = ({ onBack, onLogout }) => {
         </div>
 
         {/* Setting 3: High Contrast Mode */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-glass)', paddingTop: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-glass)', paddingTop: '20px' }}>
           <div>
-            <label style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Eye size={22} color="#C084FC" /> {t('highContrastSetting')}
+            <label style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Eye size={18} color="var(--accent-indigo)" /> {t('highContrastSetting')}
             </label>
-            <p style={{ fontSize: '14px', color: '#D8B4FE', marginTop: '4px' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
               {highContrast ? t('highContrastEnabled') : t('highContrastDisabled')}
             </p>
           </div>
@@ -129,17 +129,16 @@ export const SettingsScreen: React.FC<Props> = ({ onBack, onLogout }) => {
           <button
             onClick={() => setHighContrast(!highContrast)}
             style={{
-              minHeight: '52px',
-              padding: '0 24px',
-              borderRadius: '26px',
+              minHeight: '44px',
+              padding: '0 20px',
+              borderRadius: '22px',
               border: 'none',
-              background: highContrast ? 'linear-gradient(135deg, #A855F7, #7C3AED)' : 'rgba(255, 255, 255, 0.1)',
-              color: '#FFFFFF',
+              background: highContrast ? 'var(--accent-indigo)' : '#F1F5F9',
+              color: highContrast ? '#FFFFFF' : 'var(--text-secondary)',
               fontWeight: '700',
-              fontSize: '16px',
+              fontSize: '14px',
               cursor: 'pointer',
-              boxShadow: highContrast ? '0 0 16px rgba(168, 85, 247, 0.4)' : 'none',
-              transition: 'all 0.2s ease',
+              transition: 'all 0.15s ease',
             }}
           >
             {highContrast ? 'ON' : 'OFF'}
@@ -147,12 +146,12 @@ export const SettingsScreen: React.FC<Props> = ({ onBack, onLogout }) => {
         </div>
 
         {/* Setting 4: Voice Assistance Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-glass)', paddingTop: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-glass)', paddingTop: '20px' }}>
           <div>
-            <label style={{ fontSize: '18px', fontWeight: '700', color: '#FFFFFF', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Mic size={22} color="#D946EF" /> {t('voiceAssistanceSetting')}
+            <label style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Mic size={18} color="var(--accent-teal)" /> {t('voiceAssistanceSetting')}
             </label>
-            <p style={{ fontSize: '14px', color: '#D8B4FE', marginTop: '4px' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
               {voiceEnabled ? t('voiceEnabled') : t('voiceDisabled')}
             </p>
           </div>
@@ -160,17 +159,16 @@ export const SettingsScreen: React.FC<Props> = ({ onBack, onLogout }) => {
           <button
             onClick={() => setVoiceEnabled(!voiceEnabled)}
             style={{
-              minHeight: '52px',
-              padding: '0 24px',
-              borderRadius: '26px',
+              minHeight: '44px',
+              padding: '0 20px',
+              borderRadius: '22px',
               border: 'none',
-              background: voiceEnabled ? 'linear-gradient(135deg, #D946EF, #C084FC)' : 'rgba(255, 255, 255, 0.1)',
-              color: '#FFFFFF',
+              background: voiceEnabled ? 'var(--accent-teal)' : '#F1F5F9',
+              color: voiceEnabled ? '#FFFFFF' : 'var(--text-secondary)',
               fontWeight: '700',
-              fontSize: '16px',
+              fontSize: '14px',
               cursor: 'pointer',
-              boxShadow: voiceEnabled ? '0 0 16px rgba(217, 70, 239, 0.4)' : 'none',
-              transition: 'all 0.2s ease',
+              transition: 'all 0.15s ease',
             }}
           >
             {voiceEnabled ? 'ON' : 'OFF'}
@@ -178,29 +176,28 @@ export const SettingsScreen: React.FC<Props> = ({ onBack, onLogout }) => {
         </div>
 
         {/* Setting 5: Logout */}
-        <div style={{ borderTop: '1px solid var(--border-glass)', paddingTop: '24px' }}>
+        <div style={{ borderTop: '1px solid var(--border-glass)', paddingTop: '20px' }}>
           <button
             onClick={onLogout}
             style={{
               width: '100%',
-              minHeight: '60px',
-              borderRadius: '18px',
-              background: 'linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(225, 29, 72, 0.2))',
-              border: '1px solid #F43F5E',
-              color: '#FDA4AF',
-              fontSize: '18px',
-              fontWeight: '800',
+              minHeight: '48px',
+              borderRadius: '14px',
+              background: '#FFE4E6',
+              border: '1px solid #FECDD3',
+              color: '#BE123C',
+              fontSize: '16px',
+              fontWeight: '700',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '12px',
+              gap: '8px',
               cursor: 'pointer',
-              boxShadow: '0 4px 16px rgba(244, 63, 94, 0.2)',
-              transition: 'all 0.2s ease',
+              transition: 'all 0.15s ease',
             }}
             aria-label="Logout from app"
           >
-            <LogOut size={22} /> {t('logoutButton')}
+            <LogOut size={18} /> {t('logoutButton')}
           </button>
         </div>
       </div>

@@ -3,7 +3,6 @@ import { Brain, LogIn, Key, Mail, AlertCircle, Play, Sparkles, UserCheck, Shield
 import { UserProfile } from '../../services/authService';
 import { translations, getTranslation, Language } from '../../i18n/translations';
 import { useAuth } from '../../context/AuthContext';
-import { VantaBackground } from '../VantaBackground';
 
 interface Props {
   onSuccess: (user: UserProfile) => void;
@@ -15,7 +14,7 @@ interface Props {
 export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, onNavigateForgot, lang }) => {
   const t = (key: keyof typeof translations['en']) => getTranslation(lang, key);
   const { login } = useAuth();
-  
+
   // Modal & Auth State
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [email, setEmail] = useState('');
@@ -23,7 +22,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Video Link State (User can provide video link or test with a video)
+  // Video Link State
   const [videoUrl, setVideoUrl] = useState<string>('https://www.youtube.com/embed/dQw4w9WgXcQ');
   const [inputVideoUrl, setInputVideoUrl] = useState<string>('');
   const [showVideoInput, setShowVideoInput] = useState(false);
@@ -71,7 +70,6 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
   const handleApplyVideoUrl = () => {
     if (!inputVideoUrl.trim()) return;
     let formattedUrl = inputVideoUrl.trim();
-    // Convert YouTube watch URL to embed URL if needed
     if (formattedUrl.includes('youtube.com/watch?v=')) {
       const videoId = formattedUrl.split('v=')[1]?.split('&')[0];
       if (videoId) formattedUrl = `https://www.youtube.com/embed/${videoId}`;
@@ -84,59 +82,55 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
   };
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'radial-gradient(circle at 50% 20%, rgba(16, 185, 129, 0.08), transparent 60%), #070A12', color: '#FFFFFF' }}>
-      {/* Vanta 3D NET Background Animation */}
-      <VantaBackground />
-
-      {/* 1. TOP NAVBAR WITH SIGN IN BUTTON */}
+    <div style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-dark)', color: 'var(--text-primary)' }}>
+      {/* 1. TOP NAVBAR */}
       <header
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '16px 36px',
-          borderBottom: '1.5px solid rgba(236, 72, 153, 0.35)',
-          background: 'rgba(26, 15, 33, 0.92)',
-          backdropFilter: 'blur(20px)',
+          padding: '16px 32px',
+          borderBottom: '1px solid var(--border-glass)',
+          background: '#FFFFFF',
           position: 'sticky',
           top: 0,
           zIndex: 100,
-          boxShadow: '0 4px 24px rgba(236, 72, 153, 0.18)',
+          boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)',
         }}
       >
-        {/* Left: Branding & Title */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        {/* Left: Branding */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div
             style={{
-              width: '46px',
-              height: '46px',
-              borderRadius: '14px',
-              background: 'linear-gradient(135deg, #EC4899, #8B5CF6)',
+              width: '42px',
+              height: '42px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #0284C7, #0D9488)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 0 20px rgba(236, 72, 153, 0.45)',
+              boxShadow: '0 2px 8px rgba(2, 132, 199, 0.2)',
             }}
           >
-            <Brain size={28} color="#FFFFFF" />
+            <Brain size={24} color="#FFFFFF" />
           </div>
           <div>
-            <h1 style={{ fontSize: '22px', fontWeight: '800', color: '#FFFFFF', letterSpacing: '-0.3px', margin: 0 }}>
+            <h1 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--text-primary)', letterSpacing: '-0.3px', margin: 0 }}>
               {t('appTitle')}
             </h1>
-            <p style={{ fontSize: '13px', color: '#D8B4FE', fontWeight: '500', margin: 0 }}>{t('tagline')}</p>
+            <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500', margin: 0 }}>{t('tagline')}</p>
           </div>
         </div>
 
-        {/* Right: Actions (Nav Sign In Button + Create Account) */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        {/* Right: Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button
             type="button"
             onClick={onNavigateRegister}
             style={{
               background: 'transparent',
               border: 'none',
-              color: '#F3E8FF',
+              color: 'var(--text-secondary)',
               fontSize: '15px',
               fontWeight: '600',
               cursor: 'pointer',
@@ -151,84 +145,79 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
             onClick={() => setShowSignInModal(true)}
             className="btn-primary btn-emerald"
             style={{
-              minHeight: '44px',
-              padding: '0 24px',
+              minHeight: '42px',
+              padding: '0 20px',
               fontSize: '15px',
-              fontWeight: '700',
-              borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 0 24px rgba(236, 72, 153, 0.45)',
+              borderRadius: '10px',
             }}
           >
-            <LogIn size={18} /> Sign In
+            <LogIn size={17} /> Sign In
           </button>
         </div>
       </header>
 
-      {/* 2. MAIN PAGE CONTENT (2 COLUMNS: LEFT TEXT & QUOTE, RIGHT VIDEO) */}
+      {/* 2. MAIN LANDING CONTENT */}
       <main style={{ position: 'relative', zIndex: 1, flex: 1, maxWidth: '1280px', margin: '0 auto', width: '100%', padding: '40px 24px', display: 'flex', alignItems: 'center' }}>
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
             gap: '40px',
             alignItems: 'center',
             width: '100%',
           }}
         >
-          {/* LEFT COLUMN: Title, Impressive Quotation & Quick Demo */}
+          {/* LEFT COLUMN: Philosophy & Quick Demo Access */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', width: 'fit-content' }}>
-              <span className="badge-pill badge-emerald" style={{ fontSize: '14px', padding: '8px 16px' }}>
-                <Sparkles size={16} /> AI-Powered Cognitive Companion for North-East India
+              <span className="badge-pill badge-emerald" style={{ fontSize: '13px', padding: '6px 14px' }}>
+                <Sparkles size={15} /> AI Cognitive Care for North-East India
               </span>
             </div>
 
-            <h1 className="text-hero-title" style={{ fontSize: '38px', lineHeight: '1.2' }}>
+            <h1 className="text-hero-title" style={{ fontSize: '36px', lineHeight: '1.2' }}>
               Preserving Memories, Empowering Elders & Supporting Caregivers
             </h1>
 
-            {/* IMPRESSIVE QUOTATION CARD */}
+            {/* QUOTATION CARD */}
             <div
               style={{
                 position: 'relative',
-                background: 'linear-gradient(135deg, rgba(236, 72, 153, 0.16), rgba(168, 85, 247, 0.12))',
-                border: '1.5px solid rgba(236, 72, 153, 0.4)',
-                borderRadius: '20px',
+                background: '#F0FDF4',
+                border: '1px solid #BBF7D0',
+                borderRadius: '16px',
                 padding: '24px 28px',
-                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)',
+                boxShadow: 'var(--shadow-soft)',
               }}
             >
-              <Quote size={32} color="#EC4899" style={{ position: 'absolute', top: '16px', right: '20px', opacity: 0.35 }} />
+              <Quote size={28} color="#16A34A" style={{ position: 'absolute', top: '16px', right: '20px', opacity: 0.25 }} />
               <blockquote
                 style={{
                   margin: 0,
-                  fontSize: '18px',
+                  fontSize: '17px',
                   fontStyle: 'italic',
-                  color: '#FFFFFF',
+                  color: '#14532D',
                   lineHeight: '1.6',
                   fontWeight: '500',
                 }}
               >
                 "Memory is the treasury and guardian of all human experience. In honoring and supporting the cognitive journey of our elders, we preserve the heartbeat of our heritage."
               </blockquote>
-              <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '30px', height: '2px', background: '#EC4899' }} />
-                <span style={{ fontSize: '13px', fontWeight: '700', color: '#F472B6', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+              <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '24px', height: '2px', background: '#16A34A' }} />
+                <span style={{ fontSize: '12px', fontWeight: '700', color: '#15803D', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                   MindMate Cognitive Care Philosophy
                 </span>
               </div>
             </div>
 
             {/* Quick Demo Access Bar */}
-            <div style={{ background: 'rgba(26, 15, 33, 0.92)', border: '1.5px solid rgba(236, 72, 153, 0.45)', borderRadius: '18px', padding: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <span style={{ fontSize: '13px', fontWeight: '700', color: '#F472B6', letterSpacing: '0.5px' }}>
+            <div style={{ background: '#FFFFFF', border: '1px solid var(--border-glass)', borderRadius: '16px', padding: '18px', boxShadow: 'var(--shadow-soft)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--accent-primary)', letterSpacing: '0.5px' }}>
                   ⚡ QUICK DEMO ACCESS
                 </span>
-                <span style={{ fontSize: '12px', color: '#D8B4FE' }}>No registration required</span>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No password required</span>
               </div>
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 <button
@@ -243,7 +232,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                   type="button"
                   onClick={() => handleQuickDemoLogin('caregiver')}
                   className="btn-primary btn-glass-subtle"
-                  style={{ flex: 1, minHeight: '44px', fontSize: '14px', border: '1px solid #EC4899' }}
+                  style={{ flex: 1, minHeight: '44px', fontSize: '14px', border: '1px solid var(--border-glass)' }}
                 >
                   Caregiver Portal (Demo 👨‍⚕️)
                 </button>
@@ -251,17 +240,18 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
             </div>
           </div>
 
-          {/* RIGHT COLUMN: VIDEO PLAYER FRAME READY FOR USER'S VIDEO LINK */}
+          {/* RIGHT COLUMN: VIDEO PLAYER FRAME */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div
               className="glass-panel"
               style={{
                 position: 'relative',
-                borderRadius: '24px',
+                borderRadius: '20px',
                 overflow: 'hidden',
-                border: '2px solid rgba(236, 72, 153, 0.45)',
-                background: '#120A1A',
-                boxShadow: '0 25px 50px rgba(0, 0, 0, 0.8)',
+                padding: 0,
+                border: '1px solid var(--border-glass)',
+                background: '#FFFFFF',
+                boxShadow: 'var(--shadow-hover)',
                 display: 'flex',
                 flexDirection: 'column',
               }}
@@ -273,13 +263,13 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '14px 20px',
-                  background: 'rgba(27, 15, 39, 0.95)',
-                  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: '#F8FAFC',
+                  borderBottom: '1px solid var(--border-glass)',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Video size={20} color="#EC4899" />
-                  <span style={{ fontSize: '15px', fontWeight: '700', color: '#FFFFFF' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Video size={18} color="var(--accent-primary)" />
+                  <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)' }}>
                     MindMate Video Presentation
                   </span>
                 </div>
@@ -287,9 +277,9 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                   type="button"
                   onClick={() => setShowVideoInput(!showVideoInput)}
                   style={{
-                    background: 'rgba(236, 72, 153, 0.18)',
-                    border: '1px solid rgba(236, 72, 153, 0.4)',
-                    color: '#F472B6',
+                    background: 'var(--accent-primary-glow)',
+                    border: 'none',
+                    color: 'var(--accent-primary)',
                     padding: '6px 12px',
                     borderRadius: '8px',
                     fontSize: '12px',
@@ -300,13 +290,13 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                     gap: '6px',
                   }}
                 >
-                  <ExternalLink size={14} /> Update Video Link
+                  <ExternalLink size={13} /> Update Video Link
                 </button>
               </div>
 
-              {/* Dynamic Video Link Input (Optional popup bar) */}
+              {/* Dynamic Video Link Input */}
               {showVideoInput && (
-                <div style={{ padding: '12px 16px', background: 'rgba(16, 185, 129, 0.1)', borderBottom: '1px solid rgba(16, 185, 129, 0.2)', display: 'flex', gap: '8px' }}>
+                <div style={{ padding: '12px 16px', background: '#F0FDF4', borderBottom: '1px solid #DCFCE7', display: 'flex', gap: '8px' }}>
                   <input
                     type="text"
                     value={inputVideoUrl}
@@ -316,25 +306,26 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                       flex: 1,
                       padding: '8px 12px',
                       borderRadius: '8px',
-                      background: 'rgba(0,0,0,0.4)',
-                      border: '1px solid rgba(255,255,255,0.2)',
-                      color: '#FFF',
+                      background: '#FFFFFF',
+                      border: '1px solid var(--border-glass)',
+                      color: 'var(--text-primary)',
                       fontSize: '13px',
+                      outline: 'none',
                     }}
                   />
                   <button
                     type="button"
                     onClick={handleApplyVideoUrl}
                     className="btn-primary btn-emerald"
-                    style={{ padding: '8px 14px', fontSize: '13px' }}
+                    style={{ padding: '8px 14px', fontSize: '13px', minHeight: '36px' }}
                   >
                     Apply
                   </button>
                 </div>
               )}
 
-              {/* Responsive Video Container (Aspect Ratio 16:9) */}
-              <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#000000' }}>
+              {/* Responsive Video Container */}
+              <div style={{ position: 'relative', width: '100%', paddingTop: '56.25%', background: '#0F172A' }}>
                 {videoUrl ? (
                   <iframe
                     src={videoUrl}
@@ -352,22 +343,22 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                   />
                 ) : (
                   <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', color: '#94A3B8' }}>
-                    <Play size={48} color="#10B981" />
-                    <p style={{ fontSize: '15px', fontWeight: '600', margin: 0 }}>Provide your video link above</p>
+                    <Play size={44} color="#0284C7" />
+                    <p style={{ fontSize: '14px', fontWeight: '600', margin: 0 }}>Provide your video link above</p>
                   </div>
                 )}
               </div>
 
               {/* Video Footer Caption */}
-              <div style={{ padding: '16px 20px', background: 'rgba(15, 23, 42, 0.8)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ padding: '14px 20px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
-                  <span style={{ fontSize: '13px', color: '#CBD5E1', fontWeight: '500' }}>
-                    MindMate Platform Overview & Demo Video
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
+                  <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                    MindMate Platform Overview Video
                   </span>
                 </div>
                 <span className="badge-pill badge-emerald" style={{ fontSize: '11px', padding: '4px 8px' }}>
-                  HD Video Ready
+                  HD Ready
                 </span>
               </div>
             </div>
@@ -375,7 +366,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
         </div>
       </main>
 
-      {/* 3. SIGN IN MODAL (TRIGGERED BY NAVBAR SIGN IN BUTTON) */}
+      {/* 3. SIGN IN MODAL */}
       {showSignInModal && (
         <div
           style={{
@@ -385,8 +376,8 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'rgba(3, 7, 18, 0.85)',
-            backdropFilter: 'blur(12px)',
+            background: 'rgba(15, 23, 42, 0.6)',
+            backdropFilter: 'blur(6px)',
             padding: '20px',
           }}
         >
@@ -397,13 +388,13 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
               width: '100%',
               maxWidth: '440px',
               padding: '32px',
-              border: '1.5px solid rgba(16, 185, 129, 0.4)',
-              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8)',
-              borderRadius: '24px',
-              background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(7, 10, 18, 0.98))',
+              border: '1px solid var(--border-glass)',
+              boxShadow: '0 20px 40px rgba(15, 23, 42, 0.2)',
+              borderRadius: '20px',
+              background: '#FFFFFF',
             }}
           >
-            {/* Close Modal Button */}
+            {/* Close Modal */}
             <button
               type="button"
               onClick={() => setShowSignInModal(false)}
@@ -411,11 +402,11 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                 position: 'absolute',
                 top: '20px',
                 right: '20px',
-                background: 'rgba(255, 255, 255, 0.08)',
+                background: '#F1F5F9',
                 border: 'none',
-                color: '#94A3B8',
-                width: '36px',
-                height: '36px',
+                color: 'var(--text-muted)',
+                width: '32px',
+                height: '32px',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
@@ -423,60 +414,60 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                 cursor: 'pointer',
               }}
             >
-              <X size={20} />
+              <X size={18} />
             </button>
 
             <div style={{ marginBottom: '24px', textAlign: 'center' }}>
               <div
                 style={{
-                  width: '54px',
-                  height: '54px',
-                  borderRadius: '16px',
-                  background: 'linear-gradient(135deg, #10B981, #059669)',
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '14px',
+                  background: 'linear-gradient(135deg, #0284C7, #0D9488)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  margin: '0 auto 16px auto',
-                  boxShadow: '0 0 24px rgba(16, 185, 129, 0.4)',
+                  margin: '0 auto 14px auto',
+                  boxShadow: '0 2px 8px rgba(2, 132, 199, 0.25)',
                 }}
               >
-                <Brain size={30} color="#FFFFFF" />
+                <Brain size={28} color="#FFFFFF" />
               </div>
-              <h2 style={{ fontSize: '24px', fontWeight: '800', color: '#FFFFFF', margin: 0 }}>
+              <h2 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text-primary)', margin: 0 }}>
                 Sign In to MINDMATE
               </h2>
-              <p style={{ fontSize: '14px', color: '#94A3B8', marginTop: '6px' }}>
-                Access your cognitive health & caregiving dashboard
+              <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                Access your cognitive health & caregiver dashboard
               </p>
             </div>
 
             {error && (
               <div
                 style={{
-                  background: 'rgba(244, 63, 94, 0.15)',
-                  border: '1px solid rgba(244, 63, 94, 0.4)',
-                  borderRadius: '14px',
-                  padding: '12px 16px',
-                  marginBottom: '18px',
+                  background: '#FFE4E6',
+                  border: '1px solid #FECDD3',
+                  borderRadius: '12px',
+                  padding: '10px 14px',
+                  marginBottom: '16px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '10px',
-                  color: '#FDA4AF',
-                  fontSize: '14px',
+                  gap: '8px',
+                  color: '#BE123C',
+                  fontSize: '13px',
                 }}
               >
-                <AlertCircle size={20} style={{ flexShrink: 0 }} />
+                <AlertCircle size={18} style={{ flexShrink: 0 }} />
                 <span>{error}</span>
               </div>
             )}
 
             <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: '#FFFFFF', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '6px' }}>
                   Email Address
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <Mail size={18} color="#94A3B8" style={{ position: 'absolute', left: '16px', top: '16px' }} />
+                  <Mail size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', top: '15px' }} />
                   <input
                     type="email"
                     value={email}
@@ -484,14 +475,14 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                     placeholder="name@example.com"
                     style={{
                       width: '100%',
-                      height: '50px',
-                      paddingLeft: '46px',
-                      paddingRight: '16px',
-                      borderRadius: '14px',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid var(--border-glass-bright)',
-                      color: '#FFFFFF',
-                      fontSize: '16px',
+                      height: '48px',
+                      paddingLeft: '42px',
+                      paddingRight: '14px',
+                      borderRadius: '12px',
+                      background: '#F8FAFC',
+                      border: '1px solid var(--border-glass)',
+                      color: 'var(--text-primary)',
+                      fontSize: '15px',
                       outline: 'none',
                     }}
                   />
@@ -499,11 +490,11 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: '#FFFFFF', marginBottom: '6px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '6px' }}>
                   Password
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <Key size={18} color="#94A3B8" style={{ position: 'absolute', left: '16px', top: '16px' }} />
+                  <Key size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', top: '15px' }} />
                   <input
                     type="password"
                     value={password}
@@ -511,14 +502,14 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                     placeholder="••••••••"
                     style={{
                       width: '100%',
-                      height: '50px',
-                      paddingLeft: '46px',
-                      paddingRight: '16px',
-                      borderRadius: '14px',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid var(--border-glass-bright)',
-                      color: '#FFFFFF',
-                      fontSize: '16px',
+                      height: '48px',
+                      paddingLeft: '42px',
+                      paddingRight: '14px',
+                      borderRadius: '12px',
+                      background: '#F8FAFC',
+                      border: '1px solid var(--border-glass)',
+                      color: 'var(--text-primary)',
+                      fontSize: '15px',
                       outline: 'none',
                     }}
                   />
@@ -532,26 +523,26 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                     setShowSignInModal(false);
                     onNavigateForgot();
                   }}
-                  style={{ background: 'none', border: 'none', color: '#10B981', fontSize: '14px', fontWeight: '600', cursor: 'pointer' }}
+                  style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
                 >
                   Forgot Password?
                 </button>
               </div>
 
-              <button type="submit" className="btn-primary btn-emerald" disabled={loading} style={{ minHeight: '52px', marginTop: '4px', fontSize: '16px' }}>
-                <LogIn size={20} /> {loading ? 'Authenticating...' : 'Sign In'}
+              <button type="submit" className="btn-primary btn-emerald" disabled={loading} style={{ minHeight: '48px', marginTop: '4px', fontSize: '15px' }}>
+                <LogIn size={18} /> {loading ? 'Authenticating...' : 'Sign In'}
               </button>
             </form>
 
-            <div style={{ textAlign: 'center', marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '16px' }}>
-              <span style={{ fontSize: '14px', color: '#94A3B8' }}>Don't have an account? </span>
+            <div style={{ textAlign: 'center', marginTop: '18px', borderTop: '1px solid var(--border-glass)', paddingTop: '14px' }}>
+              <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Don't have an account? </span>
               <button
                 type="button"
                 onClick={() => {
                   setShowSignInModal(false);
                   onNavigateRegister();
                 }}
-                style={{ background: 'none', border: 'none', color: '#10B981', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}
+                style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}
               >
                 Create Account
               </button>
@@ -562,4 +553,3 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
     </div>
   );
 };
-

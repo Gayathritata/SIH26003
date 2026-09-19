@@ -111,7 +111,6 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
       setElapsedSeconds((prev) => prev + 1);
     }, 1000);
 
-    // Speak game instructions if voice enabled
     if (voiceEnabled) {
       speak(t('memoryInstructions'), true);
     }
@@ -143,7 +142,6 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
       setAttempts(currentAttempts);
 
       if (firstCard && firstCard.objectId === secondCard.objectId) {
-        // MATCH
         const newCorrectCount = correctMatches + 1;
         setCorrectMatches(newCorrectCount);
 
@@ -165,7 +163,6 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
           handleGameCompletion(currentAttempts, newCorrectCount, incorrectAttempts);
         }
       } else {
-        // MISMATCH
         const newIncorrectCount = incorrectAttempts + 1;
         setIncorrectAttempts(newIncorrectCount);
 
@@ -250,28 +247,28 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
   };
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ maxWidth: '900px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       
-      {/* 1. TOP HEADER & DIFFICULTY SELECTOR */}
-      <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+      {/* 1. TOP HEADER & SCOREBOARD */}
+      <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', background: '#FFFFFF' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {onNavigateBack && (
               <button
                 type="button"
                 onClick={onNavigateBack}
                 className="btn-primary btn-glass-subtle"
-                style={{ minHeight: '44px', padding: '0 16px', fontSize: '15px' }}
+                style={{ minHeight: '40px', padding: '0 14px', fontSize: '14px' }}
                 aria-label={t('backToGames')}
               >
-                <ArrowLeft size={20} /> {t('backToGames')}
+                <ArrowLeft size={18} /> {t('backToGames')}
               </button>
             )}
             <div>
-              <h2 className="text-hero-title" style={{ fontSize: '26px', margin: 0 }}>
+              <h2 className="text-hero-title" style={{ fontSize: '24px', margin: 0 }}>
                 🧠 {t('memoryGameTitle')}
               </h2>
-              <p style={{ fontSize: '16px', color: 'var(--text-secondary)', margin: '4px 0 0 0', fontWeight: '600' }}>
+              <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: '2px 0 0 0', fontWeight: '500' }}>
                 {t('memoryInstructions')}
               </p>
             </div>
@@ -281,15 +278,15 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
             <button
               onClick={() => speak(t('memoryInstructions'), true)}
               className="btn-primary btn-glass-subtle"
-              style={{ minHeight: '44px', padding: '0 14px', fontSize: '14px', color: '#F472B6', border: '1px solid #EC4899' }}
+              style={{ minHeight: '40px', padding: '0 12px', fontSize: '13px', color: 'var(--accent-primary)' }}
               title={t('listenInstructions')}
               aria-label={t('listenInstructions')}
             >
-              <Volume2 size={18} /> {t('listenInstructions')}
+              <Volume2 size={16} /> {t('listenInstructions')}
             </button>
 
-            {/* Difficulty Level Buttons */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.06)', padding: '6px', borderRadius: '16px' }}>
+            {/* Difficulty Level Switcher */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#F1F5F9', padding: '4px', borderRadius: '10px' }}>
               {[1, 2, 3].map((lvl) => (
                 <button
                   key={lvl}
@@ -299,7 +296,7 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
                     initializeGame(lvl);
                   }}
                   className={`btn-primary ${difficulty === lvl ? 'btn-emerald' : 'btn-glass-subtle'}`}
-                  style={{ minHeight: '42px', padding: '0 12px', fontSize: '14px', borderRadius: '12px' }}
+                  style={{ minHeight: '36px', padding: '0 10px', fontSize: '13px', borderRadius: '8px' }}
                 >
                   L{lvl}
                 </button>
@@ -312,49 +309,49 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-            gap: '12px',
-            background: 'rgba(0, 0, 0, 0.3)',
-            padding: '16px',
-            borderRadius: '16px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+            gap: '10px',
+            background: '#F8FAFC',
+            padding: '12px 16px',
+            borderRadius: '12px',
             border: '1px solid var(--border-glass)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Target size={22} color="#EC4899" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Target size={20} color="var(--accent-primary)" />
             <div>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Level</span>
-              <span style={{ fontSize: '16px', fontWeight: '800', color: '#FFFFFF' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Level</span>
+              <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-primary)' }}>
                 Level {difficulty}
               </span>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <CheckCircle2 size={22} color="#10B981" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <CheckCircle2 size={20} color="var(--accent-emerald)" />
             <div>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>{t('scoreLabel')}</span>
-              <span style={{ fontSize: '16px', fontWeight: '800', color: '#6EE7B7' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>{t('scoreLabel')}</span>
+              <span style={{ fontSize: '15px', fontWeight: '800', color: '#15803D' }}>
                 {correctMatches} / {totalPairs}
               </span>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Award size={22} color="#F59E0B" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Award size={20} color="var(--accent-amber)" />
             <div>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>{t('movesLabel')}</span>
-              <span style={{ fontSize: '16px', fontWeight: '800', color: '#FCD34D' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>{t('movesLabel')}</span>
+              <span style={{ fontSize: '15px', fontWeight: '800', color: '#B45309' }}>
                 {attempts}
               </span>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Clock size={22} color="#3B82F6" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Clock size={20} color="var(--accent-indigo)" />
             <div>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>{t('timeLabel')}</span>
-              <span style={{ fontSize: '16px', fontWeight: '800', color: '#93C5FD' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>{t('timeLabel')}</span>
+              <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--accent-indigo)' }}>
                 {formatTimer(elapsedSeconds)}
               </span>
             </div>
@@ -362,12 +359,12 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
         </div>
       </div>
 
-      {/* 2. MAIN CARDS GRID */}
+      {/* 2. CARDS GRID */}
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: difficulty === 1 ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)',
-          gap: '20px',
+          gap: '16px',
         }}
       >
         {cards.map((card) => (
@@ -376,74 +373,72 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
             type="button"
             onClick={() => handleCardClick(card)}
             disabled={card.isFlipped || card.isMatched || isProcessing || !isGameActive}
-            className="glass-panel-hover"
             style={{
-              minHeight: '160px',
-              borderRadius: '24px',
+              minHeight: '140px',
+              borderRadius: '16px',
               background: card.isMatched
-                ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.35), rgba(5, 150, 105, 0.45))'
+                ? '#DCFCE7'
                 : card.isFlipped
-                ? 'linear-gradient(135deg, rgba(236, 72, 153, 0.35), rgba(168, 85, 247, 0.45))'
-                : 'linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95))',
+                ? '#E0F2FE'
+                : '#FFFFFF',
               border: card.isMatched
-                ? '3px solid #10B981'
+                ? '2px solid #86EFAC'
                 : card.isFlipped
-                ? '3px solid #EC4899'
-                : '2px solid var(--border-glass-bright)',
-              boxShadow: card.isFlipped || card.isMatched ? '0 0 24px rgba(236, 72, 153, 0.4)' : '0 10px 30px rgba(0,0,0,0.4)',
+                ? '2px solid #BAE6FD'
+                : '1px solid var(--border-glass)',
+              boxShadow: 'var(--shadow-soft)',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '12px',
+              gap: '8px',
               cursor: card.isFlipped || card.isMatched ? 'default' : 'pointer',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              padding: '16px',
+              transition: 'all 0.2s ease',
+              padding: '12px',
             }}
             aria-label={card.isFlipped ? card.objectId : 'Card hidden'}
           >
             {card.isFlipped || card.isMatched ? (
               <>
-                <span style={{ fontSize: '56px', lineHeight: 1 }}>{card.emoji}</span>
+                <span style={{ fontSize: '48px', lineHeight: 1 }}>{card.emoji}</span>
                 {card.isMatched && (
-                  <span className="badge-pill badge-emerald" style={{ fontSize: '13px' }}>
-                    <CheckCircle2 size={14} /> {t('memoryCardMatched')}
+                  <span className="badge-pill badge-emerald" style={{ fontSize: '11px', padding: '2px 8px' }}>
+                    <CheckCircle2 size={12} /> {t('memoryCardMatched')}
                   </span>
                 )}
               </>
             ) : (
               <div
                 style={{
-                  width: '64px',
-                  height: '64px',
-                  borderRadius: '20px',
-                  background: 'rgba(255, 255, 255, 0.08)',
+                  width: '52px',
+                  height: '52px',
+                  borderRadius: '14px',
+                  background: '#F1F5F9',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
                 }}
               >
-                <Brain size={32} color="#D8B4FE" />
+                <Brain size={28} color="var(--accent-primary)" />
               </div>
             )}
           </button>
         ))}
       </div>
 
-      {/* 3. RESTART ACTION BAR */}
+      {/* 3. RESTART ACTION */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <button
           type="button"
           onClick={() => initializeGame(difficulty)}
           className="btn-primary btn-glass-subtle"
-          style={{ minHeight: '52px', padding: '0 32px', fontSize: '17px', borderRadius: '16px' }}
+          style={{ minHeight: '46px', padding: '0 24px', fontSize: '15px' }}
         >
-          <RotateCcw size={20} /> {t('startGame')}
+          <RotateCcw size={18} /> Restart Game
         </button>
       </div>
 
-      {/* 4. GAME COMPLETE OVERLAY MODAL */}
+      {/* 4. GAME COMPLETE OVERLAY */}
       {isGameComplete && gameResultMetrics && (
         <div
           style={{
@@ -453,47 +448,47 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'rgba(3, 7, 18, 0.88)',
-            backdropFilter: 'blur(16px)',
+            background: 'rgba(15, 23, 42, 0.6)',
+            backdropFilter: 'blur(6px)',
             padding: '20px',
           }}
         >
           <div
             className="glass-panel"
             style={{
-              maxWidth: '520px',
+              maxWidth: '460px',
               width: '100%',
-              padding: '36px',
-              borderRadius: '28px',
-              border: '2px solid rgba(236, 72, 153, 0.5)',
-              background: 'linear-gradient(135deg, rgba(27, 15, 39, 0.98), rgba(15, 23, 42, 0.98))',
-              boxShadow: '0 30px 70px rgba(0, 0, 0, 0.9)',
+              padding: '32px',
+              borderRadius: '20px',
+              border: '1px solid var(--border-glass)',
+              background: '#FFFFFF',
+              boxShadow: 'var(--shadow-hover)',
               display: 'flex',
               flexDirection: 'column',
-              gap: '24px',
+              gap: '20px',
               textAlign: 'center',
             }}
           >
             <div>
               <div
                 style={{
-                  width: '76px',
-                  height: '76px',
-                  borderRadius: '24px',
-                  background: 'linear-gradient(135deg, #EC4899, #8B5CF6)',
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '18px',
+                  background: 'linear-gradient(135deg, #0284C7, #0D9488)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  margin: '0 auto 16px auto',
-                  boxShadow: '0 0 35px rgba(236, 72, 153, 0.55)',
+                  margin: '0 auto 12px auto',
+                  boxShadow: '0 2px 10px rgba(2, 132, 199, 0.3)',
                 }}
               >
-                <Trophy size={42} color="#FFFFFF" />
+                <Trophy size={34} color="#FFFFFF" />
               </div>
-              <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#FFFFFF', margin: 0 }}>
+              <h2 style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text-primary)', margin: 0 }}>
                 {t('activityCompleted')} 🎉
               </h2>
-              <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '6px' }}>
+              <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '4px' }}>
                 {t('gameComplete')}
               </p>
             </div>
@@ -502,38 +497,38 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: '16px',
-                background: 'rgba(0, 0, 0, 0.4)',
-                padding: '20px',
-                borderRadius: '20px',
+                gap: '12px',
+                background: '#F8FAFC',
+                padding: '16px',
+                borderRadius: '14px',
                 border: '1px solid var(--border-glass)',
               }}
             >
               <div style={{ textAlign: 'center' }}>
-                <span style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>{t('scoreLabel')}</span>
-                <span style={{ fontSize: '28px', fontWeight: '800', color: '#F472B6' }}>{gameResultMetrics.score}</span>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>{t('scoreLabel')}</span>
+                <span style={{ fontSize: '24px', fontWeight: '800', color: 'var(--accent-primary)' }}>{gameResultMetrics.score}</span>
               </div>
 
               <div style={{ textAlign: 'center' }}>
-                <span style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>{t('accuracy')}</span>
-                <span style={{ fontSize: '28px', fontWeight: '800', color: '#6EE7B7' }}>{gameResultMetrics.accuracy}%</span>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>{t('accuracy')}</span>
+                <span style={{ fontSize: '24px', fontWeight: '800', color: '#15803D' }}>{gameResultMetrics.accuracy}%</span>
               </div>
             </div>
 
             {isSaving && (
-              <p style={{ fontSize: '13px', color: '#F472B6', margin: 0, fontWeight: '600' }}>
+              <p style={{ fontSize: '12px', color: 'var(--accent-primary)', margin: 0, fontWeight: '600' }}>
                 Saving session data...
               </p>
             )}
 
-            <div style={{ display: 'flex', gap: '14px' }}>
+            <div style={{ display: 'flex', gap: '12px' }}>
               <button
                 type="button"
                 onClick={() => initializeGame(difficulty)}
                 className="btn-primary btn-emerald"
-                style={{ flex: 1, minHeight: '54px', fontSize: '17px', borderRadius: '16px' }}
+                style={{ flex: 1, minHeight: '48px', fontSize: '15px' }}
               >
-                <Play size={20} /> {t('startGame')}
+                <Play size={18} /> Play Again
               </button>
 
               {onNavigateBack && (
@@ -541,7 +536,7 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
                   type="button"
                   onClick={onNavigateBack}
                   className="btn-primary btn-glass-subtle"
-                  style={{ flex: 1, minHeight: '54px', fontSize: '17px', borderRadius: '16px' }}
+                  style={{ flex: 1, minHeight: '48px', fontSize: '15px' }}
                 >
                   {t('backToGames')}
                 </button>

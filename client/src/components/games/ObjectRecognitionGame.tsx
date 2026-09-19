@@ -104,6 +104,7 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
     setIncorrectAnswers(0);
     setFeedback(null);
     setSttNotice(null);
+    setIsListeningSTT(false);
     setElapsedSeconds(0);
     setIsGameComplete(false);
     setMetrics(null);
@@ -126,36 +127,32 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
     };
   }, [difficulty]);
 
-  const handleSelectOption = (selectedOpt: string) => {
+  const handleSelectOption = (optionName: string) => {
     if (!isGameActive || feedback !== null) return;
 
-    const isCorrect = selectedOpt.toLowerCase().trim() === currentQuestion.objectName.toLowerCase().trim();
+    const isCorrect = optionName.toLowerCase() === currentQuestion.objectName.toLowerCase();
 
     if (isCorrect) {
-      const nextCorrect = correctAnswers + 1;
-      setCorrectAnswers(nextCorrect);
-      setFeedback({ isCorrect: true, text: `${t('correctAnswer')} 🎉 (${currentQuestion.objectName})` });
+      const newCorrect = correctAnswers + 1;
+      setCorrectAnswers(newCorrect);
+      setFeedback({ isCorrect: true, text: t('correctAnswer') });
 
-      if (voiceEnabled) {
-        speak(t('correctAnswer'), true);
-      }
+      if (voiceEnabled) speak(t('correctAnswer'), true);
 
       setTimeout(() => {
         setFeedback(null);
-        if (questionIndex + 1 >= totalQuestions) {
-          handleGameCompletion(nextCorrect, incorrectAnswers);
-        } else {
+        if (questionIndex + 1 < totalQuestions) {
           setQuestionIndex((prev) => prev + 1);
+        } else {
+          finishGame(totalQuestions, newCorrect, incorrectAnswers);
         }
       }, 1000);
     } else {
-      const nextIncorrect = incorrectAnswers + 1;
-      setIncorrectAnswers(nextIncorrect);
+      const newIncorrect = incorrectAnswers + 1;
+      setIncorrectAnswers(newIncorrect);
       setFeedback({ isCorrect: false, text: t('tryAgain') });
 
-      if (voiceEnabled) {
-        speak(t('tryAgain'), true);
-      }
+      if (voiceEnabled) speak(t('tryAgain'), true);
 
       setTimeout(() => {
         setFeedback(null);
@@ -165,59 +162,50 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
 
   const handleStartSTT = () => {
     if (!voiceService.isSTTSupported()) {
-      setSttNotice(t('voiceInputUnavailable'));
+      setSttNotice('Voice recognition is not supported in this browser.');
       return;
     }
 
     setIsListeningSTT(true);
-    setSttNotice('Listening... Speak object name.');
+    setSttNotice('Listening... Speak the object name now.');
 
     voiceService.listen(
       (transcript) => {
         setIsListeningSTT(false);
         setSttNotice(`Heard: "${transcript}"`);
-        
-        // Find matching option
-        const match = currentQuestion.options.find(
-          (opt) => transcript.toLowerCase().includes(opt.toLowerCase()) || opt.toLowerCase().includes(transcript.toLowerCase())
-        );
-        if (match) {
-          handleSelectOption(match);
-        } else {
+        if (transcript) {
           handleSelectOption(transcript);
         }
       },
       (err) => {
         setIsListeningSTT(false);
-        if (err === 'unsupported') {
-          setSttNotice(t('voiceInputUnavailable'));
-        } else {
-          setSttNotice(t('tryAgain'));
-        }
+        setSttNotice('Speech recognition timeout or error. Try clicking the option.');
       },
       lang
     );
   };
 
-  const handleGameCompletion = async (finalCorrect: number, finalIncorrect: number) => {
+  const finishGame = async (
+    finalAttempts: number,
+    finalCorrect: number,
+    finalIncorrect: number
+  ) => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-
-    setIsGameActive(false);
-
-    if (voiceEnabled) {
-      speak(t('gameComplete'), true);
-    }
 
     const completedAtISO = new Date().toISOString();
     const startedAtISO = new Date(startTimeRef.current).toISOString();
     const finalCompletionTime = Math.max(1, elapsedSeconds);
 
+    setIsGameActive(false);
+
+    if (voiceEnabled) speak(t('gameComplete'), true);
+
     const calculated = calculateObjectRecognitionScore({
       difficulty,
-      totalQuestions,
       correctAnswers: finalCorrect,
       incorrectAnswers: finalIncorrect,
       completionTime: finalCompletionTime,
+      totalQuestions,
       startedAt: startedAtISO,
       completedAt: completedAtISO,
     });
@@ -254,24 +242,24 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
     <div style={{ maxWidth: '850px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       
       {/* Header */}
-      <div className="glass-panel" style={{ padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+      <div className="glass-panel" style={{ padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', background: '#FFFFFF' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {onNavigateBack && (
             <button
               type="button"
               onClick={onNavigateBack}
               className="btn-primary btn-glass-subtle"
-              style={{ minHeight: '44px', padding: '0 16px', fontSize: '15px' }}
+              style={{ minHeight: '40px', padding: '0 14px', fontSize: '14px' }}
               aria-label={t('backToGames')}
             >
-              <ArrowLeft size={20} /> {t('backToGames')}
+              <ArrowLeft size={18} /> {t('backToGames')}
             </button>
           )}
           <div>
-            <h2 className="text-hero-title" style={{ fontSize: '26px', margin: 0 }}>
+            <h2 className="text-hero-title" style={{ fontSize: '24px', margin: 0 }}>
               👀 {t('objectGameTitle')}
             </h2>
-            <p style={{ fontSize: '16px', color: 'var(--text-secondary)', margin: '4px 0 0 0', fontWeight: '600' }}>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: '2px 0 0 0', fontWeight: '500' }}>
               {t('objectInstructions')}
             </p>
           </div>
@@ -280,35 +268,35 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
         <button
           onClick={() => speak(t('objectInstructions'), true)}
           className="btn-primary btn-glass-subtle"
-          style={{ minHeight: '44px', padding: '0 14px', fontSize: '14px', color: '#5EEAD4', border: '1px solid #14B8A6' }}
+          style={{ minHeight: '40px', padding: '0 12px', fontSize: '13px', color: 'var(--accent-teal)' }}
           title={t('listenInstructions')}
           aria-label={t('listenInstructions')}
         >
-          <Volume2 size={18} /> {t('listenInstructions')}
+          <Volume2 size={16} /> {t('listenInstructions')}
         </button>
       </div>
 
       {/* Main Object Visualizer */}
-      <div className="glass-panel" style={{ padding: '32px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
-        {/* Object Large Icon */}
+      <div className="glass-panel" style={{ padding: '28px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '18px', alignItems: 'center', background: '#FFFFFF' }}>
+        {/* Object Large Frame */}
         <div
           style={{
-            width: '130px',
-            height: '130px',
-            borderRadius: '32px',
-            background: 'rgba(20, 184, 166, 0.15)',
-            border: '3px solid #14B8A6',
+            width: '120px',
+            height: '120px',
+            borderRadius: '24px',
+            background: 'var(--accent-teal-glow)',
+            border: '2px solid var(--accent-teal)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '72px',
-            boxShadow: '0 0 35px rgba(20, 184, 166, 0.35)',
+            fontSize: '64px',
+            boxShadow: 'var(--shadow-soft)',
           }}
         >
           {currentQuestion.emoji}
         </div>
 
-        <h3 style={{ fontSize: '24px', fontWeight: '800', color: '#FFFFFF', margin: 0 }}>
+        <h3 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--text-primary)', margin: 0 }}>
           {t('objectInstructions')}
         </h3>
 
@@ -317,19 +305,19 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
           onClick={handleStartSTT}
           className={`btn-primary ${isListeningSTT ? 'btn-emerald pulse-mic' : 'btn-glass-subtle'}`}
           style={{
-            minHeight: '52px',
-            padding: '0 24px',
-            fontSize: '16px',
-            border: '2px solid #14B8A6',
-            color: '#5EEAD4',
+            minHeight: '46px',
+            padding: '0 20px',
+            fontSize: '15px',
+            border: '1px solid var(--accent-teal)',
+            color: 'var(--accent-teal)',
           }}
           aria-label={t('listenPrompt')}
         >
-          <Mic size={20} /> {isListeningSTT ? t('speaking') : t('listenPrompt')}
+          <Mic size={18} /> {isListeningSTT ? t('speaking') : t('listenPrompt')}
         </button>
 
         {sttNotice && (
-          <p style={{ fontSize: '14px', color: '#FCD34D', margin: 0, fontWeight: '600' }}>
+          <p style={{ fontSize: '13px', color: 'var(--accent-amber)', margin: 0, fontWeight: '600' }}>
             {sttNotice}
           </p>
         )}
@@ -338,46 +326,47 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
         {feedback && (
           <div
             style={{
-              fontSize: '20px',
+              fontSize: '18px',
               fontWeight: '800',
-              color: feedback.isCorrect ? '#6EE7B7' : '#FDA4AF',
-              padding: '12px 24px',
-              borderRadius: '16px',
-              background: feedback.isCorrect ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)',
-              border: feedback.isCorrect ? '2px solid #10B981' : '2px solid #F43F5E',
+              color: feedback.isCorrect ? '#15803D' : '#BE123C',
+              padding: '10px 20px',
+              borderRadius: '14px',
+              background: feedback.isCorrect ? '#DCFCE7' : '#FFE4E6',
+              border: feedback.isCorrect ? '1px solid #86EFAC' : '1px solid #FECDD3',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '10px',
+              gap: '8px',
             }}
           >
-            {feedback.isCorrect ? <CheckCircle2 size={24} /> : null}
+            {feedback.isCorrect ? <CheckCircle2 size={20} /> : null}
             {feedback.text}
           </div>
         )}
       </div>
 
-      {/* Multiple-Choice Answer Buttons */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+      {/* Answer Buttons */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '14px' }}>
         {currentQuestion.options.map((opt) => (
           <button
             key={opt}
             type="button"
             onClick={() => handleSelectOption(opt)}
             disabled={!isGameActive || feedback !== null}
-            className="glass-panel-hover"
             style={{
-              minHeight: '80px',
-              borderRadius: '22px',
-              background: 'rgba(30, 41, 59, 0.95)',
-              border: '3px solid var(--border-glass-bright)',
+              minHeight: '72px',
+              borderRadius: '16px',
+              background: '#FFFFFF',
+              border: '1px solid var(--border-glass)',
+              boxShadow: 'var(--shadow-soft)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              padding: '16px',
-              fontSize: '22px',
+              padding: '14px',
+              fontSize: '18px',
               fontWeight: '800',
-              color: '#FFFFFF',
+              color: 'var(--text-primary)',
+              transition: 'all 0.2s ease',
             }}
           >
             {opt}
@@ -386,14 +375,14 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
       </div>
 
       {/* Restart Button */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8px' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '6px' }}>
         <button
           type="button"
           onClick={() => startNewGame(difficulty)}
           className="btn-primary btn-glass-subtle"
-          style={{ minHeight: '48px', padding: '0 24px', fontSize: '16px', borderRadius: '14px' }}
+          style={{ minHeight: '44px', padding: '0 20px', fontSize: '15px' }}
         >
-          <RotateCcw size={18} /> {t('startGame')}
+          <RotateCcw size={16} /> Restart Game
         </button>
       </div>
 

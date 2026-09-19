@@ -185,6 +185,7 @@ export interface ReminderData {
   _id?: string;
   id?: string;
   userId?: string;
+  patientId?: string;
   caregiverId?: string;
   title: string;
   description?: string;

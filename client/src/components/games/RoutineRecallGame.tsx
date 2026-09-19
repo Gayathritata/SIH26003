@@ -103,70 +103,69 @@ export const RoutineRecallGame: React.FC<RoutineRecallGameProps> = ({
   }, [difficulty]);
 
   const moveItem = (index: number, direction: 'up' | 'down') => {
-    if (!isGameActive || feedback !== null) return;
-    const targetIdx = direction === 'up' ? index - 1 : index + 1;
-    if (targetIdx < 0 || targetIdx >= currentList.length) return;
+    if (!isGameActive) return;
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= currentList.length) return;
 
-    const updated = [...currentList];
-    const temp = updated[index];
-    updated[index] = updated[targetIdx];
-    updated[targetIdx] = temp;
-    setCurrentList(updated);
+    const newList = [...currentList];
+    const temp = newList[index];
+    newList[index] = newList[targetIndex];
+    newList[targetIndex] = temp;
+    setCurrentList(newList);
   };
 
   const handleCheckOrder = () => {
     if (!isGameActive || feedback !== null) return;
 
-    const currentAttempts = attempts + 1;
-    setAttempts(currentAttempts);
+    const newAttempts = attempts + 1;
+    setAttempts(newAttempts);
 
     const isCorrect = currentList.every((item, idx) => item.correctOrder === idx + 1);
 
     if (isCorrect) {
-      setCorrectAnswers(1);
-      setFeedback({ isCorrect: true, text: `${t('correctAnswer')} 🎉` });
+      const newCorrect = correctAnswers + 1;
+      setCorrectAnswers(newCorrect);
+      setFeedback({ isCorrect: true, text: t('correctAnswer') });
 
-      if (voiceEnabled) {
-        speak(t('correctAnswer'), true);
-      }
+      if (voiceEnabled) speak(t('correctAnswer'), true);
 
       setTimeout(() => {
-        handleGameCompletion(1, incorrectAnswers);
+        finishGame(newAttempts, 1, 0);
       }, 1200);
     } else {
-      const nextIncorrect = incorrectAnswers + 1;
-      setIncorrectAnswers(nextIncorrect);
+      const newIncorrect = incorrectAnswers + 1;
+      setIncorrectAnswers(newIncorrect);
       setFeedback({ isCorrect: false, text: t('tryAgain') });
 
-      if (voiceEnabled) {
-        speak(t('tryAgain'), true);
-      }
+      if (voiceEnabled) speak(t('tryAgain'), true);
 
       setTimeout(() => {
         setFeedback(null);
-      }, 1500);
+      }, 1200);
     }
   };
 
-  const handleGameCompletion = async (finalCorrect: number, finalIncorrect: number) => {
+  const finishGame = async (
+    finalAttempts: number,
+    finalCorrect: number,
+    finalIncorrect: number
+  ) => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-
-    setIsGameActive(false);
-
-    if (voiceEnabled) {
-      speak(t('gameComplete'), true);
-    }
 
     const completedAtISO = new Date().toISOString();
     const startedAtISO = new Date(startTimeRef.current).toISOString();
     const finalCompletionTime = Math.max(1, elapsedSeconds);
 
+    setIsGameActive(false);
+
+    if (voiceEnabled) speak(t('gameComplete'), true);
+
     const calculated = calculateRoutineRecallScore({
       difficulty,
-      totalQuestions: 1,
       correctAnswers: finalCorrect,
       incorrectAnswers: finalIncorrect,
       completionTime: finalCompletionTime,
+      totalQuestions: currentList.length,
       startedAt: startedAtISO,
       completedAt: completedAtISO,
     });
@@ -179,7 +178,7 @@ export const RoutineRecallGame: React.FC<RoutineRecallGameProps> = ({
       await submitGameSession({
         gameType: 'daily_routine_recall',
         difficulty: calculated.difficulty,
-        totalPairs: getBaseActivities(difficulty).length,
+        totalPairs: currentList.length,
         attempts: calculated.attempts,
         correctMatches: calculated.correctAnswers,
         incorrectAttempts: calculated.incorrectAnswers,
@@ -203,24 +202,24 @@ export const RoutineRecallGame: React.FC<RoutineRecallGameProps> = ({
     <div style={{ maxWidth: '850px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       
       {/* Header */}
-      <div className="glass-panel" style={{ padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+      <div className="glass-panel" style={{ padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', background: '#FFFFFF' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {onNavigateBack && (
             <button
               type="button"
               onClick={onNavigateBack}
               className="btn-primary btn-glass-subtle"
-              style={{ minHeight: '44px', padding: '0 16px', fontSize: '15px' }}
+              style={{ minHeight: '40px', padding: '0 14px', fontSize: '14px' }}
               aria-label={t('backToGames')}
             >
-              <ArrowLeft size={20} /> {t('backToGames')}
+              <ArrowLeft size={18} /> {t('backToGames')}
             </button>
           )}
           <div>
-            <h2 className="text-hero-title" style={{ fontSize: '26px', margin: 0 }}>
+            <h2 className="text-hero-title" style={{ fontSize: '24px', margin: 0 }}>
               📅 {t('routineGameTitle')}
             </h2>
-            <p style={{ fontSize: '16px', color: 'var(--text-secondary)', margin: '4px 0 0 0', fontWeight: '600' }}>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: '2px 0 0 0', fontWeight: '500' }}>
               {t('routineInstructions')}
             </p>
           </div>
@@ -229,17 +228,17 @@ export const RoutineRecallGame: React.FC<RoutineRecallGameProps> = ({
         <button
           onClick={() => speak(t('routineInstructions'), true)}
           className="btn-primary btn-glass-subtle"
-          style={{ minHeight: '44px', padding: '0 14px', fontSize: '14px', color: '#A5B4FC', border: '1px solid #6366F1' }}
+          style={{ minHeight: '40px', padding: '0 12px', fontSize: '13px', color: 'var(--accent-indigo)' }}
           title={t('listenInstructions')}
           aria-label={t('listenInstructions')}
         >
-          <Volume2 size={18} /> {t('listenInstructions')}
+          <Volume2 size={16} /> {t('listenInstructions')}
         </button>
       </div>
 
-      {/* Main Routine Display */}
-      <div className="glass-panel" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <p style={{ fontSize: '16px', color: 'var(--text-secondary)', fontWeight: '600', textAlign: 'center', margin: 0 }}>
+      {/* Main Routine Container */}
+      <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', background: '#FFFFFF' }}>
+        <p style={{ fontSize: '15px', color: 'var(--text-secondary)', fontWeight: '600', textAlign: 'center', margin: 0 }}>
           {t('routineInstructions')}
         </p>
 
@@ -247,13 +246,13 @@ export const RoutineRecallGame: React.FC<RoutineRecallGameProps> = ({
         {feedback && (
           <div
             style={{
-              fontSize: '20px',
+              fontSize: '18px',
               fontWeight: '800',
-              color: feedback.isCorrect ? '#6EE7B7' : '#FDA4AF',
-              padding: '12px 20px',
-              borderRadius: '14px',
-              background: feedback.isCorrect ? 'rgba(16, 185, 129, 0.2)' : 'rgba(244, 63, 94, 0.2)',
-              border: feedback.isCorrect ? '2px solid #10B981' : '2px solid #F43F5E',
+              color: feedback.isCorrect ? '#15803D' : '#BE123C',
+              padding: '10px 20px',
+              borderRadius: '12px',
+              background: feedback.isCorrect ? '#DCFCE7' : '#FFE4E6',
+              border: feedback.isCorrect ? '1px solid #86EFAC' : '1px solid #FECDD3',
               textAlign: 'center',
             }}
           >
@@ -262,62 +261,63 @@ export const RoutineRecallGame: React.FC<RoutineRecallGameProps> = ({
         )}
 
         {/* Activity Re-ordering List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {currentList.map((item, index) => (
             <div
               key={item.id}
               style={{
-                background: 'rgba(15, 23, 42, 0.85)',
-                border: '3px solid var(--border-glass-bright)',
-                borderRadius: '18px',
-                padding: '14px 20px',
+                background: '#F8FAFC',
+                border: '1px solid var(--border-glass)',
+                borderRadius: '14px',
+                padding: '12px 18px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: '16px',
+                gap: '14px',
+                boxShadow: 'var(--shadow-soft)',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                 <span
                   style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '12px',
-                    background: 'rgba(236, 72, 153, 0.2)',
-                    border: '2px solid #EC4899',
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    background: 'var(--accent-primary-glow)',
+                    border: '1px solid var(--accent-primary)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '18px',
+                    fontSize: '16px',
                     fontWeight: '800',
-                    color: '#F472B6',
+                    color: 'var(--accent-primary)',
                   }}
                 >
                   {index + 1}
                 </span>
 
-                <span style={{ fontSize: '38px', lineHeight: 1 }}>{item.emoji}</span>
-                <span style={{ fontSize: '20px', fontWeight: '800', color: '#FFFFFF' }}>
+                <span style={{ fontSize: '34px', lineHeight: 1 }}>{item.emoji}</span>
+                <span style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)' }}>
                   {t(item.nameKey as any)}
                 </span>
               </div>
 
               {/* Move Controls */}
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '6px' }}>
                 <button
                   type="button"
                   onClick={() => moveItem(index, 'up')}
                   disabled={index === 0 || !isGameActive}
                   className="btn-primary btn-glass-subtle"
                   style={{
-                    minHeight: '46px',
-                    padding: '0 14px',
-                    borderRadius: '12px',
+                    minHeight: '40px',
+                    padding: '0 12px',
+                    borderRadius: '10px',
                     opacity: index === 0 ? 0.4 : 1,
                   }}
                   title="Move Up"
                 >
-                  <ArrowUp size={22} />
+                  <ArrowUp size={18} />
                 </button>
 
                 <button
@@ -326,14 +326,14 @@ export const RoutineRecallGame: React.FC<RoutineRecallGameProps> = ({
                   disabled={index === currentList.length - 1 || !isGameActive}
                   className="btn-primary btn-glass-subtle"
                   style={{
-                    minHeight: '46px',
-                    padding: '0 14px',
-                    borderRadius: '12px',
+                    minHeight: '40px',
+                    padding: '0 12px',
+                    borderRadius: '10px',
                     opacity: index === currentList.length - 1 ? 0.4 : 1,
                   }}
                   title="Move Down"
                 >
-                  <ArrowDown size={22} />
+                  <ArrowDown size={18} />
                 </button>
               </div>
             </div>
@@ -341,24 +341,24 @@ export const RoutineRecallGame: React.FC<RoutineRecallGameProps> = ({
         </div>
 
         {/* Submit Order Action Button */}
-        <div style={{ display: 'flex', gap: '14px', marginTop: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
           <button
             type="button"
             onClick={handleCheckOrder}
             disabled={!isGameActive || feedback !== null}
             className="btn-primary btn-emerald"
-            style={{ flex: 1, minHeight: '54px', fontSize: '18px', borderRadius: '16px' }}
+            style={{ flex: 1, minHeight: '48px', fontSize: '16px' }}
           >
-            <CheckCircle2 size={22} /> {t('startGame')}
+            <CheckCircle2 size={20} /> Check Sequence
           </button>
 
           <button
             type="button"
             onClick={() => startNewGame(difficulty)}
             className="btn-primary btn-glass-subtle"
-            style={{ minHeight: '54px', padding: '0 24px', fontSize: '16px', borderRadius: '16px' }}
+            style={{ minHeight: '48px', padding: '0 20px', fontSize: '15px' }}
           >
-            <RotateCcw size={18} /> {t('startGame')}
+            <RotateCcw size={16} /> Restart
           </button>
         </div>
       </div>

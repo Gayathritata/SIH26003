@@ -67,11 +67,11 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ lang, onNavigate }) 
 
   const getGameBadgeColor = (gameType: string) => {
     const type = (gameType || '').toLowerCase();
-    if (type === 'memory_match' || type === 'memory') return '#EC4899';
-    if (type === 'pattern_recognition' || type === 'pattern') return '#F59E0B';
-    if (type === 'daily_routine_recall' || type === 'routine') return '#6366F1';
-    if (type === 'object_recognition' || type === 'object_rec') return '#14B8A6';
-    return '#8B5CF6';
+    if (type === 'memory_match' || type === 'memory') return '#0284C7';
+    if (type === 'pattern_recognition' || type === 'pattern') return '#D97706';
+    if (type === 'daily_routine_recall' || type === 'routine') return '#4F46E5';
+    if (type === 'object_recognition' || type === 'object_rec') return '#0D9488';
+    return '#64748B';
   };
 
   const formatDifficultyLabel = (diff: number) => {
@@ -108,16 +108,16 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ lang, onNavigate }) 
   });
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ maxWidth: '900px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       
       {/* Top Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <button
           onClick={() => onNavigate('/dashboard')}
           className="btn-primary btn-glass-subtle"
-          style={{ minHeight: '48px', padding: '0 18px', fontSize: '16px' }}
+          style={{ minHeight: '42px', padding: '0 16px', fontSize: '15px' }}
         >
-          <ArrowLeft size={20} /> {t('backToHome')}
+          <ArrowLeft size={18} /> {t('backToHome')}
         </button>
         <h2 className="text-section-title">📊 Cognitive Progress</h2>
         <button
@@ -130,36 +130,36 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ lang, onNavigate }) 
         </button>
       </div>
 
-      {/* Main History Container */}
-      <div className="glass-panel" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* Main Container */}
+      <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px', background: '#FFFFFF' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div
               style={{
-                width: '52px',
-                height: '52px',
-                borderRadius: '16px',
-                background: 'linear-gradient(135deg, #EC4899, #8B5CF6)',
+                width: '46px',
+                height: '46px',
+                borderRadius: '14px',
+                background: 'linear-gradient(135deg, #0284C7, #0D9488)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 0 20px rgba(236, 72, 153, 0.4)',
+                boxShadow: '0 2px 8px rgba(2, 132, 199, 0.25)',
               }}
             >
-              <Trophy size={28} color="#FFFFFF" />
+              <Trophy size={24} color="#FFFFFF" />
             </div>
             <div>
-              <h3 style={{ fontSize: '24px', fontWeight: '800', color: '#FFFFFF', margin: 0 }}>
+              <h3 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--text-primary)', margin: 0 }}>
                 Completed Game Sessions
               </h3>
-              <p style={{ fontSize: '15px', color: 'var(--text-secondary)', margin: '4px 0 0 0', fontWeight: '500' }}>
-                Track your memory, pattern, routine, and object recognition scores.
+              <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: '2px 0 0 0' }}>
+                Track your cognitive scores and progress trends.
               </p>
             </div>
           </div>
 
-          {/* Game Type Filter Tabs */}
-          <div style={{ display: 'flex', gap: '6px', background: 'rgba(255,255,255,0.06)', padding: '6px', borderRadius: '16px', flexWrap: 'wrap' }}>
+          {/* Filter Tabs */}
+          <div style={{ display: 'flex', gap: '4px', background: '#F1F5F9', padding: '4px', borderRadius: '12px', flexWrap: 'wrap' }}>
             {[
               { id: 'all', label: 'All Games' },
               { id: 'memory', label: 'Memory' },
@@ -171,8 +171,17 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ lang, onNavigate }) 
                 key={tab.id}
                 type="button"
                 onClick={() => setSelectedFilter(tab.id)}
-                className={`btn-primary ${selectedFilter === tab.id ? 'btn-emerald' : 'btn-glass-subtle'}`}
-                style={{ minHeight: '38px', padding: '0 12px', fontSize: '13px', borderRadius: '10px' }}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: selectedFilter === tab.id ? 'var(--accent-primary)' : 'transparent',
+                  color: selectedFilter === tab.id ? '#FFFFFF' : 'var(--text-secondary)',
+                  fontWeight: selectedFilter === tab.id ? '700' : '600',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
               >
                 {tab.label}
               </button>
@@ -181,81 +190,81 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ lang, onNavigate }) 
         </div>
 
         {loading ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '16px' }}>
+          <div style={{ padding: '36px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '15px' }}>
             Loading completed game sessions...
           </div>
         ) : error ? (
-          <div style={{ padding: '30px', textAlign: 'center', color: '#EF4444', fontSize: '15px' }}>
+          <div style={{ padding: '24px', textAlign: 'center', color: '#BE123C', fontSize: '14px' }}>
             {error}
           </div>
         ) : filteredSessions.length === 0 ? (
           <div
             style={{
-              padding: '48px 24px',
+              padding: '40px 20px',
               textAlign: 'center',
-              background: 'rgba(0, 0, 0, 0.25)',
-              borderRadius: '20px',
+              background: '#F8FAFC',
+              borderRadius: '16px',
               border: '1px dashed var(--border-glass)',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '16px',
+              gap: '12px',
             }}
           >
-            <Trophy size={48} color="rgba(255, 255, 255, 0.3)" />
-            <h4 style={{ fontSize: '22px', fontWeight: '700', color: '#FFFFFF', margin: 0 }}>
+            <Trophy size={40} color="var(--border-glass-bright)" />
+            <h4 style={{ fontSize: '18px', fontWeight: '700', color: 'var(--text-primary)', margin: 0 }}>
               No completed games yet.
             </h4>
-            <p style={{ fontSize: '15px', color: 'var(--text-muted)', maxWidth: '400px', margin: 0 }}>
-              Play cognitive games from the Games tab to track your performance and history.
+            <p style={{ fontSize: '14px', color: 'var(--text-muted)', maxWidth: '380px', margin: 0 }}>
+              Play cognitive games from the Games tab to track your history.
             </p>
             <button
               onClick={() => onNavigate('/games')}
               className="btn-primary btn-emerald"
-              style={{ minHeight: '48px', padding: '0 24px', fontSize: '16px', marginTop: '8px' }}
+              style={{ minHeight: '44px', padding: '0 20px', fontSize: '15px', marginTop: '6px' }}
             >
               Play Games Now
             </button>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {filteredSessions.map((sess, idx) => (
               <div
                 key={sess._id || sess.id || idx}
                 style={{
-                  background: 'rgba(15, 23, 42, 0.75)',
-                  border: '1px solid var(--border-glass-bright)',
-                  borderRadius: '18px',
-                  padding: '18px 22px',
+                  background: '#F8FAFC',
+                  border: '1px solid var(--border-glass)',
+                  borderRadius: '14px',
+                  padding: '16px 20px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   flexWrap: 'wrap',
-                  gap: '16px',
+                  gap: '14px',
+                  boxShadow: 'var(--shadow-soft)',
                 }}
               >
-                {/* Game Name & Date / Difficulty */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                   <div
                     style={{
-                      width: '44px',
-                      height: '44px',
-                      borderRadius: '14px',
-                      background: 'rgba(255, 255, 255, 0.08)',
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '12px',
+                      background: '#FFFFFF',
                       border: `2px solid ${getGameBadgeColor(sess.gameType)}`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
                   >
-                    <Calendar size={22} color={getGameBadgeColor(sess.gameType)} />
+                    <Calendar size={20} color={getGameBadgeColor(sess.gameType)} />
                   </div>
                   <div>
-                    <span style={{ fontSize: '18px', fontWeight: '800', color: '#FFFFFF', display: 'block' }}>
+                    <span style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', display: 'block' }}>
                       {getGameTitle(sess.gameType)}
                     </span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                      <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                         {formatDateLabel(sess.completedAt || sess.createdAt)}
                       </span>
                       <span className="badge-pill badge-emerald" style={{ fontSize: '11px', padding: '2px 8px' }}>
@@ -265,25 +274,25 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ lang, onNavigate }) 
                   </div>
                 </div>
 
-                {/* Performance Metrics: Score, Accuracy, Time */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+                {/* Metrics */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
                   <div style={{ textAlign: 'center' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Score</span>
-                    <span style={{ fontSize: '20px', fontWeight: '800', color: '#F472B6' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Score</span>
+                    <span style={{ fontSize: '18px', fontWeight: '800', color: 'var(--accent-primary)' }}>
                       {sess.score}
                     </span>
                   </div>
 
                   <div style={{ textAlign: 'center' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Accuracy</span>
-                    <span style={{ fontSize: '20px', fontWeight: '800', color: '#6EE7B7' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Accuracy</span>
+                    <span style={{ fontSize: '18px', fontWeight: '800', color: '#15803D' }}>
                       {sess.accuracy}%
                     </span>
                   </div>
 
                   <div style={{ textAlign: 'center' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Time</span>
-                    <span style={{ fontSize: '20px', fontWeight: '800', color: '#93C5FD' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Time</span>
+                    <span style={{ fontSize: '18px', fontWeight: '800', color: 'var(--accent-indigo)' }}>
                       {sess.completionTime}s
                     </span>
                   </div>
@@ -296,4 +305,3 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ lang, onNavigate }) 
     </div>
   );
 };
-

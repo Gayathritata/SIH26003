@@ -59,16 +59,16 @@ export const ProfileScreen: React.FC<Props> = ({ user, onBack }) => {
   const activeUser = profileData || user;
 
   return (
-    <div style={{ maxWidth: '720px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ maxWidth: '720px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Header Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <button
           onClick={onBack}
           className="btn-primary btn-glass-subtle"
-          style={{ minHeight: '48px', padding: '0 18px', fontSize: '16px' }}
+          style={{ minHeight: '42px', padding: '0 16px', fontSize: '15px' }}
           aria-label="Go Back"
         >
-          <ArrowLeft size={20} /> {t('backToHome')}
+          <ArrowLeft size={18} /> {t('backToHome')}
         </button>
 
         <h2 className="text-section-title">{t('profileTitle')}</h2>
@@ -76,104 +76,104 @@ export const ProfileScreen: React.FC<Props> = ({ user, onBack }) => {
         <button
           onClick={fetchProfile}
           className="btn-primary btn-glass-subtle"
-          style={{ minHeight: '44px', width: '44px', padding: 0 }}
+          style={{ minHeight: '40px', width: '40px', padding: 0 }}
           title="Refresh Profile"
           aria-label="Refresh Profile"
         >
-          <RefreshCw size={18} />
+          <RefreshCw size={16} />
         </button>
       </div>
 
       {saveSuccessMsg && (
         <div
           style={{
-            background: 'rgba(16, 185, 129, 0.15)',
-            border: '1px solid #10B981',
-            borderRadius: '16px',
-            padding: '14px 20px',
-            color: '#6EE7B7',
+            background: '#DCFCE7',
+            border: '1px solid #86EFAC',
+            borderRadius: '12px',
+            padding: '12px 18px',
+            color: '#15803D',
             display: 'flex',
             alignItems: 'center',
-            gap: '12px',
-            fontSize: '16px',
+            gap: '10px',
+            fontSize: '15px',
             fontWeight: '600',
           }}
         >
-          <CheckCircle2 size={22} color="#10B981" />
+          <CheckCircle2 size={20} color="#15803D" />
           {saveSuccessMsg}
         </div>
       )}
 
       {loading ? (
-        <div className="glass-panel" style={{ padding: '60px', textAlign: 'center' }}>
-          <RefreshCw size={36} className="pulse-mic" color="#EC4899" />
-          <p className="text-body-elderly" style={{ marginTop: '16px' }}>Loading Profile Information...</p>
+        <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', background: '#FFFFFF' }}>
+          <RefreshCw size={32} className="pulse-mic" color="var(--accent-primary)" />
+          <p className="text-body-elderly" style={{ marginTop: '12px', color: 'var(--text-muted)' }}>Loading Profile Information...</p>
         </div>
       ) : (
-        <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '24px', padding: '32px' }}>
+        <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '28px', background: '#FFFFFF' }}>
           {/* User Avatar & Name */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', borderBottom: '1px solid var(--border-glass)', paddingBottom: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', borderBottom: '1px solid var(--border-glass)', paddingBottom: '20px' }}>
             <div
               style={{
-                width: '72px',
-                height: '72px',
+                width: '64px',
+                height: '64px',
                 borderRadius: '50%',
-                background: 'linear-gradient(135deg, #EC4899, #8B5CF6)',
+                background: 'linear-gradient(135deg, #0284C7, #0D9488)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '32px',
+                fontSize: '28px',
                 fontWeight: '800',
                 color: '#FFFFFF',
-                boxShadow: '0 0 20px rgba(236, 72, 153, 0.3)',
+                boxShadow: '0 2px 8px rgba(2, 132, 199, 0.25)',
               }}
             >
               {activeUser?.name ? activeUser.name.charAt(0).toUpperCase() : 'U'}
             </div>
             <div>
-              <h3 style={{ fontSize: '26px', fontWeight: '800', color: '#FFFFFF' }}>
+              <h3 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text-primary)', margin: 0 }}>
                 {activeUser?.name || 'MINDMATE User'}
               </h3>
-              <span className="badge-pill badge-emerald" style={{ marginTop: '6px' }}>
+              <span className="badge-pill badge-emerald" style={{ marginTop: '4px' }}>
                 Role: {activeUser?.role || 'elderly'}
               </span>
             </div>
           </div>
 
           {/* User Fields */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '15px', color: '#D8B4FE', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Mail size={18} color="#EC4899" /> {t('profileEmail')}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Mail size={16} color="var(--accent-primary)" /> {t('profileEmail')}
               </label>
               <div
                 style={{
-                  background: 'rgba(255, 255, 255, 0.04)',
+                  background: '#F8FAFC',
                   border: '1px solid var(--border-glass)',
-                  borderRadius: '14px',
-                  padding: '14px 18px',
-                  fontSize: '17px',
+                  borderRadius: '12px',
+                  padding: '12px 16px',
+                  fontSize: '15px',
                   fontWeight: '600',
-                  color: '#F1F5F9',
+                  color: 'var(--text-primary)',
                 }}
               >
                 {activeUser?.email || 'N/A'}
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '15px', color: '#D8B4FE', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Shield size={18} color="#EC4899" /> {t('profileRole')}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Shield size={16} color="var(--accent-primary)" /> {t('profileRole')}
               </label>
               <div
                 style={{
-                  background: 'rgba(255, 255, 255, 0.04)',
+                  background: '#F8FAFC',
                   border: '1px solid var(--border-glass)',
-                  borderRadius: '14px',
-                  padding: '14px 18px',
-                  fontSize: '17px',
+                  borderRadius: '12px',
+                  padding: '12px 16px',
+                  fontSize: '15px',
                   fontWeight: '600',
-                  color: '#F1F5F9',
+                  color: 'var(--text-primary)',
                   textTransform: 'capitalize',
                 }}
               >
@@ -181,12 +181,12 @@ export const ProfileScreen: React.FC<Props> = ({ user, onBack }) => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '15px', color: '#D8B4FE', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Globe size={18} color="#EC4899" /> {t('profileLang')}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Globe size={16} color="var(--accent-primary)" /> {t('profileLang')}
               </label>
 
-              <div style={{ display: 'flex', gap: '10px' }}>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {[
                   { code: 'en', name: 'English' },
                   { code: 'hi', name: 'हिन्दी (Hindi)' },
@@ -197,15 +197,15 @@ export const ProfileScreen: React.FC<Props> = ({ user, onBack }) => {
                     onClick={() => setSelectedLanguage(l.code as Language)}
                     style={{
                       flex: 1,
-                      minHeight: '52px',
-                      borderRadius: '14px',
-                      border: selectedLanguage === l.code ? '2px solid #EC4899' : '1px solid var(--border-glass)',
-                      background: selectedLanguage === l.code ? 'rgba(236, 72, 153, 0.15)' : 'rgba(255, 255, 255, 0.04)',
-                      color: selectedLanguage === l.code ? '#F472B6' : '#FFFFFF',
+                      minHeight: '44px',
+                      borderRadius: '10px',
+                      border: selectedLanguage === l.code ? '2px solid var(--accent-primary)' : '1px solid var(--border-glass)',
+                      background: selectedLanguage === l.code ? 'var(--accent-primary-glow)' : '#F8FAFC',
+                      color: selectedLanguage === l.code ? 'var(--accent-primary)' : 'var(--text-primary)',
                       fontWeight: '700',
-                      fontSize: '16px',
+                      fontSize: '14px',
                       cursor: 'pointer',
-                      transition: 'all 0.2s ease',
+                      transition: 'all 0.15s ease',
                     }}
                   >
                     {l.name}
@@ -217,7 +217,7 @@ export const ProfileScreen: React.FC<Props> = ({ user, onBack }) => {
             <button
               className="btn-primary btn-emerald"
               onClick={handleSavePreferences}
-              style={{ width: '100%', minHeight: '56px', marginTop: '12px', fontSize: '18px' }}
+              style={{ width: '100%', minHeight: '48px', marginTop: '8px', fontSize: '16px' }}
             >
               {t('savePreferences')}
             </button>

@@ -12,14 +12,14 @@ export const GamesPage: React.FC<GamesPageProps> = ({ difficulty, onNavigate, on
   const { t } = useAccessibility();
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div style={{ maxWidth: '960px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <button
           onClick={() => onNavigate('/dashboard')}
           className="btn-primary btn-glass-subtle"
-          style={{ minHeight: '48px', padding: '0 18px', fontSize: '16px' }}
+          style={{ minHeight: '42px', padding: '0 16px', fontSize: '15px' }}
         >
-          <ArrowLeft size={20} /> {t('backToHome')}
+          <ArrowLeft size={18} /> {t('backToHome')}
         </button>
         <h2 className="text-section-title">{t('cognitiveGames')}</h2>
         <span className="badge-pill badge-emerald">Difficulty Level {difficulty}</span>
@@ -35,33 +35,34 @@ export const GamesPage: React.FC<GamesPageProps> = ({ difficulty, onNavigate, on
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            minHeight: '230px',
-            border: '2px solid rgba(236, 72, 153, 0.5)',
+            minHeight: '220px',
+            border: '1px solid #BAE6FD',
+            background: '#FFFFFF',
           }}
         >
           <div>
             <div
               style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '18px',
-                background: 'linear-gradient(135deg, #EC4899, #8B5CF6)',
+                width: '48px',
+                height: '48px',
+                borderRadius: '14px',
+                background: 'var(--accent-primary)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginBottom: '16px',
-                boxShadow: '0 0 20px rgba(236, 72, 153, 0.4)',
+                marginBottom: '14px',
+                boxShadow: '0 2px 8px rgba(2, 132, 199, 0.2)',
               }}
             >
-              <Brain size={30} color="#FFFFFF" />
+              <Brain size={26} color="#FFFFFF" />
             </div>
-            <h3 className="text-card-title" style={{ fontSize: '22px' }}>🧠 {t('memoryGameTitle')}</h3>
-            <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '6px', fontWeight: '500' }}>
+            <h3 className="text-card-title" style={{ fontSize: '20px' }}>🧠 {t('memoryGameTitle')}</h3>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '4px', fontWeight: '500' }}>
               {t('memoryGameDesc')}
             </p>
           </div>
-          <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '50px', marginTop: '16px', fontSize: '17px' }}>
-            <Play size={20} /> {t('startGame')}
+          <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '46px', marginTop: '16px', fontSize: '15px' }}>
+            <Play size={18} /> {t('startGame')}
           </button>
         </div>
 
@@ -74,33 +75,34 @@ export const GamesPage: React.FC<GamesPageProps> = ({ difficulty, onNavigate, on
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            minHeight: '230px',
-            border: '2px solid rgba(245, 158, 11, 0.5)',
+            minHeight: '220px',
+            border: '1px solid #FDE68A',
+            background: '#FFFFFF',
           }}
         >
           <div>
             <div
               style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '18px',
-                background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                width: '48px',
+                height: '48px',
+                borderRadius: '14px',
+                background: 'var(--accent-amber)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginBottom: '16px',
-                boxShadow: '0 0 20px rgba(245, 158, 11, 0.4)',
+                marginBottom: '14px',
+                boxShadow: '0 2px 8px rgba(217, 119, 6, 0.2)',
               }}
             >
-              <Target size={30} color="#FFFFFF" />
+              <Target size={26} color="#FFFFFF" />
             </div>
-            <h3 className="text-card-title" style={{ fontSize: '22px' }}>🔷 {t('patternGameTitle')}</h3>
-            <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '6px', fontWeight: '500' }}>
+            <h3 className="text-card-title" style={{ fontSize: '20px' }}>🔷 {t('patternGameTitle')}</h3>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '4px', fontWeight: '500' }}>
               {t('patternGameDesc')}
             </p>
           </div>
-          <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '50px', marginTop: '16px', fontSize: '17px' }}>
-            <Play size={20} /> {t('startGame')}
+          <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '46px', marginTop: '16px', fontSize: '15px' }}>
+            <Play size={18} /> {t('startGame')}
           </button>
         </div>
 
@@ -113,33 +115,34 @@ export const GamesPage: React.FC<GamesPageProps> = ({ difficulty, onNavigate, on
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            minHeight: '230px',
-            border: '2px solid rgba(99, 102, 241, 0.5)',
+            minHeight: '220px',
+            border: '1px solid #C7D2FE',
+            background: '#FFFFFF',
           }}
         >
           <div>
             <div
               style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '18px',
-                background: 'linear-gradient(135deg, #6366F1, #4338CA)',
+                width: '48px',
+                height: '48px',
+                borderRadius: '14px',
+                background: 'var(--accent-indigo)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginBottom: '16px',
-                boxShadow: '0 0 20px rgba(99, 102, 241, 0.4)',
+                marginBottom: '14px',
+                boxShadow: '0 2px 8px rgba(79, 70, 229, 0.2)',
               }}
             >
-              <Calendar size={30} color="#FFFFFF" />
+              <Calendar size={26} color="#FFFFFF" />
             </div>
-            <h3 className="text-card-title" style={{ fontSize: '22px' }}>📅 {t('routineGameTitle')}</h3>
-            <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '6px', fontWeight: '500' }}>
+            <h3 className="text-card-title" style={{ fontSize: '20px' }}>📅 {t('routineGameTitle')}</h3>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '4px', fontWeight: '500' }}>
               {t('routineGameDesc')}
             </p>
           </div>
-          <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '50px', marginTop: '16px', fontSize: '17px' }}>
-            <Play size={20} /> {t('startGame')}
+          <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '46px', marginTop: '16px', fontSize: '15px' }}>
+            <Play size={18} /> {t('startGame')}
           </button>
         </div>
 
@@ -152,33 +155,34 @@ export const GamesPage: React.FC<GamesPageProps> = ({ difficulty, onNavigate, on
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            minHeight: '230px',
-            border: '2px solid rgba(20, 184, 166, 0.5)',
+            minHeight: '220px',
+            border: '1px solid #99F6E4',
+            background: '#FFFFFF',
           }}
         >
           <div>
             <div
               style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '18px',
-                background: 'linear-gradient(135deg, #14B8A6, #0D9488)',
+                width: '48px',
+                height: '48px',
+                borderRadius: '14px',
+                background: 'var(--accent-teal)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginBottom: '16px',
-                boxShadow: '0 0 20px rgba(20, 184, 166, 0.4)',
+                marginBottom: '14px',
+                boxShadow: '0 2px 8px rgba(13, 148, 136, 0.2)',
               }}
             >
-              <Search size={30} color="#FFFFFF" />
+              <Search size={26} color="#FFFFFF" />
             </div>
-            <h3 className="text-card-title" style={{ fontSize: '22px' }}>👀 {t('objectGameTitle')}</h3>
-            <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '6px', fontWeight: '500' }}>
+            <h3 className="text-card-title" style={{ fontSize: '20px' }}>👀 {t('objectGameTitle')}</h3>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginTop: '4px', fontWeight: '500' }}>
               {t('objectGameDesc')}
             </p>
           </div>
-          <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '50px', marginTop: '16px', fontSize: '17px' }}>
-            <Play size={20} /> {t('startGame')}
+          <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '46px', marginTop: '16px', fontSize: '15px' }}>
+            <Play size={18} /> {t('startGame')}
           </button>
         </div>
       </div>

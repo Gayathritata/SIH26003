@@ -58,60 +58,62 @@ export const RegisterScreen: React.FC<Props> = ({ onSuccess, onNavigateLogin, la
         alignItems: 'center',
         justifyContent: 'center',
         padding: '24px',
-        background: 'radial-gradient(circle at 50% 20%, rgba(99, 102, 241, 0.1), transparent 60%), #070A12',
+        background: 'var(--bg-dark)',
       }}
     >
       <div
         className="glass-panel"
         style={{
-          maxWidth: '520px',
+          maxWidth: '500px',
           width: '100%',
           padding: '36px',
-          border: '1.5px solid rgba(99, 102, 241, 0.35)',
-          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)',
+          background: '#FFFFFF',
+          border: '1px solid var(--border-glass)',
+          boxShadow: 'var(--shadow-hover)',
+          borderRadius: '20px',
         }}
       >
         <button
           onClick={onNavigateLogin}
-          style={{ background: 'none', border: 'none', color: '#94A3B8', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '15px', marginBottom: '16px' }}
+          style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px', marginBottom: '16px' }}
         >
-          <ArrowLeft size={18} /> Back to Sign In
+          <ArrowLeft size={16} /> Back to Sign In
         </button>
 
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <h1 className="text-hero-title" style={{ fontSize: '28px' }}>Create New Account</h1>
-          <p style={{ fontSize: '15px', color: '#94A3B8', marginTop: '4px' }}>
-            JWT Authentication & MongoDB User Registration
+          <h1 className="text-hero-title" style={{ fontSize: '26px' }}>Create New Account</h1>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px' }}>
+            Register for MINDMATE Cognitive Assistance Platform
           </p>
         </div>
 
         {error && (
           <div
             style={{
-              background: 'rgba(244, 63, 94, 0.15)',
-              border: '1px solid rgba(244, 63, 94, 0.4)',
-              borderRadius: '14px',
-              padding: '14px 18px',
+              background: '#FFE4E6',
+              border: '1px solid #FECDD3',
+              borderRadius: '12px',
+              padding: '12px 16px',
               marginBottom: '20px',
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
-              color: '#FDA4AF',
-              fontSize: '15px',
+              gap: '10px',
+              color: '#BE123C',
+              fontSize: '14px',
             }}
           >
-            <AlertCircle size={22} style={{ flexShrink: 0 }} />
+            <AlertCircle size={20} style={{ flexShrink: 0 }} />
             <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Role Selection */}
           <div>
-            <label style={{ display: 'block', fontSize: '16px', fontWeight: '700', color: '#FFFFFF', marginBottom: '10px' }}>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
               Select User Role
             </label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
               {[
                 { key: 'elderly_user', label: 'Elderly 👵' },
                 { key: 'caregiver', label: 'Caregiver 👨‍⚕️' },
@@ -122,13 +124,13 @@ export const RegisterScreen: React.FC<Props> = ({ onSuccess, onNavigateLogin, la
                   type="button"
                   onClick={() => setRole(r.key as any)}
                   style={{
-                    padding: '12px 8px',
-                    borderRadius: '14px',
-                    border: role === r.key ? '2px solid #10B981' : '1px solid var(--border-glass)',
-                    background: role === r.key ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                    color: '#FFFFFF',
+                    padding: '10px 6px',
+                    borderRadius: '12px',
+                    border: role === r.key ? '2px solid var(--accent-primary)' : '1px solid var(--border-glass)',
+                    background: role === r.key ? 'var(--accent-primary-glow)' : '#F8FAFC',
+                    color: role === r.key ? 'var(--accent-primary)' : 'var(--text-primary)',
                     fontWeight: '700',
-                    fontSize: '14px',
+                    fontSize: '13px',
                     cursor: 'pointer',
                   }}
                 >
@@ -139,11 +141,11 @@ export const RegisterScreen: React.FC<Props> = ({ onSuccess, onNavigateLogin, la
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '16px', fontWeight: '700', color: '#FFFFFF', marginBottom: '8px' }}>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '6px' }}>
               Full Name
             </label>
             <div style={{ position: 'relative' }}>
-              <User size={20} color="#94A3B8" style={{ position: 'absolute', left: '16px', top: '16px' }} />
+              <User size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', top: '15px' }} />
               <input
                 type="text"
                 value={name}
@@ -151,14 +153,14 @@ export const RegisterScreen: React.FC<Props> = ({ onSuccess, onNavigateLogin, la
                 placeholder="Asha Devi"
                 style={{
                   width: '100%',
-                  height: '54px',
-                  paddingLeft: '48px',
-                  paddingRight: '16px',
-                  borderRadius: '14px',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid var(--border-glass-bright)',
-                  color: '#FFFFFF',
-                  fontSize: '17px',
+                  height: '48px',
+                  paddingLeft: '42px',
+                  paddingRight: '14px',
+                  borderRadius: '12px',
+                  background: '#F8FAFC',
+                  border: '1px solid var(--border-glass)',
+                  color: 'var(--text-primary)',
+                  fontSize: '15px',
                   outline: 'none',
                 }}
               />
@@ -166,11 +168,11 @@ export const RegisterScreen: React.FC<Props> = ({ onSuccess, onNavigateLogin, la
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '16px', fontWeight: '700', color: '#FFFFFF', marginBottom: '8px' }}>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '6px' }}>
               Email Address
             </label>
             <div style={{ position: 'relative' }}>
-              <Mail size={20} color="#94A3B8" style={{ position: 'absolute', left: '16px', top: '16px' }} />
+              <Mail size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', top: '15px' }} />
               <input
                 type="email"
                 value={email}
@@ -178,14 +180,14 @@ export const RegisterScreen: React.FC<Props> = ({ onSuccess, onNavigateLogin, la
                 placeholder="asha.devi@example.com"
                 style={{
                   width: '100%',
-                  height: '54px',
-                  paddingLeft: '48px',
-                  paddingRight: '16px',
-                  borderRadius: '14px',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid var(--border-glass-bright)',
-                  color: '#FFFFFF',
-                  fontSize: '17px',
+                  height: '48px',
+                  paddingLeft: '42px',
+                  paddingRight: '14px',
+                  borderRadius: '12px',
+                  background: '#F8FAFC',
+                  border: '1px solid var(--border-glass)',
+                  color: 'var(--text-primary)',
+                  fontSize: '15px',
                   outline: 'none',
                 }}
               />
@@ -193,11 +195,11 @@ export const RegisterScreen: React.FC<Props> = ({ onSuccess, onNavigateLogin, la
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '16px', fontWeight: '700', color: '#FFFFFF', marginBottom: '8px' }}>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '6px' }}>
               Password (6+ characters)
             </label>
             <div style={{ position: 'relative' }}>
-              <Key size={20} color="#94A3B8" style={{ position: 'absolute', left: '16px', top: '16px' }} />
+              <Key size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', top: '15px' }} />
               <input
                 type="password"
                 value={password}
@@ -205,33 +207,33 @@ export const RegisterScreen: React.FC<Props> = ({ onSuccess, onNavigateLogin, la
                 placeholder="••••••••"
                 style={{
                   width: '100%',
-                  height: '54px',
-                  paddingLeft: '48px',
-                  paddingRight: '16px',
-                  borderRadius: '14px',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid var(--border-glass-bright)',
-                  color: '#FFFFFF',
-                  fontSize: '17px',
+                  height: '48px',
+                  paddingLeft: '42px',
+                  paddingRight: '14px',
+                  borderRadius: '12px',
+                  background: '#F8FAFC',
+                  border: '1px solid var(--border-glass)',
+                  color: 'var(--text-primary)',
+                  fontSize: '15px',
                   outline: 'none',
                 }}
               />
             </div>
           </div>
 
-          <button type="submit" className="btn-primary btn-emerald" disabled={loading} style={{ minHeight: '56px', marginTop: '10px' }}>
-            <UserCheck size={22} /> {loading ? 'Registering...' : 'Register Account with JWT'}
+          <button type="submit" className="btn-primary btn-emerald" disabled={loading} style={{ minHeight: '50px', marginTop: '6px' }}>
+            <UserCheck size={20} /> {loading ? 'Registering...' : 'Register Account'}
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '24px' }}>
-          <span style={{ fontSize: '15px', color: '#94A3B8' }}>Already registered? </span>
+        <div style={{ textAlign: 'center', marginTop: '20px', borderTop: '1px solid var(--border-glass)', paddingTop: '16px' }}>
+          <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Already registered? </span>
           <button
             type="button"
             onClick={onNavigateLogin}
-            style={{ background: 'none', border: 'none', color: '#10B981', fontSize: '16px', fontWeight: '700', cursor: 'pointer' }}
+            style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}
           >
-            Sign In Here
+            Sign In 
           </button>
         </div>
       </div>

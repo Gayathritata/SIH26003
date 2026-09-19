@@ -41,7 +41,7 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ onNavigateLogin }) => {
         alignItems: 'center',
         justifyContent: 'center',
         padding: '24px',
-        background: 'radial-gradient(circle at 50% 20%, rgba(245, 158, 11, 0.1), transparent 60%), #070A12',
+        background: 'var(--bg-dark)',
       }}
     >
       <div
@@ -50,40 +50,42 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ onNavigateLogin }) => {
           maxWidth: '460px',
           width: '100%',
           padding: '36px',
-          border: '1.5px solid rgba(245, 158, 11, 0.35)',
-          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6)',
+          background: '#FFFFFF',
+          border: '1px solid var(--border-glass)',
+          boxShadow: 'var(--shadow-hover)',
+          borderRadius: '20px',
         }}
       >
         <button
           onClick={onNavigateLogin}
-          style={{ background: 'none', border: 'none', color: '#94A3B8', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '15px', marginBottom: '16px' }}
+          style={{ background: 'none', border: 'none', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '14px', marginBottom: '16px' }}
         >
-          <ArrowLeft size={18} /> Back to Sign In
+          <ArrowLeft size={16} /> Back to Sign In
         </button>
 
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <h1 className="text-hero-title" style={{ fontSize: '28px' }}>Reset Password</h1>
-          <p style={{ fontSize: '15px', color: '#94A3B8', marginTop: '4px' }}>
-            Firebase Auth Password Recovery
+          <h1 className="text-hero-title" style={{ fontSize: '26px' }}>Reset Password</h1>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px' }}>
+            Enter your registered email to receive reset instructions
           </p>
         </div>
 
         {error && (
           <div
             style={{
-              background: 'rgba(244, 63, 94, 0.15)',
-              border: '1px solid rgba(244, 63, 94, 0.4)',
-              borderRadius: '14px',
-              padding: '14px 18px',
+              background: '#FFE4E6',
+              border: '1px solid #FECDD3',
+              borderRadius: '12px',
+              padding: '12px 16px',
               marginBottom: '20px',
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
-              color: '#FDA4AF',
-              fontSize: '15px',
+              gap: '10px',
+              color: '#BE123C',
+              fontSize: '14px',
             }}
           >
-            <AlertCircle size={22} style={{ flexShrink: 0 }} />
+            <AlertCircle size={20} style={{ flexShrink: 0 }} />
             <span>{error}</span>
           </div>
         )}
@@ -91,30 +93,30 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ onNavigateLogin }) => {
         {successMsg && (
           <div
             style={{
-              background: 'rgba(16, 185, 129, 0.15)',
-              border: '1px solid rgba(16, 185, 129, 0.4)',
-              borderRadius: '14px',
-              padding: '14px 18px',
+              background: '#DCFCE7',
+              border: '1px solid #86EFAC',
+              borderRadius: '12px',
+              padding: '12px 16px',
               marginBottom: '20px',
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
-              color: '#6EE7B7',
-              fontSize: '15px',
+              gap: '10px',
+              color: '#15803D',
+              fontSize: '14px',
             }}
           >
-            <CheckCircle2 size={22} style={{ flexShrink: 0 }} />
+            <CheckCircle2 size={20} style={{ flexShrink: 0 }} />
             <span>{successMsg}</span>
           </div>
         )}
 
-        <form onSubmit={handleReset} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+        <form onSubmit={handleReset} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '16px', fontWeight: '700', color: '#FFFFFF', marginBottom: '8px' }}>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '6px' }}>
               Your Registered Email Address
             </label>
             <div style={{ position: 'relative' }}>
-              <Mail size={20} color="#94A3B8" style={{ position: 'absolute', left: '16px', top: '16px' }} />
+              <Mail size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', top: '15px' }} />
               <input
                 type="email"
                 value={email}
@@ -122,22 +124,22 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ onNavigateLogin }) => {
                 placeholder="asha.devi@example.com"
                 style={{
                   width: '100%',
-                  height: '54px',
-                  paddingLeft: '48px',
-                  paddingRight: '16px',
-                  borderRadius: '14px',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid var(--border-glass-bright)',
-                  color: '#FFFFFF',
-                  fontSize: '17px',
+                  height: '48px',
+                  paddingLeft: '42px',
+                  paddingRight: '14px',
+                  borderRadius: '12px',
+                  background: '#F8FAFC',
+                  border: '1px solid var(--border-glass)',
+                  color: 'var(--text-primary)',
+                  fontSize: '15px',
                   outline: 'none',
                 }}
               />
             </div>
           </div>
 
-          <button type="submit" className="btn-primary btn-amber" disabled={loading} style={{ minHeight: '56px' }}>
-            <Send size={20} /> {loading ? 'Sending Request...' : 'Send Password Reset Email'}
+          <button type="submit" className="btn-primary btn-emerald" disabled={loading} style={{ minHeight: '48px' }}>
+            <Send size={18} /> {loading ? 'Sending Request...' : 'Send Password Reset Email'}
           </button>
         </form>
       </div>
