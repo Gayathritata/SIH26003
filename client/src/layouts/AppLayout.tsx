@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { Brain, Wifi, WifiOff, UserCheck, User, Settings as SettingsIcon, LogOut, Mic } from 'lucide-react';
+import { Brain, Wifi, WifiOff, UserCheck, User, Settings as SettingsIcon, LogOut } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { getTranslation, Language } from '../utils/i18n';
 import { offlineService } from '../services/offlineService';
@@ -149,43 +149,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       <main className="main-content" role="main" style={{ flex: 1, padding: '24px 16px', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
         {children}
       </main>
-
-      {/* Floating Voice Assistant Bar */}
-      <div className="voice-footer-bar" role="navigation" aria-label="Voice Dock">
-        <button
-          onClick={onTriggerVoice}
-          className="pulse-mic"
-          style={{
-            width: '54px',
-            height: '54px',
-            borderRadius: '50%',
-            background: voiceEnabled ? 'linear-gradient(135deg, #10B981, #059669)' : 'rgba(255,255,255,0.2)',
-            border: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-          }}
-          title={voiceEnabled ? 'Speak' : 'Voice Assistance Muted'}
-          aria-label={t('voicePrompt')}
-        >
-          <Mic size={26} color="#FFFFFF" />
-        </button>
-
-        <span style={{ fontSize: '15px', fontWeight: '600', color: '#E2E8F0' }}>
-          {t('voicePrompt')}
-        </span>
-
-        {currentPath !== '/dashboard' && currentPath !== '/caregiver' && (
-          <button
-            className="btn-primary btn-glass-subtle"
-            onClick={() => onNavigate(isCaregiverOrAdmin ? '/caregiver' : '/dashboard')}
-            style={{ minHeight: '38px', padding: '0 14px', fontSize: '13px' }}
-          >
-            Home
-          </button>
-        )}
-      </div>
     </div>
   );
 };
