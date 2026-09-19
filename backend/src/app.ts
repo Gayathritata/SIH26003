@@ -17,6 +17,7 @@ const allowedOrigins = [
   process.env.CLIENT_ORIGIN,
   process.env.FRONTEND_URL,
   process.env.CLIENT_URL,
+  'https://sih-26003-hazel.vercel.app',
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:4173',

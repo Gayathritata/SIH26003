@@ -1,8 +1,12 @@
 import axios from 'axios';
 import { offlineService } from './offlineService';
 
+const isBrowser = typeof window !== 'undefined';
+const isLocalhost = isBrowser && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const defaultBackendUrl = isLocalhost ? 'http://localhost:5000' : 'https://mindmate-backend-dopt.onrender.com';
 const metaEnv = (import.meta as any).env || {};
-const API_BASE_URL = metaEnv.VITE_API_URL || metaEnv.VITE_API_BASE_URL || 'http://localhost:5000';
+
+const API_BASE_URL = metaEnv.VITE_API_URL || metaEnv.VITE_API_BASE_URL || defaultBackendUrl;
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
