@@ -3,7 +3,6 @@ import { Brain, LogIn, Key, Mail, AlertCircle, Play, Sparkles, UserCheck, Shield
 import { UserProfile } from '../../services/authService';
 import { translations, getTranslation, Language } from '../../i18n/translations';
 import { useAuth } from '../../context/AuthContext';
-import { VantaBackground } from '../VantaBackground';
 
 interface Props {
   onSuccess: (user: UserProfile) => void;
@@ -84,9 +83,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
   };
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'radial-gradient(circle at 50% 20%, rgba(16, 185, 129, 0.08), transparent 60%), #070A12', color: '#FFFFFF' }}>
-      {/* Vanta 3D NET Background Animation */}
-      <VantaBackground color={0x473b3f} backgroundColor={0x070a12} />
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'radial-gradient(circle at 50% 20%, rgba(16, 185, 129, 0.08), transparent 60%), #070A12', color: '#FFFFFF' }}>
       
       {/* 1. TOP NAVBAR WITH SIGN IN BUTTON */}
       <header
