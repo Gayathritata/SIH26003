@@ -12,13 +12,26 @@ export interface MemoryMatchGameInput {
   completedAt: string; // ISO string
 }
 
+export interface QuizGameInput {
+  difficulty: number; // 1 = Easy, 2 = Medium, 3 = Hard
+  totalQuestions: number;
+  correctAnswers: number;
+  incorrectAnswers: number;
+  completionTime: number; // in seconds
+  startedAt: string;
+  completedAt: string;
+}
+
 export interface CalculatedGameMetrics {
   gameType: string;
   difficulty: number;
-  totalPairs: number;
+  totalPairs?: number;
+  totalQuestions?: number;
   attempts: number;
   correctMatches: number;
   incorrectAttempts: number;
+  correctAnswers?: number;
+  incorrectAnswers?: number;
   accuracy: number; // percentage 0-100 (1 decimal place)
   completionTime: number; // seconds
   completionRate: number; // percentage 0-100
@@ -29,10 +42,6 @@ export interface CalculatedGameMetrics {
 
 /**
  * Calculates transparent, actual performance-based score and metrics for Memory Match game.
- * Base points per match: 100
- * Penalty per incorrect attempt: 15
- * Time bonus: Max(0, 300 - completionTime * 3)
- * Difficulty multiplier: Easy (1.0x), Medium (1.2x), Hard (1.5x)
  */
 export const calculateMemoryMatchScore = (input: MemoryMatchGameInput): CalculatedGameMetrics => {
   const { difficulty, attempts, correctMatches, incorrectAttempts, completionTime, startedAt, completedAt } = input;
@@ -48,7 +57,7 @@ export const calculateMemoryMatchScore = (input: MemoryMatchGameInput): Calculat
   const completionRate = Number(Math.min(100, Math.max(0, rawCompletionRate)).toFixed(1));
 
   // Difficulty multiplier
-  const diffMultiplier = difficulty === 1 ? 1.0 : (difficulty === 2 ? 1.2 : 1.5);
+  const diffMultiplier = difficulty === 1 ? 1.0 : (difficulty === 2 ? 1.25 : 1.5);
 
   // Score formula
   const matchPoints = correctMatches * 100;
@@ -73,3 +82,55 @@ export const calculateMemoryMatchScore = (input: MemoryMatchGameInput): Calculat
     completedAt,
   };
 };
+
+/**
+ * Generic scoring calculator for question/ordering based cognitive games (Pattern Recognition, Routine Recall, Object Recognition).
+ */
+const calculateQuizGameScore = (
+  gameType: 'pattern_recognition' | 'daily_routine_recall' | 'object_recognition',
+  input: QuizGameInput
+): CalculatedGameMetrics => {
+  const { difficulty, totalQuestions, correctAnswers, incorrectAnswers, completionTime, startedAt, completedAt } = input;
+
+  const totalAttempts = correctAnswers + incorrectAnswers;
+  const rawAccuracy = totalAttempts > 0 ? (correctAnswers / totalAttempts) * 100 : 0;
+  const accuracy = Number(Math.min(100, Math.max(0, rawAccuracy)).toFixed(1));
+
+  const rawCompletionRate = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+  const completionRate = Number(Math.min(100, Math.max(0, rawCompletionRate)).toFixed(1));
+
+  const diffMultiplier = difficulty === 1 ? 1.0 : (difficulty === 2 ? 1.25 : 1.5);
+
+  const basePoints = correctAnswers * 100;
+  const penalty = incorrectAnswers * 20;
+  const timeBonus = Math.max(0, 240 - completionTime * 2);
+
+  const rawScore = (basePoints - penalty + timeBonus) * diffMultiplier;
+  const score = Math.max(0, Math.round(rawScore));
+
+  return {
+    gameType,
+    difficulty,
+    totalQuestions,
+    attempts: totalAttempts,
+    correctMatches: correctAnswers,
+    incorrectAttempts: incorrectAnswers,
+    correctAnswers,
+    incorrectAnswers,
+    accuracy,
+    completionTime,
+    completionRate,
+    score,
+    startedAt,
+    completedAt,
+  };
+};
+
+export const calculatePatternRecognitionScore = (input: QuizGameInput): CalculatedGameMetrics =>
+  calculateQuizGameScore('pattern_recognition', input);
+
+export const calculateRoutineRecallScore = (input: QuizGameInput): CalculatedGameMetrics =>
+  calculateQuizGameScore('daily_routine_recall', input);
+
+export const calculateObjectRecognitionScore = (input: QuizGameInput): CalculatedGameMetrics =>
+  calculateQuizGameScore('object_recognition', input);

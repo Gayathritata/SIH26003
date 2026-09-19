@@ -1,151 +1,351 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, CheckCircle2, Volume2 } from 'lucide-react';
-import { voiceService } from '../../services/voiceService';
+import React, { useState, useEffect, useRef } from 'react';
+import { Calendar, RotateCcw, CheckCircle2, ArrowUp, ArrowDown } from 'lucide-react';
+import { calculateRoutineRecallScore, CalculatedGameMetrics } from '../../utils/gameScoring';
+import { submitGameSession } from '../../services/api';
+import { GameHeader } from './common/GameHeader';
+import { GameCompletionScreen } from './common/GameCompletionScreen';
+import { Language } from '../../utils/i18n';
 
-interface RoutineStep {
+export interface RoutineActivity {
+  id: string;
   name: string;
   emoji: string;
-  time: string;
+  correctOrder: number; // 1-indexed correct chronological order
 }
 
-const MORNING_ROUTINE: RoutineStep[] = [
-  { name: 'Wake Up', emoji: '🌅', time: '07:00 AM' },
-  { name: 'Brush Teeth', emoji: '🪥', time: '07:30 AM' },
-  { name: 'Breakfast', emoji: '🥣', time: '08:00 AM' },
-  { name: 'Morning Medicine', emoji: '💊', time: '08:30 AM' },
-  { name: 'Morning Walk', emoji: '🚶', time: '09:00 AM' },
+const EASY_ACTIVITIES: RoutineActivity[] = [
+  { id: 'wakeup', name: 'Wake up', emoji: '🌅', correctOrder: 1 },
+  { id: 'breakfast', name: 'Have breakfast', emoji: '🥣', correctOrder: 2 },
+  { id: 'sleep', name: 'Go to sleep', emoji: '🌙', correctOrder: 3 },
 ];
 
-interface Props {
-  difficulty: number;
-  onFinish: (result: {
-    gameType: string;
-    difficulty: number;
-    score: number;
-    accuracy: number;
-    reactionTime: number;
-    mistakes: number;
-  }) => void;
-  lang: string;
+const MEDIUM_ACTIVITIES: RoutineActivity[] = [
+  { id: 'wakeup', name: 'Wake up', emoji: '🌅', correctOrder: 1 },
+  { id: 'teeth', name: 'Brush teeth', emoji: '🪥', correctOrder: 2 },
+  { id: 'breakfast', name: 'Have breakfast', emoji: '🥣', correctOrder: 3 },
+  { id: 'medicine', name: 'Take medicine', emoji: '💊', correctOrder: 4 },
+  { id: 'sleep', name: 'Go to sleep', emoji: '🌙', correctOrder: 5 },
+];
+
+const HARD_ACTIVITIES: RoutineActivity[] = [
+  { id: 'wakeup', name: 'Wake up', emoji: '🌅', correctOrder: 1 },
+  { id: 'teeth', name: 'Brush teeth', emoji: '🪥', correctOrder: 2 },
+  { id: 'breakfast', name: 'Have breakfast', emoji: '🥣', correctOrder: 3 },
+  { id: 'medicine', name: 'Take medicine', emoji: '💊', correctOrder: 4 },
+  { id: 'walk', name: 'Take a walk', emoji: '🚶', correctOrder: 5 },
+  { id: 'read', name: 'Read a book', emoji: '📖', correctOrder: 6 },
+  { id: 'sleep', name: 'Go to sleep', emoji: '🌙', correctOrder: 7 },
+];
+
+interface RoutineRecallGameProps {
+  difficulty?: number;
+  initialDifficulty?: number;
+  lang?: Language | string;
+  onNavigateBack?: () => void;
+  onSessionSaved?: () => void;
+  onFinish?: (resultData: any) => void;
 }
 
-export const RoutineRecallGame: React.FC<Props> = ({ difficulty, onFinish, lang }) => {
-  const [startTime, setStartTime] = useState<number>(Date.now());
-  const [mistakes, setMistakes] = useState<number>(0);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+export const RoutineRecallGame: React.FC<RoutineRecallGameProps> = ({
+  difficulty: propDiff,
+  initialDifficulty = 1,
+  lang = 'en',
+  onNavigateBack,
+  onSessionSaved,
+  onFinish,
+}) => {
+  const [difficulty, setDifficulty] = useState<number>(propDiff || initialDifficulty);
+  const [currentList, setCurrentList] = useState<RoutineActivity[]>([]);
 
-  // Question: What comes right after Breakfast? Correct answer: Morning Medicine 💊
-  const questionText = "What activity should you complete right after Breakfast?";
-  const correctAnswer = "Morning Medicine";
+  // Performance tracking
+  const [attempts, setAttempts] = useState<number>(0);
+  const [correctAnswers, setCorrectAnswers] = useState<number>(0);
+  const [incorrectAnswers, setIncorrectAnswers] = useState<number>(0);
+  const [feedback, setFeedback] = useState<{ isCorrect: boolean; text: string } | null>(null);
 
-  const options = [
-    { name: 'Morning Medicine', emoji: '💊' },
-    { name: 'Morning Walk', emoji: '🚶' },
-    { name: 'Go to Sleep', emoji: '😴' },
-    { name: 'Dinner', emoji: '🍲' },
-  ];
+  // Timer & completion states
+  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
+  const [isGameActive, setIsGameActive] = useState<boolean>(false);
+  const [isGameComplete, setIsGameComplete] = useState<boolean>(false);
+  const [metrics, setMetrics] = useState<CalculatedGameMetrics | null>(null);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+
+  const startTimeRef = useRef<number>(Date.now());
+  const timerIntervalRef = useRef<any>(null);
+
+  const getBaseActivities = (diff: number) => {
+    if (diff === 1) return EASY_ACTIVITIES;
+    if (diff === 2) return MEDIUM_ACTIVITIES;
+    return HARD_ACTIVITIES;
+  };
+
+  const startNewGame = (selectedDiff: number = difficulty) => {
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+
+    setDifficulty(selectedDiff);
+    const baseList = getBaseActivities(selectedDiff);
+
+    // Shuffle list guaranteed not to be in correct order initially
+    let shuffled = [...baseList].sort(() => Math.random() - 0.5);
+    while (shuffled.every((item, idx) => item.correctOrder === idx + 1) && shuffled.length > 1) {
+      shuffled = [...baseList].sort(() => Math.random() - 0.5);
+    }
+
+    setCurrentList(shuffled);
+    setAttempts(0);
+    setCorrectAnswers(0);
+    setIncorrectAnswers(0);
+    setFeedback(null);
+    setElapsedSeconds(0);
+    setIsGameComplete(false);
+    setMetrics(null);
+    setIsGameActive(true);
+
+    startTimeRef.current = Date.now();
+    timerIntervalRef.current = setInterval(() => {
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+  };
 
   useEffect(() => {
-    setStartTime(Date.now());
-    voiceService.speak(`Daily Routine Recall. ${questionText}`, lang);
-  }, []);
+    startNewGame(difficulty);
+    return () => {
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    };
+  }, [difficulty]);
 
-  const handleOptionClick = (optName: string) => {
-    setSelectedOption(optName);
-    const duration = (Date.now() - startTime) / 1000;
-    const isCorrect = optName === correctAnswer;
+  // Swap item positions up or down
+  const moveItem = (index: number, direction: 'up' | 'down') => {
+    if (!isGameActive || feedback !== null) return;
+    const targetIdx = direction === 'up' ? index - 1 : index + 1;
+    if (targetIdx < 0 || targetIdx >= currentList.length) return;
 
-    if (!isCorrect) {
-      setMistakes((m) => m + 1);
-      voiceService.speak("Incorrect step. Try again.", lang);
-    } else {
-      voiceService.speak("Well done! Morning Medicine comes after Breakfast.", lang);
-      const acc = mistakes === 0 ? 1.0 : 0.8;
-      const score = Math.round(acc * 100);
+    const updated = [...currentList];
+    const temp = updated[index];
+    updated[index] = updated[targetIdx];
+    updated[targetIdx] = temp;
+    setCurrentList(updated);
+  };
+
+  // Submit and verify chronological order
+  const handleCheckOrder = () => {
+    if (!isGameActive || feedback !== null) return;
+
+    const currentAttempts = attempts + 1;
+    setAttempts(currentAttempts);
+
+    const isCorrect = currentList.every((item, idx) => item.correctOrder === idx + 1);
+
+    if (isCorrect) {
+      setCorrectAnswers(1);
+      setFeedback({ isCorrect: true, text: 'Correct! 🎉 Excellent routine recall!' });
 
       setTimeout(() => {
-        onFinish({
-          gameType: 'routine',
-          difficulty,
-          score,
-          accuracy: acc,
-          reactionTime: Math.round(duration * 10) / 10,
-          mistakes,
-        });
-      }, 800);
+        handleGameCompletion(1, incorrectAnswers);
+      }, 1200);
+    } else {
+      const nextIncorrect = incorrectAnswers + 1;
+      setIncorrectAnswers(nextIncorrect);
+      setFeedback({ isCorrect: false, text: 'Try again. Some steps are out of order.' });
+
+      setTimeout(() => {
+        setFeedback(null);
+      }, 1500);
+    }
+  };
+
+  const handleGameCompletion = async (finalCorrect: number, finalIncorrect: number) => {
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+
+    setIsGameActive(false);
+    const completedAtISO = new Date().toISOString();
+    const startedAtISO = new Date(startTimeRef.current).toISOString();
+    const finalCompletionTime = Math.max(1, elapsedSeconds);
+
+    const calculated = calculateRoutineRecallScore({
+      difficulty,
+      totalQuestions: 1,
+      correctAnswers: finalCorrect,
+      incorrectAnswers: finalIncorrect,
+      completionTime: finalCompletionTime,
+      startedAt: startedAtISO,
+      completedAt: completedAtISO,
+    });
+
+    setMetrics(calculated);
+    setIsGameComplete(true);
+
+    setIsSaving(true);
+    try {
+      await submitGameSession({
+        gameType: 'daily_routine_recall',
+        difficulty: calculated.difficulty,
+        totalPairs: getBaseActivities(difficulty).length,
+        attempts: calculated.attempts,
+        correctMatches: calculated.correctAnswers,
+        incorrectAttempts: calculated.incorrectAnswers,
+        accuracy: calculated.accuracy,
+        completionTime: calculated.completionTime,
+        completionRate: calculated.completionRate,
+        score: calculated.score,
+        startedAt: calculated.startedAt,
+        completedAt: calculated.completedAt,
+      });
+      if (onSessionSaved) onSessionSaved();
+      if (onFinish) onFinish(calculated);
+    } catch (err) {
+      console.warn('[SAVE ROUTINE GAME FAILED]', err);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   return (
-    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Calendar size={28} color="#6366F1" />
-          <h2 className="title-lg">Daily Routine Recall</h2>
-        </div>
-        <span className="badge badge-online">Level {difficulty}</span>
-      </div>
+    <div style={{ maxWidth: '850px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <GameHeader
+        title="📅 Daily Routine Recall"
+        subtitle="Arrange the daily activities in the correct order from morning to night."
+        icon={<Calendar size={30} color="#6366F1" />}
+        difficulty={difficulty}
+        elapsedSeconds={elapsedSeconds}
+        attemptsCount={attempts}
+        onNavigateBack={onNavigateBack}
+        onChangeDifficulty={(d) => startNewGame(d)}
+      />
 
-      {/* Routine Timeline Visualizer */}
-      <div className="card-glass" style={{ padding: '16px' }}>
-        <p style={{ fontSize: '15px', color: '#94A3B8', marginBottom: '12px', textAlign: 'center' }}>
-          Standard Daily Routine Timeline:
+      {/* Main Routine Display Container */}
+      <div className="glass-panel" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <p style={{ fontSize: '16px', color: 'var(--text-secondary)', fontWeight: '600', textAlign: 'center', margin: 0 }}>
+          Use the ▲ and ▼ buttons to move activities into the correct order (First to Last):
         </p>
 
-        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px' }}>
-          {MORNING_ROUTINE.map((step, idx) => (
+        {/* Feedback Display */}
+        {feedback && (
+          <div
+            style={{
+              fontSize: '20px',
+              fontWeight: '800',
+              color: feedback.isCorrect ? '#10B981' : '#F43F5E',
+              padding: '12px 20px',
+              borderRadius: '14px',
+              background: feedback.isCorrect ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
+              textAlign: 'center',
+            }}
+          >
+            {feedback.text}
+          </div>
+        )}
+
+        {/* Activity Re-ordering List */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {currentList.map((item, index) => (
             <div
-              key={idx}
+              key={item.id}
               style={{
-                minWidth: '75px',
-                padding: '10px 6px',
-                borderRadius: '14px',
-                background: step.name === 'Breakfast' ? 'rgba(99, 102, 241, 0.25)' : 'rgba(255,255,255,0.06)',
-                border: step.name === 'Breakfast' ? '2px solid #6366F1' : '1px solid rgba(255,255,255,0.1)',
-                textAlign: 'center',
+                background: 'rgba(15, 23, 42, 0.85)',
+                border: '2px solid var(--border-glass-bright)',
+                borderRadius: '18px',
+                padding: '14px 20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '16px',
               }}
             >
-              <span style={{ fontSize: '26px' }}>{step.emoji}</span>
-              <p style={{ fontSize: '12px', fontWeight: '700', color: '#FFFFFF', marginTop: '4px' }}>{step.name}</p>
+              {/* Order Number & Activity Details */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <span
+                  style={{
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '12px',
+                    background: 'rgba(99, 102, 241, 0.2)',
+                    border: '1px solid #6366F1',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '18px',
+                    fontWeight: '800',
+                    color: '#A5B4FC',
+                  }}
+                >
+                  {index + 1}
+                </span>
+
+                <span style={{ fontSize: '38px', lineHeight: 1 }}>{item.emoji}</span>
+                <span style={{ fontSize: '20px', fontWeight: '800', color: '#FFFFFF' }}>{item.name}</span>
+              </div>
+
+              {/* Move Controls */}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => moveItem(index, 'up')}
+                  disabled={index === 0 || !isGameActive}
+                  className="btn-primary btn-glass-subtle"
+                  style={{
+                    minHeight: '44px',
+                    padding: '0 12px',
+                    borderRadius: '12px',
+                    opacity: index === 0 ? 0.4 : 1,
+                  }}
+                  title="Move Up"
+                >
+                  <ArrowUp size={20} />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => moveItem(index, 'down')}
+                  disabled={index === currentList.length - 1 || !isGameActive}
+                  className="btn-primary btn-glass-subtle"
+                  style={{
+                    minHeight: '44px',
+                    padding: '0 12px',
+                    borderRadius: '12px',
+                    opacity: index === currentList.length - 1 ? 0.4 : 1,
+                  }}
+                  title="Move Down"
+                >
+                  <ArrowDown size={20} />
+                </button>
+              </div>
             </div>
           ))}
         </div>
+
+        {/* Submit Order Action Button */}
+        <div style={{ display: 'flex', gap: '14px', marginTop: '12px' }}>
+          <button
+            type="button"
+            onClick={handleCheckOrder}
+            disabled={!isGameActive || feedback !== null}
+            className="btn-primary btn-emerald"
+            style={{ flex: 1, minHeight: '54px', fontSize: '18px', borderRadius: '16px' }}
+          >
+            <CheckCircle2 size={22} /> Check Order
+          </button>
+
+          <button
+            type="button"
+            onClick={() => startNewGame(difficulty)}
+            className="btn-primary btn-glass-subtle"
+            style={{ minHeight: '54px', padding: '0 24px', fontSize: '16px', borderRadius: '16px' }}
+          >
+            <RotateCcw size={18} /> Reset
+          </button>
+        </div>
       </div>
 
-      {/* Question Card */}
-      <div className="card-glass" style={{ textAlign: 'center', padding: '20px', borderLeft: '4px solid #6366F1' }}>
-        <p className="text-elderly" style={{ color: '#FFFFFF', fontWeight: '700' }}>
-          {questionText}
-        </p>
-      </div>
-
-      {/* Options */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
-        {options.map((opt) => {
-          const isSelected = selectedOption === opt.name;
-          const isCorrect = opt.name === correctAnswer;
-
-          return (
-            <button
-              key={opt.name}
-              onClick={() => handleOptionClick(opt.name)}
-              className="btn-elderly"
-              style={{
-                background: isSelected
-                  ? (isCorrect ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, #F43F5E, #E11D48)')
-                  : 'rgba(30, 41, 59, 0.8)',
-                border: isSelected ? '2px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.12)',
-                justifyContent: 'flex-start',
-                padding: '0 20px',
-              }}
-            >
-              <span style={{ fontSize: '32px' }}>{opt.emoji}</span>
-              <span style={{ fontSize: '19px', color: '#FFFFFF' }}>{opt.name}</span>
-            </button>
-          );
-        })}
-      </div>
+      {/* Completion Modal */}
+      {isGameComplete && metrics && (
+        <GameCompletionScreen
+          metrics={metrics}
+          isSaving={isSaving}
+          onPlayAgain={() => startNewGame(difficulty)}
+          onNavigateBack={onNavigateBack}
+        />
+      )}
     </div>
   );
 };

@@ -35,17 +35,42 @@ export const createGameSession = async (req: AuthenticatedRequest, res: Response
       completedAt,
     } = req.body;
 
-    // Validation: gameType
-    const validGameType = gameType || 'memory_match';
-    if (typeof validGameType !== 'string' || !validGameType.trim()) {
-      res.status(400).json({ success: false, error: 'Invalid or missing gameType.' });
+    // Normalize and validate gameType
+    let validGameType = (gameType || 'memory_match').toString().toLowerCase().trim();
+    if (validGameType === 'memory') validGameType = 'memory_match';
+    if (validGameType === 'pattern') validGameType = 'pattern_recognition';
+    if (validGameType === 'routine') validGameType = 'daily_routine_recall';
+    if (validGameType === 'object_rec') validGameType = 'object_recognition';
+
+    const ALLOWED_GAME_TYPES = [
+      'memory_match',
+      'pattern_recognition',
+      'daily_routine_recall',
+      'object_recognition',
+    ];
+
+    if (!ALLOWED_GAME_TYPES.includes(validGameType)) {
+      res.status(400).json({
+        success: false,
+        error: `Invalid gameType '${gameType}'. Allowed game types: ${ALLOWED_GAME_TYPES.join(', ')}`,
+      });
       return;
     }
 
-    // Validation: difficulty
-    const numDifficulty = Number(difficulty);
+    // Normalize and validate difficulty ('easy'|'medium'|'hard' or 1|2|3)
+    let numDifficulty = 1;
+    if (typeof difficulty === 'string') {
+      const lowerDiff = difficulty.toLowerCase().trim();
+      if (lowerDiff === 'easy' || lowerDiff === '1') numDifficulty = 1;
+      else if (lowerDiff === 'medium' || lowerDiff === '2') numDifficulty = 2;
+      else if (lowerDiff === 'hard' || lowerDiff === '3') numDifficulty = 3;
+      else numDifficulty = Number(difficulty);
+    } else {
+      numDifficulty = Number(difficulty ?? 1);
+    }
+
     if (isNaN(numDifficulty) || numDifficulty < 1 || numDifficulty > 10) {
-      res.status(400).json({ success: false, error: 'Invalid difficulty level. Must be a number between 1 and 10.' });
+      res.status(400).json({ success: false, error: 'Invalid difficulty level. Must be easy, medium, hard or a number between 1 and 10.' });
       return;
     }
 

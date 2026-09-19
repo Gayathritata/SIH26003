@@ -27,7 +27,7 @@ export const GamesPage: React.FC<GamesPageProps> = ({ lang, difficulty, onNaviga
       </div>
 
       <div className="activities-grid">
-        {/* Active Game: 🧠 Memory Match */}
+        {/* Game 1: 🧠 Memory Match */}
         <div
           className="glass-panel glass-panel-hover"
           onClick={() => onStartGame('memory')}
@@ -66,16 +66,17 @@ export const GamesPage: React.FC<GamesPageProps> = ({ lang, difficulty, onNaviga
           </button>
         </div>
 
-        {/* Future Game 1: Pattern Recognition — Coming Soon */}
+        {/* Game 2: 🔷 Pattern Recognition */}
         <div
-          className="glass-panel"
+          className="glass-panel glass-panel-hover"
+          onClick={() => onStartGame('pattern')}
           style={{
-            opacity: 0.75,
+            cursor: 'pointer',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
             minHeight: '230px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: '2px solid rgba(245, 158, 11, 0.5)',
           }}
         >
           <div>
@@ -84,39 +85,37 @@ export const GamesPage: React.FC<GamesPageProps> = ({ lang, difficulty, onNaviga
                 width: '56px',
                 height: '56px',
                 borderRadius: '18px',
-                background: 'rgba(245, 158, 11, 0.15)',
-                border: '1px solid #F59E0B',
+                background: 'linear-gradient(135deg, #F59E0B, #D97706)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: '16px',
+                boxShadow: '0 0 20px rgba(245, 158, 11, 0.4)',
               }}
             >
-              <Target size={30} color="#F59E0B" />
+              <Target size={30} color="#FFFFFF" />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h3 className="text-card-title" style={{ fontSize: '20px' }}>Pattern Recognition</h3>
-              <span className="badge-pill badge-amber" style={{ fontSize: '11px', padding: '4px 8px' }}>Coming Soon</span>
-            </div>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '6px' }}>
-              Identify visual sequence patterns and shapes.
+            <h3 className="text-card-title" style={{ fontSize: '22px' }}>🔷 Pattern Recognition</h3>
+            <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '6px', fontWeight: '500' }}>
+              Find the missing part of a pattern.
             </p>
           </div>
-          <button disabled className="btn-primary btn-glass-subtle" style={{ width: '100%', minHeight: '48px', marginTop: '16px', opacity: 0.6, cursor: 'not-allowed', fontSize: '15px' }}>
-            Coming Soon
+          <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '50px', marginTop: '16px', fontSize: '17px' }}>
+            <Play size={20} /> Start Game
           </button>
         </div>
 
-        {/* Future Game 2: Daily Routine Recall — Coming Soon */}
+        {/* Game 3: 📅 Daily Routine Recall */}
         <div
-          className="glass-panel"
+          className="glass-panel glass-panel-hover"
+          onClick={() => onStartGame('routine')}
           style={{
-            opacity: 0.75,
+            cursor: 'pointer',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
             minHeight: '230px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: '2px solid rgba(99, 102, 241, 0.5)',
           }}
         >
           <div>
@@ -125,39 +124,37 @@ export const GamesPage: React.FC<GamesPageProps> = ({ lang, difficulty, onNaviga
                 width: '56px',
                 height: '56px',
                 borderRadius: '18px',
-                background: 'rgba(99, 102, 241, 0.15)',
-                border: '1px solid #6366F1',
+                background: 'linear-gradient(135deg, #6366F1, #4338CA)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: '16px',
+                boxShadow: '0 0 20px rgba(99, 102, 241, 0.4)',
               }}
             >
-              <Calendar size={30} color="#6366F1" />
+              <Calendar size={30} color="#FFFFFF" />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h3 className="text-card-title" style={{ fontSize: '20px' }}>Daily Routine Recall</h3>
-              <span className="badge-pill badge-amber" style={{ fontSize: '11px', padding: '4px 8px' }}>Coming Soon</span>
-            </div>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '6px' }}>
-              Order daily morning and evening activities correctly.
+            <h3 className="text-card-title" style={{ fontSize: '22px' }}>📅 Daily Routine Recall</h3>
+            <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '6px', fontWeight: '500' }}>
+              Remember the correct order of daily activities.
             </p>
           </div>
-          <button disabled className="btn-primary btn-glass-subtle" style={{ width: '100%', minHeight: '48px', marginTop: '16px', opacity: 0.6, cursor: 'not-allowed', fontSize: '15px' }}>
-            Coming Soon
+          <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '50px', marginTop: '16px', fontSize: '17px' }}>
+            <Play size={20} /> Start Game
           </button>
         </div>
 
-        {/* Future Game 3: Object Recognition — Coming Soon */}
+        {/* Game 4: 👀 Object Recognition */}
         <div
-          className="glass-panel"
+          className="glass-panel glass-panel-hover"
+          onClick={() => onStartGame('object_rec')}
           style={{
-            opacity: 0.75,
+            cursor: 'pointer',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
             minHeight: '230px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: '2px solid rgba(20, 184, 166, 0.5)',
           }}
         >
           <div>
@@ -166,26 +163,23 @@ export const GamesPage: React.FC<GamesPageProps> = ({ lang, difficulty, onNaviga
                 width: '56px',
                 height: '56px',
                 borderRadius: '18px',
-                background: 'rgba(20, 184, 166, 0.15)',
-                border: '1px solid #14B8A6',
+                background: 'linear-gradient(135deg, #14B8A6, #0D9488)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: '16px',
+                boxShadow: '0 0 20px rgba(20, 184, 166, 0.4)',
               }}
             >
-              <Search size={30} color="#14B8A6" />
+              <Search size={30} color="#FFFFFF" />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <h3 className="text-card-title" style={{ fontSize: '20px' }}>Object Recognition</h3>
-              <span className="badge-pill badge-amber" style={{ fontSize: '11px', padding: '4px 8px' }}>Coming Soon</span>
-            </div>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '6px' }}>
-              Recognize everyday objects from pictures and names.
+            <h3 className="text-card-title" style={{ fontSize: '22px' }}>👀 Object Recognition</h3>
+            <p style={{ fontSize: '15px', color: 'var(--text-secondary)', marginTop: '6px', fontWeight: '500' }}>
+              Identify familiar objects.
             </p>
           </div>
-          <button disabled className="btn-primary btn-glass-subtle" style={{ width: '100%', minHeight: '48px', marginTop: '16px', opacity: 0.6, cursor: 'not-allowed', fontSize: '15px' }}>
-            Coming Soon
+          <button className="btn-primary btn-emerald" style={{ width: '100%', minHeight: '50px', marginTop: '16px', fontSize: '17px' }}>
+            <Play size={20} /> Start Game
           </button>
         </div>
       </div>

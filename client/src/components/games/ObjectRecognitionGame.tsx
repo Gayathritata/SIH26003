@@ -1,128 +1,253 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Mic, Volume2, CheckCircle2 } from 'lucide-react';
-import { voiceService } from '../../services/voiceService';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, RotateCcw } from 'lucide-react';
+import { calculateObjectRecognitionScore, CalculatedGameMetrics } from '../../utils/gameScoring';
+import { submitGameSession } from '../../services/api';
+import { GameHeader } from './common/GameHeader';
+import { GameCompletionScreen } from './common/GameCompletionScreen';
+import { Language } from '../../utils/i18n';
 
-interface CulturalObject {
-  title: string;
-  question: string;
-  options: string[];
-  correctAnswer: string;
-  imageEmoji: string;
+interface ObjectQuestion {
+  objectName: string;
+  emoji: string;
   category: string;
+  prompt: string;
+  options: string[];
 }
 
-const CULTURAL_OBJECTS: CulturalObject[] = [
+const EASY_QUESTIONS: ObjectQuestion[] = [
   {
-    title: 'Traditional Bamboo Headgear',
-    question: 'Identify this traditional woven bamboo and palm leaf conical hat from Assam:',
-    options: ['Jhapi', 'Gamucha', 'Pugree', 'Topi'],
-    correctAnswer: 'Jhapi',
-    imageEmoji: '🧺',
-    category: 'Assam Traditional Object',
+    objectName: 'Mango',
+    emoji: '🥭',
+    category: 'Fresh Fruit',
+    prompt: 'What fruit is shown above?',
+    options: ['Mango', 'Apple', 'Cup'],
   },
   {
-    title: 'Kaziranga Wildlife',
-    question: 'Identify this famous one-horned animal native to Assam Kaziranga National Park:',
-    options: ['One-Horned Rhinoceros', 'Asian Elephant', 'Bengal Tiger', 'Snow Leopard'],
-    correctAnswer: 'One-Horned Rhinoceros',
-    imageEmoji: '🦏',
-    category: 'North-East Wildlife',
+    objectName: 'Cup',
+    emoji: '☕',
+    category: 'Kitchenware',
+    prompt: 'What container is shown above?',
+    options: ['Book', 'Cup', 'Chair'],
   },
   {
-    title: 'Indigenous Assam Fabric',
-    question: 'Identify this world-famous eco-friendly thermal silk variety woven in Assam:',
-    options: ['Eri Silk', 'Polyester', 'Cotton', 'Nylon'],
-    correctAnswer: 'Eri Silk',
-    imageEmoji: '🧶',
-    category: 'Regional Textile',
+    objectName: 'Clock',
+    emoji: '⏰',
+    category: 'Household Item',
+    prompt: 'What device tells time?',
+    options: ['Clock', 'Umbrella', 'Flower'],
   },
 ];
 
-interface Props {
-  difficulty: number;
-  onFinish: (result: {
-    gameType: string;
-    difficulty: number;
-    score: number;
-    accuracy: number;
-    reactionTime: number;
-    mistakes: number;
-  }) => void;
-  lang: string;
+const MEDIUM_QUESTIONS: ObjectQuestion[] = [
+  {
+    objectName: 'Book',
+    emoji: '📖',
+    category: 'Reading Item',
+    prompt: 'What reading item is shown above?',
+    options: ['Book', 'Paper', 'Magazine', 'Notebook'],
+  },
+  {
+    objectName: 'Umbrella',
+    emoji: '☂️',
+    category: 'Weather Gear',
+    prompt: 'What object protects you from rain?',
+    options: ['Hat', 'Raincoat', 'Umbrella', 'Towel'],
+  },
+  {
+    objectName: 'Flower',
+    emoji: '🌸',
+    category: 'Garden Plant',
+    prompt: 'What beautiful plant is shown above?',
+    options: ['Leaf', 'Tree', 'Flower', 'Grass'],
+  },
+];
+
+const HARD_QUESTIONS: ObjectQuestion[] = [
+  {
+    objectName: 'Chair',
+    emoji: '🪑',
+    category: 'Furniture',
+    prompt: 'What furniture piece is shown above?',
+    options: ['Chair', 'Table', 'Stool', 'Bench', 'Couch'],
+  },
+  {
+    objectName: 'Tea Cup',
+    emoji: '🍵',
+    category: 'Beverage Vessel',
+    prompt: 'What cup used for hot tea is shown above?',
+    options: ['Glass', 'Bottle', 'Tea Cup', 'Jug', 'Vase'],
+  },
+  {
+    objectName: 'Traditional Basket',
+    emoji: '🧺',
+    category: 'Woven Craft',
+    prompt: 'What traditional woven container is shown above?',
+    options: ['Bag', 'Traditional Basket', 'Box', 'Pot', 'Tray'],
+  },
+];
+
+interface ObjectRecognitionGameProps {
+  difficulty?: number;
+  initialDifficulty?: number;
+  lang?: Language | string;
+  onNavigateBack?: () => void;
+  onSessionSaved?: () => void;
+  onFinish?: (resultData: any) => void;
 }
 
-export const ObjectRecognitionGame: React.FC<Props> = ({ difficulty, onFinish, lang }) => {
-  const [index, setIndex] = useState(0);
-  const [startTime, setStartTime] = useState(Date.now());
-  const [mistakes, setMistakes] = useState(0);
-  const [isListening, setIsListening] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
+  difficulty: propDiff,
+  initialDifficulty = 1,
+  lang = 'en',
+  onNavigateBack,
+  onSessionSaved,
+  onFinish,
+}) => {
+  const [difficulty, setDifficulty] = useState<number>(propDiff || initialDifficulty);
+  const [questionIndex, setQuestionIndex] = useState<number>(0);
 
-  const currentObj = CULTURAL_OBJECTS[index % CULTURAL_OBJECTS.length];
+  // Performance tracking
+  const [correctAnswers, setCorrectAnswers] = useState<number>(0);
+  const [incorrectAnswers, setIncorrectAnswers] = useState<number>(0);
+  const [feedback, setFeedback] = useState<{ isCorrect: boolean; text: string } | null>(null);
+
+  // Timer & completion states
+  const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
+  const [isGameActive, setIsGameActive] = useState<boolean>(false);
+  const [isGameComplete, setIsGameComplete] = useState<boolean>(false);
+  const [metrics, setMetrics] = useState<CalculatedGameMetrics | null>(null);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+
+  const startTimeRef = useRef<number>(Date.now());
+  const timerIntervalRef = useRef<any>(null);
+
+  const questionsList = difficulty === 1 ? EASY_QUESTIONS : (difficulty === 2 ? MEDIUM_QUESTIONS : HARD_QUESTIONS);
+  const currentQuestion = questionsList[questionIndex % questionsList.length];
+  const totalQuestions = questionsList.length;
+
+  const startNewGame = (selectedDiff: number = difficulty) => {
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+
+    setDifficulty(selectedDiff);
+    setQuestionIndex(0);
+    setCorrectAnswers(0);
+    setIncorrectAnswers(0);
+    setFeedback(null);
+    setElapsedSeconds(0);
+    setIsGameComplete(false);
+    setMetrics(null);
+    setIsGameActive(true);
+
+    startTimeRef.current = Date.now();
+    timerIntervalRef.current = setInterval(() => {
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000);
+  };
 
   useEffect(() => {
-    setStartTime(Date.now());
-    setSelectedAnswer(null);
-    voiceService.speak(`${currentObj.title}. ${currentObj.question}`, lang);
-  }, [index]);
+    startNewGame(difficulty);
+    return () => {
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    };
+  }, [difficulty]);
 
-  const handleAnswer = (answer: string) => {
-    setSelectedAnswer(answer);
-    const duration = (Date.now() - startTime) / 1000;
-    const isCorrect = answer.toLowerCase().trim() === currentObj.correctAnswer.toLowerCase().trim();
+  const handleSelectOption = (selectedOpt: string) => {
+    if (!isGameActive || feedback !== null) return;
 
-    if (!isCorrect) {
-      setMistakes((m) => m + 1);
-      voiceService.speak("Try again.", lang);
-    } else {
-      voiceService.speak(`Excellent! That is indeed ${currentObj.correctAnswer}.`, lang);
-      const acc = mistakes === 0 ? 1.0 : 0.75;
-      const score = Math.round(acc * 100);
+    const isCorrect = selectedOpt.toLowerCase().trim() === currentQuestion.objectName.toLowerCase().trim();
+
+    if (isCorrect) {
+      const nextCorrect = correctAnswers + 1;
+      setCorrectAnswers(nextCorrect);
+      setFeedback({ isCorrect: true, text: `Correct! 🎉 It's a ${currentQuestion.objectName}!` });
 
       setTimeout(() => {
-        onFinish({
-          gameType: 'object_rec',
-          difficulty,
-          score,
-          accuracy: acc,
-          reactionTime: Math.round(duration * 10) / 10,
-          mistakes,
-        });
-      }, 900);
+        setFeedback(null);
+        if (questionIndex + 1 >= totalQuestions) {
+          handleGameCompletion(nextCorrect, incorrectAnswers);
+        } else {
+          setQuestionIndex((prev) => prev + 1);
+        }
+      }, 1000);
+    } else {
+      const nextIncorrect = incorrectAnswers + 1;
+      setIncorrectAnswers(nextIncorrect);
+      setFeedback({ isCorrect: false, text: 'Try again.' });
+
+      setTimeout(() => {
+        setFeedback(null);
+      }, 1000);
     }
   };
 
-  const handleStartVoice = () => {
-    setIsListening(true);
-    voiceService.speak("Listening... Speak your answer now.", lang);
-    voiceService.listen(
-      (transcript) => {
-        setIsListening(false);
-        // Find matching option
-        const match = currentObj.options.find((opt) => transcript.toLowerCase().includes(opt.toLowerCase()));
-        if (match) {
-          handleAnswer(match);
-        } else {
-          handleAnswer(transcript);
-        }
-      },
-      (err) => setIsListening(false)
-    );
+  const handleGameCompletion = async (finalCorrect: number, finalIncorrect: number) => {
+    if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+
+    setIsGameActive(false);
+    const completedAtISO = new Date().toISOString();
+    const startedAtISO = new Date(startTimeRef.current).toISOString();
+    const finalCompletionTime = Math.max(1, elapsedSeconds);
+
+    const calculated = calculateObjectRecognitionScore({
+      difficulty,
+      totalQuestions,
+      correctAnswers: finalCorrect,
+      incorrectAnswers: finalIncorrect,
+      completionTime: finalCompletionTime,
+      startedAt: startedAtISO,
+      completedAt: completedAtISO,
+    });
+
+    setMetrics(calculated);
+    setIsGameComplete(true);
+
+    setIsSaving(true);
+    try {
+      await submitGameSession({
+        gameType: 'object_recognition',
+        difficulty: calculated.difficulty,
+        totalPairs: totalQuestions,
+        attempts: calculated.attempts,
+        correctMatches: calculated.correctAnswers,
+        incorrectAttempts: calculated.incorrectAnswers,
+        accuracy: calculated.accuracy,
+        completionTime: calculated.completionTime,
+        completionRate: calculated.completionRate,
+        score: calculated.score,
+        startedAt: calculated.startedAt,
+        completedAt: calculated.completedAt,
+      });
+      if (onSessionSaved) onSessionSaved();
+      if (onFinish) onFinish(calculated);
+    } catch (err) {
+      console.warn('[SAVE OBJECT GAME FAILED]', err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Search size={28} color="#14B8A6" />
-          <h2 className="title-lg">Object Recognition</h2>
-        </div>
-        <span className="badge badge-online">Level {difficulty}</span>
-      </div>
+    <div style={{ maxWidth: '850px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <GameHeader
+        title="👀 Object Recognition"
+        subtitle="Identify familiar everyday objects."
+        icon={<Search size={30} color="#14B8A6" />}
+        difficulty={difficulty}
+        elapsedSeconds={elapsedSeconds}
+        correctCount={correctAnswers}
+        totalCount={totalQuestions}
+        attemptsCount={correctAnswers + incorrectAnswers}
+        onNavigateBack={onNavigateBack}
+        onChangeDifficulty={(d) => startNewGame(d)}
+      />
 
-      {/* Item Image Card */}
-      <div className="card-glass" style={{ textAlign: 'center', padding: '24px' }}>
+      {/* Main Object Visualizer */}
+      <div className="glass-panel" style={{ padding: '32px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
+        <span style={{ fontSize: '15px', color: 'var(--text-secondary)', fontWeight: '600' }}>
+          Question {questionIndex + 1} of {totalQuestions}
+        </span>
+
+        {/* Object Large Icon */}
         <div
           style={{
             width: '120px',
@@ -130,62 +255,91 @@ export const ObjectRecognitionGame: React.FC<Props> = ({ difficulty, onFinish, l
             borderRadius: '28px',
             background: 'rgba(20, 184, 166, 0.15)',
             border: '2px solid #14B8A6',
-            margin: '0 auto 16px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '64px',
-            boxShadow: '0 0 24px rgba(20, 184, 166, 0.3)',
+            boxShadow: '0 0 30px rgba(20, 184, 166, 0.35)',
           }}
         >
-          {currentObj.imageEmoji}
+          {currentQuestion.emoji}
         </div>
 
-        <span className="badge" style={{ background: 'rgba(255,255,255,0.1)', color: '#14B8A6', marginBottom: '8px' }}>
-          {currentObj.category}
+        <span className="badge-pill badge-emerald" style={{ fontSize: '13px' }}>
+          {currentQuestion.category}
         </span>
-        <p className="text-elderly" style={{ color: '#FFFFFF', fontWeight: '700', marginTop: '6px' }}>
-          {currentObj.question}
-        </p>
+
+        <h3 style={{ fontSize: '24px', fontWeight: '800', color: '#FFFFFF', margin: 0 }}>
+          {currentQuestion.prompt}
+        </h3>
+
+        {/* Feedback Display */}
+        {feedback && (
+          <div
+            style={{
+              fontSize: '20px',
+              fontWeight: '800',
+              color: feedback.isCorrect ? '#10B981' : '#F43F5E',
+              padding: '10px 20px',
+              borderRadius: '14px',
+              background: feedback.isCorrect ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
+            }}
+          >
+            {feedback.text}
+          </div>
+        )}
       </div>
 
-      {/* Voice Answer Option */}
-      <button
-        className={`btn-elderly ${isListening ? 'pulse-anim' : ''}`}
-        onClick={handleStartVoice}
-        style={{
-          background: isListening ? 'linear-gradient(135deg, #F43F5E, #E11D48)' : 'linear-gradient(135deg, #14B8A6, #0D9488)',
-          color: '#FFFFFF',
-        }}
-      >
-        <Mic size={24} /> {isListening ? 'Listening...' : 'Answer by Voice 🎙️'}
-      </button>
-
-      {/* Tap Answer Options */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-        {currentObj.options.map((opt) => {
-          const isSelected = selectedAnswer === opt;
-          const isCorrect = opt === currentObj.correctAnswer;
-
-          return (
-            <button
-              key={opt}
-              onClick={() => handleAnswer(opt)}
-              className="btn-elderly"
-              style={{
-                height: '75px',
-                fontSize: '17px',
-                background: isSelected
-                  ? (isCorrect ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, #F43F5E, #E11D48)')
-                  : 'rgba(30, 41, 59, 0.8)',
-                border: isSelected ? '2px solid #FFFFFF' : '1px solid rgba(255, 255, 255, 0.12)',
-              }}
-            >
-              {opt}
-            </button>
-          );
-        })}
+      {/* Multiple-Choice Answer Buttons */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
+        {currentQuestion.options.map((opt) => (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => handleSelectOption(opt)}
+            disabled={!isGameActive || feedback !== null}
+            className="glass-panel-hover"
+            style={{
+              minHeight: '75px',
+              borderRadius: '20px',
+              background: 'rgba(30, 41, 59, 0.9)',
+              border: '2px solid var(--border-glass-bright)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              padding: '16px',
+              fontSize: '20px',
+              fontWeight: '800',
+              color: '#FFFFFF',
+            }}
+          >
+            {opt}
+          </button>
+        ))}
       </div>
+
+      {/* Restart Button */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '8px' }}>
+        <button
+          type="button"
+          onClick={() => startNewGame(difficulty)}
+          className="btn-primary btn-glass-subtle"
+          style={{ minHeight: '48px', padding: '0 24px', fontSize: '16px', borderRadius: '14px' }}
+        >
+          <RotateCcw size={18} /> Restart Game
+        </button>
+      </div>
+
+      {/* Completion Modal */}
+      {isGameComplete && metrics && (
+        <GameCompletionScreen
+          metrics={metrics}
+          isSaving={isSaving}
+          onPlayAgain={() => startNewGame(difficulty)}
+          onNavigateBack={onNavigateBack}
+        />
+      )}
     </div>
   );
 };
