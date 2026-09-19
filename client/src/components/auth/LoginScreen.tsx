@@ -3,6 +3,7 @@ import { Brain, LogIn, Key, Mail, AlertCircle, Play, Sparkles, UserCheck, Shield
 import { UserProfile } from '../../services/authService';
 import { translations, getTranslation, Language } from '../../i18n/translations';
 import { useAuth } from '../../context/AuthContext';
+import { VantaBackground } from '../VantaBackground';
 
 interface Props {
   onSuccess: (user: UserProfile) => void;
@@ -83,7 +84,9 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'radial-gradient(circle at 50% 20%, rgba(16, 185, 129, 0.08), transparent 60%), #070A12', color: '#FFFFFF' }}>
+    <div style={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'radial-gradient(circle at 50% 20%, rgba(16, 185, 129, 0.08), transparent 60%), #070A12', color: '#FFFFFF' }}>
+      {/* Vanta 3D NET Background Animation */}
+      <VantaBackground />
       
       {/* 1. TOP NAVBAR WITH SIGN IN BUTTON */}
       <header
@@ -164,7 +167,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
       </header>
 
       {/* 2. MAIN PAGE CONTENT (2 COLUMNS: LEFT TEXT & QUOTE, RIGHT VIDEO) */}
-      <main style={{ flex: 1, maxWidth: '1280px', margin: '0 auto', width: '100%', padding: '40px 24px', display: 'flex', alignItems: 'center' }}>
+      <main style={{ position: 'relative', zIndex: 1, flex: 1, maxWidth: '1280px', margin: '0 auto', width: '100%', padding: '40px 24px', display: 'flex', alignItems: 'center' }}>
         <div
           style={{
             display: 'grid',

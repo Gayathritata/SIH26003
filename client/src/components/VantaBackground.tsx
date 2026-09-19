@@ -15,13 +15,7 @@ interface VantaBackgroundProps {
   spacing?: number;
 }
 
-export const VantaBackground: React.FC<VantaBackgroundProps> = ({
-  color = 0x10B981,
-  backgroundColor = 0x060913,
-  points = 12.00,
-  maxDistance = 24.00,
-  spacing = 16.00,
-}) => {
+export const VantaBackground: React.FC = () => {
   const vantaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,11 +33,6 @@ export const VantaBackground: React.FC<VantaBackgroundProps> = ({
             minWidth: 200.00,
             scale: 1.00,
             scaleMobile: 1.00,
-            color: color,
-            backgroundColor: backgroundColor,
-            points: points,
-            maxDistance: maxDistance,
-            spacing: spacing,
           });
         } catch (e) {
           console.warn('[VANTA INIT WARNING]', e);
@@ -51,11 +40,9 @@ export const VantaBackground: React.FC<VantaBackgroundProps> = ({
       }
     };
 
-    // If script is already loaded
     if (window.VANTA && window.VANTA.NET) {
       initVanta();
     } else {
-      // Retry initializing after scripts load
       const timer = setInterval(() => {
         if (window.VANTA && window.VANTA.NET) {
           clearInterval(timer);
@@ -76,7 +63,7 @@ export const VantaBackground: React.FC<VantaBackgroundProps> = ({
         vantaEffect.destroy();
       }
     };
-  }, [color, backgroundColor, points, maxDistance, spacing]);
+  }, []);
 
   return (
     <div
@@ -89,7 +76,6 @@ export const VantaBackground: React.FC<VantaBackgroundProps> = ({
         height: '100vh',
         zIndex: 0,
         pointerEvents: 'none',
-        opacity: 0.3,
       }}
     />
   );
