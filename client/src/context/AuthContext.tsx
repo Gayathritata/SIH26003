@@ -37,12 +37,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const refreshUser = async () => {
     const savedToken = localStorage.getItem('mindmate_token');
+    const savedUserStr = localStorage.getItem('mindmate_user');
+
     if (!savedToken) {
       setUser(null);
       setPatientProfile(null);
       setToken(null);
       setLoading(false);
       return;
+    }
+
+    if (savedToken.startsWith('jwt_local_')) {
+      if (savedUserStr) {
+        try {
+          const parsed = JSON.parse(savedUserStr);
+          setUser(parsed);
+          setToken(savedToken);
+          setLoading(false);
+          return;
+        } catch (e) {}
+      }
     }
 
     try {
@@ -56,18 +70,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return;
       }
     } catch (err: any) {
-      console.warn('[AUTH CONTEXT] getMe failed:', err?.message || err);
-      if (err?.message?.includes('token') || err?.message?.includes('expired') || err?.message?.includes('Invalid')) {
-        setUser(null);
-        setPatientProfile(null);
-        setToken(null);
-        setLoading(false);
-        return;
-      }
+      console.warn('[AUTH CONTEXT] getMe failed, attempting cached user restore:', err?.message || err);
     }
 
     // Fallback user restore from localStorage
-    const savedUserStr = localStorage.getItem('mindmate_user');
     if (savedUserStr) {
       try {
         const parsed = JSON.parse(savedUserStr);

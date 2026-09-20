@@ -20,18 +20,23 @@ export const apiClient = axios.create({
 // Dynamic authorization header using stored JWT token
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('mindmate_token');
-  if (token) {
+  if (token && !token.startsWith('jwt_local_')) {
     config.headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
   }
   return config;
 });
 
-// Response interceptor to handle 401 unauthorized
+// Response interceptor to handle 401 unauthorized gracefully
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      console.warn('[API 401 UNAUTHORIZED] Purging expired token from storage.');
+    const requestUrl = error.config?.url || '';
+    const isAuthEndpoint = requestUrl.includes('/api/auth/login') || requestUrl.includes('/api/auth/register') || requestUrl.includes('/auth/login') || requestUrl.includes('/auth/register');
+    const storedToken = typeof localStorage !== 'undefined' ? localStorage.getItem('mindmate_token') : null;
+    const isLocalToken = storedToken && storedToken.startsWith('jwt_local_');
+
+    if (error.response && error.response.status === 401 && !isAuthEndpoint && !isLocalToken) {
+      console.warn('[API 401 UNAUTHORIZED] Purging expired token from storage for route:', requestUrl);
       try {
         localStorage.removeItem('mindmate_token');
         localStorage.removeItem('mindmate_user');

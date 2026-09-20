@@ -30,7 +30,8 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !password) {
       setError('Please enter both your email address and password.');
       return;
     }
@@ -39,7 +40,8 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
     setError(null);
 
     try {
-      const res = await login(email, password);
+      const res = await login(cleanEmail, password);
+      setShowSignInModal(false);
       onSuccess(res.user);
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');

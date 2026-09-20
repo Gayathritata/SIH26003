@@ -108,6 +108,9 @@ class AuthService {
       if (user && user.role) {
         localStorage.setItem('mindmate_role', user.role);
       }
+      if (user) {
+        localStorage.setItem('mindmate_user', JSON.stringify(user));
+      }
 
       return { user, token };
     } catch (err: any) {
@@ -151,7 +154,17 @@ class AuthService {
       if (user && user.role) {
         localStorage.setItem('mindmate_role', user.role);
       }
-      localStorage.setItem('mindmate_user', JSON.stringify(user));
+      if (user) {
+        localStorage.setItem('mindmate_user', JSON.stringify(user));
+        // Cache credentials locally for offline/fallback continuity
+        saveLocalUser({
+          email: cleanEmail,
+          pass: pass,
+          name: user.name || 'MindMate User',
+          role: user.role || 'elderly_user',
+          language: user.preferredLanguage || user.language || 'en',
+        });
+      }
 
       return { user, token };
     } catch (err: any) {
