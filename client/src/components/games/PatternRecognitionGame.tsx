@@ -165,7 +165,7 @@ export const PatternRecognitionGame: React.FC<Props> = ({
 
     setIsSaving(true);
     try {
-      await submitGameSession({
+      const apiRes = await submitGameSession({
         gameType: 'pattern_recognition',
         difficulty: calculated.difficulty,
         totalPairs: totalQuestions,
@@ -180,7 +180,7 @@ export const PatternRecognitionGame: React.FC<Props> = ({
         completedAt: calculated.completedAt,
       });
       if (onSessionSaved) onSessionSaved();
-      if (onFinish) onFinish(calculated);
+      if (onFinish) onFinish({ ...calculated, aiRecommendation: apiRes?.aiRecommendation });
     } catch (err) {
       console.warn('[SAVE PATTERN GAME FAILED]', err);
     } finally {

@@ -160,7 +160,7 @@ export const RoutineRecallGame: React.FC<RoutineRecallGameProps> = ({
 
     setIsSaving(true);
     try {
-      await submitGameSession({
+      const apiRes = await submitGameSession({
         gameType: 'daily_routine_recall',
         difficulty: calculated.difficulty,
         totalPairs: currentList.length,
@@ -175,7 +175,7 @@ export const RoutineRecallGame: React.FC<RoutineRecallGameProps> = ({
         completedAt: calculated.completedAt,
       });
       if (onSessionSaved) onSessionSaved();
-      if (onFinish) onFinish(calculated);
+      if (onFinish) onFinish({ ...calculated, aiRecommendation: apiRes?.aiRecommendation });
     } catch (err) {
       console.warn('[SAVE ROUTINE GAME FAILED]', err);
     } finally {

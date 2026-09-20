@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Trophy, Clock, Target, Calendar, Award, RotateCcw, Brain } from 'lucide-react';
+import { ArrowLeft, Trophy, Clock, Target, Calendar, RotateCcw, Brain, Search, Sparkles } from 'lucide-react';
 import { fetchMyGameSessions } from '../services/api';
 import { Language, getTranslation } from '../utils/i18n';
 
@@ -56,28 +56,34 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ lang, onNavigate }) 
     loadSessions();
   }, []);
 
-  const getGameTitle = (gameType: string) => {
+  const getGameTitleText = (gameType: string) => {
     const type = (gameType || '').toLowerCase();
-    if (type === 'memory_match' || type === 'memory') return '🧠 Memory Match';
-    if (type === 'pattern_recognition' || type === 'pattern') return '🔷 Pattern Recognition';
-    if (type === 'daily_routine_recall' || type === 'routine') return '📅 Daily Routine Recall';
-    if (type === 'object_recognition' || type === 'object_rec') return '👀 Object Recognition';
-    return 'Cognitive Game';
+    if (type === 'memory_match' || type === 'memory') return 'Memory Match';
+    if (type === 'pattern_recognition' || type === 'pattern') return 'Pattern Recognition';
+    if (type === 'daily_routine_recall' || type === 'routine') return 'Daily Routine Recall';
+    if (type === 'object_recognition' || type === 'object_rec') return 'Object Recognition';
+    return 'Cognitive Activity';
   };
 
-  const getGameBadgeColor = (gameType: string) => {
+  const renderGameIcon = (gameType: string) => {
     const type = (gameType || '').toLowerCase();
-    if (type === 'memory_match' || type === 'memory') return '#0284C7';
-    if (type === 'pattern_recognition' || type === 'pattern') return '#D97706';
-    if (type === 'daily_routine_recall' || type === 'routine') return '#4F46E5';
-    if (type === 'object_recognition' || type === 'object_rec') return '#0D9488';
-    return '#64748B';
+    if (type === 'memory_match' || type === 'memory') return <Brain size={22} color="#0284C7" />;
+    if (type === 'pattern_recognition' || type === 'pattern') return <Target size={22} color="#D97706" />;
+    if (type === 'daily_routine_recall' || type === 'routine') return <Calendar size={22} color="#4F46E5" />;
+    if (type === 'object_recognition' || type === 'object_rec') return <Search size={22} color="#0D9488" />;
+    return <Brain size={22} color="#0284C7" />;
+  };
+
+  const getGameIconBg = (gameType: string) => {
+    const type = (gameType || '').toLowerCase();
+    if (type === 'memory_match' || type === 'memory') return '#E0F2FE';
+    if (type === 'pattern_recognition' || type === 'pattern') return '#FEF3C7';
+    if (type === 'daily_routine_recall' || type === 'routine') return '#E0E7FF';
+    if (type === 'object_recognition' || type === 'object_rec') return '#CCFBF1';
+    return '#F1F5F9';
   };
 
   const formatDifficultyLabel = (diff: number) => {
-    if (diff === 1) return 'Easy';
-    if (diff === 2) return 'Medium';
-    if (diff === 3) return 'Hard';
     return `Level ${diff}`;
   };
 
@@ -97,7 +103,23 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ lang, onNavigate }) 
     }
   };
 
-  const filteredSessions = sessions.filter((s) => {
+  // Deduplicate entries submitted twice by previous bug
+  const deduplicatedSessions = sessions.filter((sess, idx, arr) => {
+    if (idx === 0) return true;
+    const prev = arr[idx - 1];
+    const isDuplicate =
+      prev.gameType === sess.gameType &&
+      prev.score === sess.score &&
+      prev.accuracy === sess.accuracy &&
+      prev.completionTime === sess.completionTime &&
+      Math.abs(
+        new Date(prev.completedAt || prev.createdAt || 0).getTime() -
+        new Date(sess.completedAt || sess.createdAt || 0).getTime()
+      ) < 5000;
+    return !isDuplicate;
+  });
+
+  const filteredSessions = deduplicatedSessions.filter((s) => {
     if (selectedFilter === 'all') return true;
     const type = (s.gameType || '').toLowerCase();
     if (selectedFilter === 'memory') return type === 'memory_match' || type === 'memory';
@@ -227,72 +249,80 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ lang, onNavigate }) 
             </button>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {filteredSessions.map((sess, idx) => (
               <div
                 key={sess._id || sess.id || idx}
                 style={{
-                  background: '#F8FAFC',
+                  background: '#FFFFFF',
                   border: '1px solid var(--border-glass)',
-                  borderRadius: '14px',
-                  padding: '16px 20px',
+                  borderRadius: '16px',
+                  padding: '18px 22px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   flexWrap: 'wrap',
-                  gap: '14px',
+                  gap: '16px',
                   boxShadow: 'var(--shadow-soft)',
+                  transition: 'all 0.2s ease',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                {/* Left side: Icon, Title, Date, Level */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <div
                     style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '12px',
-                      background: '#FFFFFF',
-                      border: `2px solid ${getGameBadgeColor(sess.gameType)}`,
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '14px',
+                      background: getGameIconBg(sess.gameType),
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
                     }}
                   >
-                    <Calendar size={20} color={getGameBadgeColor(sess.gameType)} />
+                    {renderGameIcon(sess.gameType)}
                   </div>
                   <div>
-                    <span style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', display: 'block' }}>
-                      {getGameTitle(sess.gameType)}
+                    <span style={{ fontSize: '17px', fontWeight: '800', color: 'var(--text-primary)', display: 'block', letterSpacing: '-0.2px' }}>
+                      {getGameTitleText(sess.gameType)}
                     </span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
-                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
+                      <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500' }}>
                         {formatDateLabel(sess.completedAt || sess.createdAt)}
                       </span>
-                      <span className="badge-pill badge-emerald" style={{ fontSize: '11px', padding: '2px 8px' }}>
+                      <span className="badge-pill badge-emerald" style={{ fontSize: '12px', padding: '3px 10px', fontWeight: '700' }}>
                         {formatDifficultyLabel(sess.difficulty)}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Metrics */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Score</span>
-                    <span style={{ fontSize: '18px', fontWeight: '800', color: 'var(--accent-primary)' }}>
+                {/* Right side: Score, Accuracy, Time Metrics */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+                  <div style={{ textAlign: 'center', minWidth: '60px' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Score
+                    </span>
+                    <span style={{ fontSize: '20px', fontWeight: '800', color: 'var(--accent-primary)', marginTop: '2px', display: 'block' }}>
                       {sess.score}
                     </span>
                   </div>
 
-                  <div style={{ textAlign: 'center' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Accuracy</span>
-                    <span style={{ fontSize: '18px', fontWeight: '800', color: '#15803D' }}>
+                  <div style={{ textAlign: 'center', minWidth: '60px' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Accuracy
+                    </span>
+                    <span style={{ fontSize: '20px', fontWeight: '800', color: '#15803D', marginTop: '2px', display: 'block' }}>
                       {sess.accuracy}%
                     </span>
                   </div>
 
-                  <div style={{ textAlign: 'center' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Time</span>
-                    <span style={{ fontSize: '18px', fontWeight: '800', color: 'var(--accent-indigo)' }}>
+                  <div style={{ textAlign: 'center', minWidth: '60px' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Time
+                    </span>
+                    <span style={{ fontSize: '20px', fontWeight: '800', color: '#4F46E5', marginTop: '2px', display: 'block' }}>
                       {sess.completionTime}s
                     </span>
                   </div>
@@ -305,3 +335,4 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({ lang, onNavigate }) 
     </div>
   );
 };
+

@@ -228,7 +228,7 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
 
     setIsSaving(true);
     try {
-      await submitGameSession({
+      const apiRes = await submitGameSession({
         gameType: 'memory_match',
         difficulty: metrics.difficulty,
         totalPairs: metrics.totalPairs,
@@ -243,7 +243,7 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
         completedAt: metrics.completedAt,
       });
       if (onSessionSaved) onSessionSaved();
-      if (onFinish) onFinish(metrics);
+      if (onFinish) onFinish({ ...metrics, aiRecommendation: apiRes?.aiRecommendation });
     } catch (e) {
       console.warn('[SAVE GAME SESSION FAILED]', e);
     } finally {

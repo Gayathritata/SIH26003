@@ -180,7 +180,7 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
 
     setIsSaving(true);
     try {
-      await submitGameSession({
+      const apiRes = await submitGameSession({
         gameType: 'object_recognition',
         difficulty: calculated.difficulty,
         totalPairs: totalQuestions,
@@ -195,7 +195,7 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
         completedAt: calculated.completedAt,
       });
       if (onSessionSaved) onSessionSaved();
-      if (onFinish) onFinish(calculated);
+      if (onFinish) onFinish({ ...calculated, aiRecommendation: apiRes?.aiRecommendation });
     } catch (err) {
       console.warn('[SAVE OBJECT GAME FAILED]', err);
     } finally {

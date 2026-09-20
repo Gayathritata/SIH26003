@@ -123,19 +123,10 @@ const AppContent: React.FC = () => {
     }
   };
 
-  const handleGameFinish = async (resultData: any) => {
+  const handleGameFinish = (resultData: any) => {
     setGameResult(resultData);
-    try {
-      const apiRes = await submitGameSession({
-        ...resultData,
-        mood: selectedMood || 'good',
-      });
-
-      if (apiRes && apiRes.aiRecommendation) {
-        setAiRecommendation(apiRes.aiRecommendation);
-      }
-    } catch (e) {
-      console.warn('[GAME FINISH SUBMIT ERROR]', e);
+    if (resultData && resultData.aiRecommendation) {
+      setAiRecommendation(resultData.aiRecommendation);
     }
   };
 
