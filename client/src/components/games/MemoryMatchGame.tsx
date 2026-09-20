@@ -360,21 +360,15 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
       </div>
 
       {/* 2. CARDS GRID */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: difficulty === 1 ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)',
-          gap: '16px',
-        }}
-      >
+      <div className={`memory-cards-grid-l${difficulty}`}>
         {cards.map((card) => (
           <button
             key={card.key}
             type="button"
             onClick={() => handleCardClick(card)}
             disabled={card.isFlipped || card.isMatched || isProcessing || !isGameActive}
+            className="memory-card-btn"
             style={{
-              minHeight: '140px',
               borderRadius: '16px',
               background: card.isMatched
                 ? '#DCFCE7'

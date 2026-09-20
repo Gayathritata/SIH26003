@@ -98,7 +98,7 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
           </p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '10px' }}>
           <span className="badge-pill badge-emerald" style={{ fontSize: '13px', padding: '6px 14px' }}>
             <Sparkles size={16} /> Level {difficulty}
           </span>

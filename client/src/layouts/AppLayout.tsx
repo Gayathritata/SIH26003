@@ -331,6 +331,59 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           {children}
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation Bar (<768px) */}
+      <nav className="mobile-bottom-nav" role="navigation" aria-label="Mobile Navigation">
+        <button
+          onClick={() => onNavigate('/dashboard')}
+          className={`mobile-bottom-nav-item ${currentPath === '/dashboard' ? 'active' : ''}`}
+        >
+          <Home size={20} />
+          <span>Home</span>
+        </button>
+
+        <button
+          onClick={() => onNavigate('/games')}
+          className={`mobile-bottom-nav-item ${currentPath === '/games' || currentPath === '/gameplay' ? 'active' : ''}`}
+        >
+          <Gamepad2 size={20} />
+          <span>Games</span>
+        </button>
+
+        <button
+          onClick={() => onNavigate('/reminders')}
+          className={`mobile-bottom-nav-item ${currentPath === '/reminders' ? 'active' : ''}`}
+        >
+          <Bell size={20} />
+          <span>Reminders</span>
+        </button>
+
+        <button
+          onClick={() => onNavigate('/progress')}
+          className={`mobile-bottom-nav-item ${currentPath === '/progress' ? 'active' : ''}`}
+        >
+          <TrendingUp size={20} />
+          <span>Progress</span>
+        </button>
+
+        {isCaregiverOrAdmin ? (
+          <button
+            onClick={() => onNavigate('/caregiver')}
+            className={`mobile-bottom-nav-item ${currentPath === '/caregiver' ? 'active' : ''}`}
+          >
+            <Activity size={20} />
+            <span>Caregiver</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => onNavigate('/profile')}
+            className={`mobile-bottom-nav-item ${currentPath === '/profile' ? 'active' : ''}`}
+          >
+            <User size={20} />
+            <span>Profile</span>
+          </button>
+        )}
+      </nav>
     </div>
   );
 };

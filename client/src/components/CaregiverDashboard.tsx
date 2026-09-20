@@ -195,7 +195,7 @@ export const CaregiverDashboard: React.FC<CaregiverDashboardProps> = ({
       ) : (
         <>
           {/* KPI CARDS */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '14px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
             <div className="glass-panel" style={{ padding: '16px', textAlign: 'center', background: '#FFFFFF' }}>
               <Trophy size={22} color="var(--accent-primary)" style={{ margin: '0 auto 6px' }} />
               <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Games Completed</span>

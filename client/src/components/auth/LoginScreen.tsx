@@ -93,7 +93,9 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '16px 32px',
+          padding: '12px 20px',
+          flexWrap: 'wrap',
+          gap: '12px',
           borderBottom: '1px solid var(--border-glass)',
           background: '#FFFFFF',
           position: 'sticky',
@@ -127,19 +129,19 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
         </div>
 
         {/* Right: Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <button
             type="button"
             onClick={onNavigateRegister}
             className="btn-primary btn-emerald"
             style={{
-              minHeight: '42px',
-              padding: '0 20px',
-              fontSize: '15px',
+              minHeight: '40px',
+              padding: '0 16px',
+              fontSize: '14px',
               borderRadius: '10px',
             }}
           >
-            <UserPlus size={17} /> Create Account
+            <UserPlus size={16} /> Create Account
           </button>
 
           <button
@@ -147,24 +149,24 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
             onClick={() => setShowSignInModal(true)}
             className="btn-primary btn-emerald"
             style={{
-              minHeight: '42px',
-              padding: '0 20px',
-              fontSize: '15px',
+              minHeight: '40px',
+              padding: '0 16px',
+              fontSize: '14px',
               borderRadius: '10px',
             }}
           >
-            <LogIn size={17} /> Sign In
+            <LogIn size={16} /> Sign In
           </button>
         </div>
       </header>
 
       {/* 2. MAIN LANDING CONTENT */}
-      <main style={{ position: 'relative', zIndex: 1, flex: 1, maxWidth: '1280px', margin: '0 auto', width: '100%', padding: '40px 24px', display: 'flex', alignItems: 'center' }}>
+      <main style={{ position: 'relative', zIndex: 1, flex: 1, maxWidth: '1280px', margin: '0 auto', width: '100%', padding: '24px 16px', display: 'flex', alignItems: 'center' }}>
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-            gap: '40px',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: '28px',
             alignItems: 'center',
             width: '100%',
           }}

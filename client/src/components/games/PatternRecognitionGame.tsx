@@ -397,7 +397,7 @@ export const PatternRecognitionGame: React.FC<Props> = ({
       </div>
 
       {/* Answer Choices */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '14px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '12px' }}>
         {currentQuestion.options.map((option) => (
           <button
             key={option.name}

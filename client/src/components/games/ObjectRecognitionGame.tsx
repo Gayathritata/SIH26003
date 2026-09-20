@@ -345,7 +345,7 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
       </div>
 
       {/* Answer Buttons */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '14px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
         {currentQuestion.options.map((opt) => (
           <button
             key={opt}
