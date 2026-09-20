@@ -257,7 +257,7 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
           )}
           <div>
             <h2 className="text-hero-title" style={{ fontSize: '24px', margin: 0 }}>
-              👀 {t('objectGameTitle')}
+              👀 {t('objectGameTitle')} (Level {difficulty} / 100)
             </h2>
             <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: '2px 0 0 0', fontWeight: '500' }}>
               {t('objectInstructions')}

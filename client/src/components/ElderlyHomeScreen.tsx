@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Brain, Target, Flame, TrendingUp, Sparkles, User, Volume2, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Brain, Target, Flame, TrendingUp, Sparkles, User, Volume2, CheckCircle2, ArrowRight, UserCheck, Gamepad2 } from 'lucide-react';
 import { useAccessibility } from '../context/AccessibilityContext';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { UserProfile } from '../services/authService';
-import { fetchMyGameSessions } from '../services/api';
+import { fetchMyGameSessions, fetchPatientMyProfileApi, fetchMotivationalQuoteApi } from '../services/api';
+import { CaregiverSelectionModal } from './CaregiverSelectionModal';
 
 interface Props {
   user: UserProfile | null;
@@ -28,10 +29,44 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
   const [todaySessionsCount, setTodaySessionsCount] = useState<number>(0);
   const [streakDays, setStreakDays] = useState<number>(1);
   const [performanceTrendText, setPerformanceTrendText] = useState<string>('Improving');
+  
+  // Live Database Profile & Level States
+  const [assignedCaregiver, setAssignedCaregiver] = useState<any>(null);
+  const [gameLevels, setGameLevels] = useState<{
+    memory_match: number;
+    pattern_recognition: number;
+    daily_routine_recall: number;
+    object_recognition: number;
+  }>({
+    memory_match: 1,
+    pattern_recognition: 1,
+    daily_routine_recall: 1,
+    object_recognition: 1,
+  });
+  const [motivationalQuote, setMotivationalQuote] = useState<string>(
+    "Keep going! Every activity you complete is a step toward maintaining your daily routine."
+  );
+  const [showCaregiverModal, setShowCaregiverModal] = useState<boolean>(false);
 
   useEffect(() => {
     loadSessionsData();
+    loadProfileAndQuote();
   }, []);
+
+  const loadProfileAndQuote = async () => {
+    try {
+      const pRes = await fetchPatientMyProfileApi();
+      if (pRes && pRes.success) {
+        if (pRes.caregiver) setAssignedCaregiver(pRes.caregiver);
+        if (pRes.gameLevels) setGameLevels(pRes.gameLevels);
+      }
+
+      const qRes = await fetchMotivationalQuoteApi();
+      if (qRes && qRes.quote) setMotivationalQuote(qRes.quote);
+    } catch (e) {
+      console.warn('[LOAD PROFILE & QUOTE NOTICE]', e);
+    }
+  };
 
   const loadSessionsData = async () => {
     try {
@@ -277,19 +312,29 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
 
             {/* Caregiver Status */}
             <div style={{ paddingLeft: '16px', borderLeft: '1px solid var(--border-glass)' }}>
-              <span className="badge-pill badge-emerald" style={{ fontSize: '12px' }}>
-                Caregiver connected
+              <span className={`badge-pill ${assignedCaregiver ? 'badge-emerald' : 'badge-amber'}`} style={{ fontSize: '12px' }}>
+                <UserCheck size={14} /> {assignedCaregiver ? `Assigned: ${assignedCaregiver.name}` : 'No Caregiver Assigned'}
               </span>
             </div>
           </div>
 
-          <button
-            onClick={() => onNavigate(isCaregiverOrAdmin ? 'caregiver' : ('my_progress' as any))}
-            className="btn-primary btn-glass-subtle"
-            style={{ minHeight: '44px', padding: '0 18px', fontSize: '14px', color: 'var(--accent-primary)', border: '1px solid #BAE6FD' }}
-          >
-            View Caregiver Summary <ArrowRight size={16} />
-          </button>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setShowCaregiverModal(true)}
+              className="btn-primary btn-emerald"
+              style={{ minHeight: '44px', padding: '0 18px', fontSize: '14px' }}
+            >
+              <UserCheck size={16} /> {assignedCaregiver ? 'Change Caregiver' : 'Select Caregiver'}
+            </button>
+
+            <button
+              onClick={() => onNavigate(isCaregiverOrAdmin ? 'caregiver' : ('my_progress' as any))}
+              className="btn-primary btn-glass-subtle"
+              style={{ minHeight: '44px', padding: '0 18px', fontSize: '14px', color: 'var(--accent-primary)', border: '1px solid #BAE6FD' }}
+            >
+              View Caregiver Summary <ArrowRight size={16} />
+            </button>
+          </div>
         </div>
       </section>
 
@@ -313,11 +358,22 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
           <h4 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)', margin: 0 }}>
             You're doing well today, {user?.name ? user.name.split(' ')[0] : 'Krishna'}! 🌟
           </h4>
-          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
-            Keep taking a few minutes each day to stay engaged and active with MINDMATE NER.
+          <p style={{ fontSize: '15px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5, fontStyle: 'italic' }}>
+            "{motivationalQuote}"
           </p>
         </div>
       </section>
+
+      {/* Caregiver Selection Modal */}
+      {showCaregiverModal && (
+        <CaregiverSelectionModal
+          currentCaregiver={assignedCaregiver}
+          onClose={() => setShowCaregiverModal(false)}
+          onCaregiverSelected={(cg) => {
+            setAssignedCaregiver(cg);
+          }}
+        />
+      )}
     </div>
   );
 };

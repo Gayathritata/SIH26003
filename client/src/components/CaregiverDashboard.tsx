@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { UserCheck, Trophy, Target, Clock, Activity, RotateCcw, Brain, Calendar, Search, Sparkles, AlertCircle, Bell, BarChart2 } from 'lucide-react';
-import { apiClient } from '../services/api';
+import { UserCheck, Trophy, Target, Clock, Activity, RotateCcw, Brain, Calendar, Search, Sparkles, AlertCircle, Bell, BarChart2, User } from 'lucide-react';
+import { apiClient, fetchCaregiverPatientsListApi } from '../services/api';
 import { PerformanceCharts } from './caregiver/PerformanceCharts';
 import { UserProfile } from '../services/authService';
 import { Language } from '../utils/i18n';
@@ -23,12 +23,26 @@ export const CaregiverDashboard: React.FC<CaregiverDashboardProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [dashboardData, setDashboardData] = useState<any>(null);
+  const [patientsList, setPatientsList] = useState<any[]>([]);
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
 
-  const fetchCaregiverDashboardData = async () => {
+  const fetchCaregiverDashboardData = async (targetId?: string | null) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiClient.get('/caregiver/dashboard');
+      // 1. Fetch assigned patients list
+      const pRes = await fetchCaregiverPatientsListApi();
+      if (pRes && pRes.success && Array.isArray(pRes.patients)) {
+        setPatientsList(pRes.patients);
+        if (!targetId && pRes.patients.length > 0) {
+          targetId = pRes.patients[0].uid || pRes.patients[0].id;
+          setSelectedPatientId(targetId || null);
+        }
+      }
+
+      // 2. Fetch dashboard data for target patient
+      const url = targetId ? `/api/caregiver/dashboard?patientId=${targetId}` : '/api/caregiver/dashboard';
+      const response = await apiClient.get(url);
       if (response.data && response.data.success) {
         setDashboardData(response.data);
       } else {
@@ -47,7 +61,7 @@ export const CaregiverDashboard: React.FC<CaregiverDashboardProps> = ({
   };
 
   useEffect(() => {
-    fetchCaregiverDashboardData();
+    fetchCaregiverDashboardData(selectedPatientId);
   }, []);
 
   const getGameTitle = (gameType: string) => {
@@ -139,7 +153,7 @@ export const CaregiverDashboard: React.FC<CaregiverDashboardProps> = ({
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <button onClick={fetchCaregiverDashboardData} className="btn-primary btn-glass-subtle" style={{ minHeight: '40px', padding: '0 14px', fontSize: '14px' }}>
+            <button onClick={() => fetchCaregiverDashboardData(selectedPatientId)} className="btn-primary btn-glass-subtle" style={{ minHeight: '40px', padding: '0 14px', fontSize: '14px' }}>
               <RotateCcw size={15} /> Refresh
             </button>
             <button onClick={onBackToElderly} className="btn-primary btn-glass-subtle" style={{ minHeight: '40px', padding: '0 16px', fontSize: '14px' }}>
@@ -194,6 +208,119 @@ export const CaregiverDashboard: React.FC<CaregiverDashboardProps> = ({
         <RemindersScreen onBack={() => setActiveTab('analytics')} />
       ) : (
         <>
+          {/* ASSIGNED PATIENTS LIST SECTION */}
+          <div className="glass-panel" style={{ padding: '20px', background: '#FFFFFF', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <User size={20} color="var(--accent-primary)" />
+                <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)', margin: 0 }}>
+                  Assigned Patients ({patientsList.length})
+                </h3>
+              </div>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                Select a patient to view detailed cognitive analytics
+              </span>
+            </div>
+
+            {patientsList.length === 0 ? (
+              <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)', background: '#F8FAFC', borderRadius: '12px' }}>
+                <User size={28} style={{ margin: '0 auto 6px', opacity: 0.5 }} />
+                <p style={{ fontSize: '14px', margin: 0, fontWeight: '600' }}>No patients assigned yet</p>
+                <p style={{ fontSize: '12px', margin: '4px 0 0 0' }}>Patients can select you as their caregiver during login or from their dashboard.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
+                {patientsList.map((p) => {
+                  const pUid = p.uid || p.id;
+                  const isSelected = selectedPatientId === pUid;
+                  const levels = p.gameLevels || { memory_match: 1, pattern_recognition: 1, daily_routine_recall: 1, object_recognition: 1 };
+                  return (
+                    <div
+                      key={pUid}
+                      onClick={() => {
+                        setSelectedPatientId(pUid);
+                        fetchCaregiverDashboardData(pUid);
+                      }}
+                      style={{
+                        background: isSelected ? '#F0F9FF' : '#F8FAFC',
+                        border: isSelected ? '2px solid var(--accent-primary)' : '1px solid var(--border-glass)',
+                        borderRadius: '14px',
+                        padding: '16px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '10px',
+                        cursor: 'pointer',
+                        boxShadow: isSelected ? 'var(--shadow-hover)' : 'var(--shadow-soft)',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div
+                            style={{
+                              width: '38px',
+                              height: '38px',
+                              borderRadius: '50%',
+                              background: 'linear-gradient(135deg, #0284C7, #0D9488)',
+                              color: '#FFFFFF',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: '800',
+                              fontSize: '15px',
+                            }}
+                          >
+                            {p.name ? p.name.charAt(0).toUpperCase() : 'P'}
+                          </div>
+                          <div>
+                            <span style={{ fontSize: '16px', fontWeight: '800', color: 'var(--text-primary)', display: 'block' }}>
+                              {p.name}
+                            </span>
+                            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Age: {p.age || 74} • {p.email}</span>
+                          </div>
+                        </div>
+
+                        {isSelected && (
+                          <span className="badge-pill badge-emerald" style={{ fontSize: '11px', padding: '2px 8px' }}>
+                            Selected
+                          </span>
+                        )}
+                      </div>
+
+                      {/* 1-100 Game Level Badges */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px', marginTop: '4px' }}>
+                        <div style={{ background: '#FFFFFF', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--border-glass)', fontSize: '11px', display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>Memory:</span>
+                          <strong style={{ color: 'var(--accent-primary)' }}>L{levels.memory_match || 1}/100</strong>
+                        </div>
+
+                        <div style={{ background: '#FFFFFF', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--border-glass)', fontSize: '11px', display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>Pattern:</span>
+                          <strong style={{ color: 'var(--accent-amber)' }}>L{levels.pattern_recognition || 1}/100</strong>
+                        </div>
+
+                        <div style={{ background: '#FFFFFF', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--border-glass)', fontSize: '11px', display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>Routine:</span>
+                          <strong style={{ color: 'var(--accent-indigo)' }}>L{levels.daily_routine_recall || 1}/100</strong>
+                        </div>
+
+                        <div style={{ background: '#FFFFFF', padding: '6px 8px', borderRadius: '8px', border: '1px solid var(--border-glass)', fontSize: '11px', display: 'flex', justifyContent: 'space-between' }}>
+                          <span style={{ color: 'var(--text-muted)' }}>Object:</span>
+                          <strong style={{ color: 'var(--accent-teal)' }}>L{levels.object_recognition || 1}/100</strong>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', borderTop: '1px solid var(--border-glass)', paddingTop: '8px', marginTop: '2px' }}>
+                        <span style={{ color: 'var(--text-muted)' }}>Accuracy: <strong style={{ color: '#15803D' }}>{p.accuracy || 0}%</strong></span>
+                        <span style={{ color: 'var(--accent-primary)', fontWeight: '700' }}>Inspect Analytics →</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           {/* KPI CARDS */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
             <div className="glass-panel" style={{ padding: '16px', textAlign: 'center', background: '#FFFFFF' }}>

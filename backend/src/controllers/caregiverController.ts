@@ -212,3 +212,71 @@ export const getCaregiverGameHistory = async (req: AuthenticatedRequest, res: Re
     res.status(500).json({ success: false, error: (error as Error).message });
   }
 };
+
+export const getCaregiverPatientsList = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    if (!verifyCaregiverRole(req, res)) return;
+    const caregiverUid = req.user!.mongoId || req.user!.id || req.user!.firebaseUid;
+
+    const mappings = await CaregiverPatient.find({
+      $or: [{ caregiverId: caregiverUid }, { caregiverId: req.user!.firebaseUid }],
+    });
+
+    const patientUids = mappings.map((m) => m.patientId);
+
+    const patientUsers = await User.find({
+      $or: [{ _id: { $in: patientUids } }, { firebaseUid: { $in: patientUids } }],
+    }).select('-passwordHash');
+
+    const patientProfiles = await PatientProfile.find({
+      $or: [{ userId: { $in: patientUids } }, { firebaseUid: { $in: patientUids } }],
+    });
+
+    const patientsWithStats = await Promise.all(
+      patientUsers.map(async (u) => {
+        const uid = u.firebaseUid || u._id.toString();
+        const profile = patientProfiles.find(
+          (p) => p.firebaseUid === uid || (p.userId && p.userId.toString() === u._id.toString())
+        );
+
+        const recentSessions = await GameSession.find({
+          $or: [{ userId: uid }, { patientId: uid }],
+        })
+          .sort({ completedAt: -1, createdAt: -1 })
+          .limit(10);
+
+        const avgAcc =
+          recentSessions.length > 0
+            ? Number((recentSessions.reduce((sum, s) => sum + (s.accuracy || 0), 0) / recentSessions.length).toFixed(1))
+            : 0;
+
+        return {
+          id: u._id.toString(),
+          uid,
+          name: u.name,
+          email: u.email,
+          role: u.role,
+          age: profile?.age || 74,
+          gameLevels: profile?.gameLevels || {
+            memory_match: 1,
+            pattern_recognition: 1,
+            daily_routine_recall: 1,
+            object_recognition: 1,
+          },
+          accuracy: avgAcc,
+          lastActive: recentSessions[0]?.completedAt || recentSessions[0]?.createdAt || u.updatedAt,
+          totalSessions: recentSessions.length,
+        };
+      })
+    );
+
+    res.json({
+      success: true,
+      count: patientsWithStats.length,
+      patients: patientsWithStats,
+    });
+  } catch (error) {
+    console.error('[GET CAREGIVER PATIENTS LIST ERROR]', error);
+    res.status(500).json({ success: false, error: (error as Error).message });
+  }
+};

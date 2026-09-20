@@ -279,3 +279,52 @@ export const toggleReminderActiveApi = async (id: string, isActive?: boolean) =>
     return { success: false, error: err?.response?.data?.error || err.message };
   }
 };
+
+export const fetchAvailableCaregiversApi = async () => {
+  try {
+    const response = await apiClient.get('/api/patients/available-caregivers');
+    return response.data;
+  } catch (err: any) {
+    console.error('[FETCH AVAILABLE CAREGIVERS ERROR]', err?.response?.data || err.message);
+    return { success: false, error: err?.response?.data?.error || err.message };
+  }
+};
+
+export const selectCaregiverApi = async (caregiverId: string) => {
+  try {
+    const response = await apiClient.post('/api/patients/select-caregiver', { caregiverId });
+    return response.data;
+  } catch (err: any) {
+    console.error('[SELECT CAREGIVER ERROR]', err?.response?.data || err.message);
+    return { success: false, error: err?.response?.data?.error || err.message };
+  }
+};
+
+export const fetchPatientMyProfileApi = async () => {
+  try {
+    const response = await apiClient.get('/api/patients/my-profile');
+    return response.data;
+  } catch (err: any) {
+    console.error('[FETCH MY PROFILE ERROR]', err?.response?.data || err.message);
+    return { success: false, error: err?.response?.data?.error || err.message };
+  }
+};
+
+export const fetchCaregiverPatientsListApi = async () => {
+  try {
+    const response = await apiClient.get('/api/caregiver/patients-list');
+    return response.data;
+  } catch (err: any) {
+    console.error('[FETCH CAREGIVER PATIENTS LIST ERROR]', err?.response?.data || err.message);
+    return { success: false, error: err?.response?.data?.error || err.message };
+  }
+};
+
+export const fetchMotivationalQuoteApi = async () => {
+  try {
+    const response = await apiClient.get('/api/patients/motivational-quote');
+    return response.data;
+  } catch (err: any) {
+    return { success: true, quote: "Keep going! Every activity you complete is a step toward maintaining your daily routine." };
+  }
+};

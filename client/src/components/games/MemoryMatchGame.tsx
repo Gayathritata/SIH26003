@@ -66,13 +66,25 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
   const startTimeRef = useRef<number>(Date.now());
   const timerIntervalRef = useRef<any>(null);
 
-  const totalPairs = difficulty === 1 ? 3 : difficulty === 2 ? 4 : 6;
+  const calculatePairsForLevel = (lvl: number): number => {
+    if (lvl <= 2) return 3;
+    if (lvl <= 5) return 4;
+    if (lvl <= 10) return 5;
+    if (lvl <= 25) return 6;
+    if (lvl <= 50) return 7;
+    return 8;
+  };
+
+  const totalPairs = calculatePairsForLevel(difficulty);
 
   const initializeGame = (selectedDiff: number = difficulty) => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
 
-    const pairsCount = selectedDiff === 1 ? 3 : selectedDiff === 2 ? 4 : 6;
-    const selectedObjects = FAMILIAR_OBJECTS.slice(0, pairsCount);
+    const pairsCount = calculatePairsForLevel(selectedDiff);
+    const selectedObjects = [];
+    for (let i = 0; i < pairsCount; i++) {
+      selectedObjects.push(FAMILIAR_OBJECTS[i % FAMILIAR_OBJECTS.length]);
+    }
 
     const cardDeck: CardState[] = [];
     selectedObjects.forEach((obj, index) => {
@@ -320,9 +332,9 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Target size={20} color="var(--accent-primary)" />
             <div>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Level</span>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block', fontWeight: '600' }}>Progress Level</span>
               <span style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-primary)' }}>
-                Level {difficulty}
+                Level {difficulty} / 100
               </span>
             </div>
           </div>

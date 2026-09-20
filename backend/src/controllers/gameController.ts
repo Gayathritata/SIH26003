@@ -120,11 +120,50 @@ export const createGameSession = async (req: AuthenticatedRequest, res: Response
       aiReason: 'STEP 5 Initial Game Logic',
     });
 
-    // Update cognitive level in PatientProfile if available
-    await PatientProfile.findOneAndUpdate(
-      { $or: [{ userId: authenticatedUserId }, { firebaseUid: authenticatedUserId }] },
-      { cognitiveLevel: numDifficulty }
-    ).catch(() => {});
+    // Fetch patient profile to evaluate and update per-game level progression (1 - 100)
+    let profile = await PatientProfile.findOne({
+      $or: [{ userId: authenticatedUserId }, { firebaseUid: authenticatedUserId }],
+    });
+
+    if (!profile) {
+      profile = new PatientProfile({
+        userId: authenticatedUserId,
+        firebaseUid: authenticatedUserId,
+        gameLevels: {
+          memory_match: 1,
+          pattern_recognition: 1,
+          daily_routine_recall: 1,
+          object_recognition: 1,
+        },
+      });
+    }
+
+    const currentLevels = profile.gameLevels || {
+      memory_match: 1,
+      pattern_recognition: 1,
+      daily_routine_recall: 1,
+      object_recognition: 1,
+    };
+
+    const gKey = validGameType as keyof typeof currentLevels;
+    let currentLevel = Number(currentLevels[gKey] || numDifficulty || 1);
+    if (isNaN(currentLevel) || currentLevel < 1) currentLevel = 1;
+
+    let nextLevel = currentLevel;
+    if (numAccuracy >= 75) {
+      nextLevel = Math.min(100, currentLevel + 1);
+    } else if (numAccuracy < 40 && currentLevel > 1) {
+      nextLevel = Math.max(1, currentLevel - 1);
+    }
+
+    const updatedLevels = {
+      ...currentLevels,
+      [gKey]: nextLevel,
+    };
+
+    profile.gameLevels = updatedLevels;
+    profile.cognitiveLevel = nextLevel;
+    await profile.save();
 
     // Evaluate caregiver alerts
     checkAndUpdatePatientAlerts(authenticatedUserId).catch((err) =>
@@ -134,6 +173,9 @@ export const createGameSession = async (req: AuthenticatedRequest, res: Response
     res.status(201).json({
       success: true,
       session,
+      previousLevel: currentLevel,
+      nextLevel,
+      gameLevels: updatedLevels,
     });
   } catch (error) {
     console.error('[CREATE GAME SESSION ERROR]', error);

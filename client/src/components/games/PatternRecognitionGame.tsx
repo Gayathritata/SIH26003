@@ -306,7 +306,7 @@ export const PatternRecognitionGame: React.FC<Props> = ({
           )}
           <div>
             <h2 className="text-hero-title" style={{ fontSize: '24px', margin: 0 }}>
-              🔷 {t('patternGameTitle')}
+              🔷 {t('patternGameTitle')} (Level {difficulty} / 100)
             </h2>
             <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: '2px 0 0 0', fontWeight: '500' }}>
               {t('patternInstructions')}

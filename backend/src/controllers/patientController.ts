@@ -93,3 +93,127 @@ export const getPatientSessions = async (req: AuthenticatedRequest, res: Respons
     res.status(500).json({ success: false, error: (error as Error).message });
   }
 };
+
+export const getAvailableCaregivers = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const caregivers = await User.find({ role: 'caregiver' }).select('-passwordHash');
+    res.json({ success: true, count: caregivers.length, caregivers });
+  } catch (error) {
+    res.status(500).json({ success: false, error: (error as Error).message });
+  }
+};
+
+export const selectCaregiver = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const patientId = req.user?.mongoId || req.user?.id || req.user?.firebaseUid;
+    const { caregiverId } = req.body;
+
+    if (!patientId || !caregiverId) {
+      res.status(400).json({ success: false, error: 'Caregiver ID is required.' });
+      return;
+    }
+
+    let caregiverUser = await User.findById(caregiverId).catch(() => null);
+    if (!caregiverUser) {
+      caregiverUser = await User.findOne({ firebaseUid: caregiverId });
+    }
+
+    if (!caregiverUser) {
+      res.status(404).json({ success: false, error: 'Selected caregiver not found.' });
+      return;
+    }
+
+    const targetCaregiverUid = caregiverUser.firebaseUid || caregiverUser._id.toString();
+    const targetPatientUid = patientId.toString();
+
+    await CaregiverPatient.findOneAndUpdate(
+      { patientId: targetPatientUid },
+      { caregiverId: targetCaregiverUid, relationship: 'Assigned Caregiver' },
+      { upsert: true, new: true }
+    );
+
+    await PatientProfile.findOneAndUpdate(
+      { $or: [{ userId: patientId }, { firebaseUid: targetPatientUid }] },
+      { selectedCaregiverId: targetCaregiverUid }
+    );
+
+    res.json({ success: true, message: 'Caregiver selected successfully.', caregiver: caregiverUser });
+  } catch (error) {
+    res.status(500).json({ success: false, error: (error as Error).message });
+  }
+};
+
+export const getPatientMyProfile = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.mongoId || req.user?.id || req.user?.firebaseUid;
+    let user: any = await User.findById(userId).select('-passwordHash').catch(() => null);
+    if (!user) {
+      user = await User.findOne({ firebaseUid: userId }).select('-passwordHash');
+    }
+
+    if (!user) {
+      res.status(404).json({ success: false, error: 'Patient account not found' });
+      return;
+    }
+
+    let profile = await PatientProfile.findOne({
+      $or: [{ userId: user._id }, { firebaseUid: user.firebaseUid || user._id.toString() }],
+    });
+
+    if (!profile) {
+      profile = await PatientProfile.create({
+        userId: user._id,
+        firebaseUid: user.firebaseUid || user._id.toString(),
+        age: 74,
+        preferredLanguage: user.preferredLanguage || 'en',
+        gameLevels: {
+          memory_match: 1,
+          pattern_recognition: 1,
+          daily_routine_recall: 1,
+          object_recognition: 1,
+        },
+      });
+    }
+
+    let caregiver = null;
+    const link = await CaregiverPatient.findOne({
+      $or: [{ patientId: user.firebaseUid }, { patientId: user._id.toString() }],
+    });
+    if (link) {
+      caregiver = await User.findOne({
+        $or: [{ firebaseUid: link.caregiverId }, { _id: link.caregiverId }],
+      }).select('-passwordHash');
+    }
+
+    res.json({
+      success: true,
+      user,
+      profile,
+      caregiver,
+      gameLevels: profile.gameLevels || {
+        memory_match: 1,
+        pattern_recognition: 1,
+        daily_routine_recall: 1,
+        object_recognition: 1,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: (error as Error).message });
+  }
+};
+
+export const getMotivationalQuote = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const quotes = [
+      "Keep going! Every activity you complete is a step toward maintaining your daily routine.",
+      "Great work today. Keep your mind engaged with small activities each day.",
+      "You are making progress. Keep going at your own pace.",
+      "Every small practice keeps your memory sharp and mind bright.",
+      "Honoring your daily journey preserves your health and happiness."
+    ];
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    res.json({ success: true, quote: randomQuote });
+  } catch (error) {
+    res.status(500).json({ success: false, error: (error as Error).message });
+  }
+};
