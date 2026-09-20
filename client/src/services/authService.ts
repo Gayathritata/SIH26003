@@ -196,6 +196,12 @@ class AuthService {
       const response = await apiClient.get('/api/auth/me');
       return response.data;
     } catch (err: any) {
+      if (err.response && err.response.status === 401) {
+        localStorage.removeItem('mindmate_token');
+        localStorage.removeItem('mindmate_role');
+        localStorage.removeItem('mindmate_user');
+        throw new Error('Invalid or expired token.');
+      }
       const rawStoredUser = localStorage.getItem('mindmate_user');
       if (rawStoredUser) {
         try {

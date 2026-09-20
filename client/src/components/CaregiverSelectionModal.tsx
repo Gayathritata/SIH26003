@@ -173,18 +173,34 @@ export const CaregiverSelectionModal: React.FC<Props> = ({
             style={{
               background: '#FFE4E6',
               border: '1px solid #FECDD3',
-              borderRadius: '10px',
-              padding: '10px 14px',
+              borderRadius: '12px',
+              padding: '12px 16px',
               marginBottom: '14px',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
+              justifyContent: 'space-between',
+              gap: '10px',
               color: '#BE123C',
-              fontSize: '13px',
+              fontSize: '14px',
             }}
           >
-            <AlertCircle size={16} />
-            <span>{error}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertCircle size={18} style={{ flexShrink: 0 }} />
+              <span>{error}</span>
+            </div>
+            {(error.includes('token') || error.includes('expired') || error.includes('Unauthorized')) && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  window.dispatchEvent(new Event('mindmate_unauthorized'));
+                }}
+                className="btn-primary btn-emerald"
+                style={{ minHeight: '36px', padding: '0 12px', fontSize: '13px', whiteSpace: 'nowrap' }}
+              >
+                Sign In Again
+              </button>
+            )}
           </div>
         )}
 

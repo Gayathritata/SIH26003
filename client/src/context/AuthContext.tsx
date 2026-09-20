@@ -55,8 +55,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setLoading(false);
         return;
       }
-    } catch (err) {
-      console.warn('[AUTH CONTEXT] getMe failed, restoring local cached session:', err);
+    } catch (err: any) {
+      console.warn('[AUTH CONTEXT] getMe failed:', err?.message || err);
+      if (err?.message?.includes('token') || err?.message?.includes('expired') || err?.message?.includes('Invalid')) {
+        setUser(null);
+        setPatientProfile(null);
+        setToken(null);
+        setLoading(false);
+        return;
+      }
     }
 
     // Fallback user restore from localStorage
@@ -85,6 +92,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     refreshUser();
+
+    const handleUnauthorized = () => {
+      console.warn('[AUTH CONTEXT] Unauthorized event received. Clearing session token.');
+      setUser(null);
+      setToken(null);
+      setPatientProfile(null);
+      localStorage.removeItem('mindmate_token');
+      localStorage.removeItem('mindmate_user');
+      localStorage.removeItem('mindmate_role');
+    };
+
+    window.addEventListener('mindmate_unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('mindmate_unauthorized', handleUnauthorized);
   }, []);
 
   const login = async (email: string, pass: string) => {

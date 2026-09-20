@@ -31,7 +31,15 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      console.warn('[API 401 UNAUTHORIZED] Clearing token context.');
+      console.warn('[API 401 UNAUTHORIZED] Purging expired token from storage.');
+      try {
+        localStorage.removeItem('mindmate_token');
+        localStorage.removeItem('mindmate_user');
+        localStorage.removeItem('mindmate_role');
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new Event('mindmate_unauthorized'));
+        }
+      } catch (e) {}
     }
     return Promise.reject(error);
   }
