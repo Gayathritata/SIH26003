@@ -328,3 +328,14 @@ export const fetchMotivationalQuoteApi = async () => {
     return { success: true, quote: "Keep going! Every activity you complete is a step toward maintaining your daily routine." };
   }
 };
+
+export const fetchCaregiverProfileApi = async () => {
+  try {
+    const response = await apiClient.get('/api/caregiver/profile');
+    return response.data;
+  } catch (err: any) {
+    console.error('[FETCH CAREGIVER PROFILE ERROR]', err?.response?.data || err.message);
+    return { success: false, error: err?.response?.data?.error || err.message };
+  }
+};
+

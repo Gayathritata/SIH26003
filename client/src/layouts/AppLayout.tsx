@@ -243,56 +243,35 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         {/* Desktop & Tablet Sidebar */}
         <aside className="desktop-sidebar">
           <nav style={{ display: 'flex', flexDirection: 'column', gap: '6px', width: '100%' }}>
-            <button
-              onClick={() => onNavigate('/dashboard')}
-              className={`sidebar-nav-item ${currentPath === '/dashboard' ? 'active' : ''}`}
-            >
-              <Home size={19} />
-              <span>Home</span>
-            </button>
-
-            <button
-              onClick={() => onNavigate('/games')}
-              className={`sidebar-nav-item ${currentPath === '/games' || currentPath === '/gameplay' ? 'active' : ''}`}
-            >
-              <Gamepad2 size={19} />
-              <span>{t('cognitiveGames')}</span>
-            </button>
-
-            <button
-              onClick={() => onNavigate('/reminders')}
-              className={`sidebar-nav-item ${currentPath === '/reminders' ? 'active' : ''}`}
-            >
-              <Bell size={19} />
-              <span>{t('remindersTitle')}</span>
-            </button>
-
-            <button
-              onClick={() => onNavigate('/progress')}
-              className={`sidebar-nav-item ${currentPath === '/progress' ? 'active' : ''}`}
-            >
-              <TrendingUp size={19} />
-              <span>{t('myProgress')}</span>
-            </button>
-
-            {isCaregiverOrAdmin && (
+            {isCaregiverOrAdmin ? (
               <>
-                <div style={{ margin: '12px 0 6px 12px', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Caregiver Portal
-                </div>
                 <button
                   onClick={() => onNavigate('/caregiver')}
                   className={`sidebar-nav-item ${currentPath === '/caregiver' ? 'active' : ''}`}
                 >
                   <Activity size={19} />
-                  <span>{t('caregiverDashboard')}</span>
+                  <span>Dashboard</span>
                 </button>
                 <button
                   onClick={() => onNavigate('/patients')}
                   className={`sidebar-nav-item ${currentPath === '/patients' ? 'active' : ''}`}
                 >
                   <User size={19} />
-                  <span>Patients List</span>
+                  <span>My Patients</span>
+                </button>
+                <button
+                  onClick={() => onNavigate('/progress')}
+                  className={`sidebar-nav-item ${currentPath === '/progress' ? 'active' : ''}`}
+                >
+                  <TrendingUp size={19} />
+                  <span>Patient Progress</span>
+                </button>
+                <button
+                  onClick={() => onNavigate('/reminders')}
+                  className={`sidebar-nav-item ${currentPath === '/reminders' ? 'active' : ''}`}
+                >
+                  <Bell size={19} />
+                  <span>Reminders</span>
                 </button>
                 <button
                   onClick={() => onNavigate('/alerts')}
@@ -300,6 +279,37 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                 >
                   <ShieldAlert size={19} />
                   <span>Safety Alerts</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => onNavigate('/dashboard')}
+                  className={`sidebar-nav-item ${currentPath === '/dashboard' ? 'active' : ''}`}
+                >
+                  <Home size={19} />
+                  <span>Home</span>
+                </button>
+                <button
+                  onClick={() => onNavigate('/games')}
+                  className={`sidebar-nav-item ${currentPath === '/games' || currentPath.startsWith('/gameplay') ? 'active' : ''}`}
+                >
+                  <Gamepad2 size={19} />
+                  <span>{t('cognitiveGames')}</span>
+                </button>
+                <button
+                  onClick={() => onNavigate('/reminders')}
+                  className={`sidebar-nav-item ${currentPath === '/reminders' ? 'active' : ''}`}
+                >
+                  <Bell size={19} />
+                  <span>{t('remindersTitle')}</span>
+                </button>
+                <button
+                  onClick={() => onNavigate('/progress')}
+                  className={`sidebar-nav-item ${currentPath === '/progress' ? 'active' : ''}`}
+                >
+                  <TrendingUp size={19} />
+                  <span>{t('myProgress')}</span>
                 </button>
               </>
             )}
@@ -313,7 +323,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               className={`sidebar-nav-item ${currentPath === '/profile' ? 'active' : ''}`}
             >
               <User size={19} />
-              <span>{t('profileTitle')}</span>
+              <span>{isCaregiverOrAdmin ? 'Caregiver Profile' : t('profileTitle')}</span>
             </button>
 
             <button
@@ -334,54 +344,82 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 
       {/* Mobile Bottom Navigation Bar (<768px) */}
       <nav className="mobile-bottom-nav" role="navigation" aria-label="Mobile Navigation">
-        <button
-          onClick={() => onNavigate('/dashboard')}
-          className={`mobile-bottom-nav-item ${currentPath === '/dashboard' ? 'active' : ''}`}
-        >
-          <Home size={20} />
-          <span>Home</span>
-        </button>
-
-        <button
-          onClick={() => onNavigate('/games')}
-          className={`mobile-bottom-nav-item ${currentPath === '/games' || currentPath === '/gameplay' ? 'active' : ''}`}
-        >
-          <Gamepad2 size={20} />
-          <span>Games</span>
-        </button>
-
-        <button
-          onClick={() => onNavigate('/reminders')}
-          className={`mobile-bottom-nav-item ${currentPath === '/reminders' ? 'active' : ''}`}
-        >
-          <Bell size={20} />
-          <span>Reminders</span>
-        </button>
-
-        <button
-          onClick={() => onNavigate('/progress')}
-          className={`mobile-bottom-nav-item ${currentPath === '/progress' ? 'active' : ''}`}
-        >
-          <TrendingUp size={20} />
-          <span>Progress</span>
-        </button>
-
         {isCaregiverOrAdmin ? (
-          <button
-            onClick={() => onNavigate('/caregiver')}
-            className={`mobile-bottom-nav-item ${currentPath === '/caregiver' ? 'active' : ''}`}
-          >
-            <Activity size={20} />
-            <span>Caregiver</span>
-          </button>
+          <>
+            <button
+              onClick={() => onNavigate('/caregiver')}
+              className={`mobile-bottom-nav-item ${currentPath === '/caregiver' ? 'active' : ''}`}
+            >
+              <Activity size={20} />
+              <span>Dashboard</span>
+            </button>
+            <button
+              onClick={() => onNavigate('/patients')}
+              className={`mobile-bottom-nav-item ${currentPath === '/patients' ? 'active' : ''}`}
+            >
+              <User size={20} />
+              <span>Patients</span>
+            </button>
+            <button
+              onClick={() => onNavigate('/progress')}
+              className={`mobile-bottom-nav-item ${currentPath === '/progress' ? 'active' : ''}`}
+            >
+              <TrendingUp size={20} />
+              <span>Progress</span>
+            </button>
+            <button
+              onClick={() => onNavigate('/reminders')}
+              className={`mobile-bottom-nav-item ${currentPath === '/reminders' ? 'active' : ''}`}
+            >
+              <Bell size={20} />
+              <span>Reminders</span>
+            </button>
+            <button
+              onClick={() => onNavigate('/profile')}
+              className={`mobile-bottom-nav-item ${currentPath === '/profile' ? 'active' : ''}`}
+            >
+              <User size={20} />
+              <span>Profile</span>
+            </button>
+          </>
         ) : (
-          <button
-            onClick={() => onNavigate('/profile')}
-            className={`mobile-bottom-nav-item ${currentPath === '/profile' ? 'active' : ''}`}
-          >
-            <User size={20} />
-            <span>Profile</span>
-          </button>
+          <>
+            <button
+              onClick={() => onNavigate('/dashboard')}
+              className={`mobile-bottom-nav-item ${currentPath === '/dashboard' ? 'active' : ''}`}
+            >
+              <Home size={20} />
+              <span>Home</span>
+            </button>
+            <button
+              onClick={() => onNavigate('/games')}
+              className={`mobile-bottom-nav-item ${currentPath === '/games' || currentPath.startsWith('/gameplay') ? 'active' : ''}`}
+            >
+              <Gamepad2 size={20} />
+              <span>Games</span>
+            </button>
+            <button
+              onClick={() => onNavigate('/reminders')}
+              className={`mobile-bottom-nav-item ${currentPath === '/reminders' ? 'active' : ''}`}
+            >
+              <Bell size={20} />
+              <span>Reminders</span>
+            </button>
+            <button
+              onClick={() => onNavigate('/progress')}
+              className={`mobile-bottom-nav-item ${currentPath === '/progress' ? 'active' : ''}`}
+            >
+              <TrendingUp size={20} />
+              <span>Progress</span>
+            </button>
+            <button
+              onClick={() => onNavigate('/profile')}
+              className={`mobile-bottom-nav-item ${currentPath === '/profile' ? 'active' : ''}`}
+            >
+              <User size={20} />
+              <span>Profile</span>
+            </button>
+          </>
         )}
       </nav>
     </div>

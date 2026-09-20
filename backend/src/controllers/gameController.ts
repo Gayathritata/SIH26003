@@ -20,6 +20,11 @@ export const createGameSession = async (req: AuthenticatedRequest, res: Response
       return;
     }
 
+    if (req.user.role === 'caregiver') {
+      res.status(403).json({ success: false, error: 'Forbidden: Caregivers cannot play games or create game sessions.' });
+      return;
+    }
+
     const {
       gameType,
       difficulty,

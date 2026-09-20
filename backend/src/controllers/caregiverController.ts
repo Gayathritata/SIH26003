@@ -280,3 +280,42 @@ export const getCaregiverPatientsList = async (req: AuthenticatedRequest, res: R
     res.status(500).json({ success: false, error: (error as Error).message });
   }
 };
+
+/**
+ * GET /api/caregiver/profile
+ * Returns authenticated caregiver profile details and count of assigned patients
+ */
+export const getCaregiverProfile = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    if (!verifyCaregiverRole(req, res)) return;
+
+    const caregiverUid = req.user!.mongoId || req.user!.id || req.user!.firebaseUid;
+
+    const caregiverUser = await User.findById(caregiverUid).select('-passwordHash');
+    if (!caregiverUser) {
+      res.status(404).json({ success: false, error: 'Caregiver profile user not found.' });
+      return;
+    }
+
+    const assignedCount = await CaregiverPatient.countDocuments({
+      $or: [{ caregiverId: caregiverUid }, { caregiverId: req.user!.firebaseUid }],
+    });
+
+    res.json({
+      success: true,
+      caregiver: {
+        id: caregiverUser._id.toString(),
+        name: caregiverUser.name,
+        email: caregiverUser.email,
+        role: caregiverUser.role,
+        contactInfo: (caregiverUser as any).contactInfo || caregiverUser.email,
+        assignedPatientCount: assignedCount,
+        createdAt: caregiverUser.createdAt,
+      },
+    });
+  } catch (error) {
+    console.error('[GET CAREGIVER PROFILE ERROR]', error);
+    res.status(500).json({ success: false, error: (error as Error).message });
+  }
+};
+

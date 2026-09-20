@@ -3,7 +3,7 @@ import { Mail, Shield, Globe, ArrowLeft, CheckCircle2, RefreshCw } from 'lucide-
 import { useAccessibility } from '../context/AccessibilityContext';
 import { Language } from '../i18n';
 import { UserProfile } from '../services/authService';
-import { apiClient } from '../services/api';
+import { apiClient, fetchCaregiverProfileApi } from '../services/api';
 
 interface Props {
   user: UserProfile | null;
@@ -17,6 +17,8 @@ export const ProfileScreen: React.FC<Props> = ({ user, onBack }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedLanguage, setSelectedLanguage] = useState<Language>(lang);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState<string | null>(null);
+
+  const [caregiverInfo, setCaregiverInfo] = useState<{ contactInfo?: string; assignedPatientCount?: number } | null>(null);
 
   useEffect(() => {
     fetchProfile();
@@ -33,6 +35,16 @@ export const ProfileScreen: React.FC<Props> = ({ user, onBack }) => {
           if (['en', 'hi', 'as'].includes(fetchedLang)) {
             setSelectedLanguage(fetchedLang as Language);
           }
+        }
+      }
+
+      if (user?.role === 'caregiver' || res.data?.user?.role === 'caregiver') {
+        const cgRes = await fetchCaregiverProfileApi();
+        if (cgRes && cgRes.success && cgRes.caregiver) {
+          setCaregiverInfo({
+            contactInfo: cgRes.caregiver.contactInfo,
+            assignedPatientCount: cgRes.caregiver.assignedPatientCount,
+          });
         }
       }
     } catch (err) {
@@ -71,7 +83,7 @@ export const ProfileScreen: React.FC<Props> = ({ user, onBack }) => {
           <ArrowLeft size={18} /> {t('backToHome')}
         </button>
 
-        <h2 className="text-section-title">{t('profileTitle')}</h2>
+        <h2 className="text-section-title">{activeUser?.role === 'caregiver' ? 'Caregiver Profile' : t('profileTitle')}</h2>
 
         <button
           onClick={fetchProfile}
@@ -139,6 +151,24 @@ export const ProfileScreen: React.FC<Props> = ({ user, onBack }) => {
               </span>
             </div>
           </div>
+
+          {/* Caregiver Summary Cards */}
+          {activeUser?.role === 'caregiver' && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+              <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-glass)' }}>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>Assigned Patients</span>
+                <p style={{ fontSize: '24px', fontWeight: '800', color: 'var(--accent-primary)', marginTop: '2px' }}>
+                  {caregiverInfo?.assignedPatientCount ?? 0}
+                </p>
+              </div>
+              <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-glass)' }}>
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>Contact Info</span>
+                <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginTop: '6px', wordBreak: 'break-all' }}>
+                  {caregiverInfo?.contactInfo || activeUser.email}
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* User Fields */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

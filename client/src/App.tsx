@@ -63,8 +63,14 @@ const AppContent: React.FC = () => {
       return;
     }
 
-    if (!isCaregiverOrAdmin && ['/caregiver', '/patients', '/alerts', '/caregiver/performance'].includes(currentPath)) {
-      setCurrentPath('/dashboard');
+    if (isCaregiverOrAdmin) {
+      if (['/games', '/gameplay', '/dashboard'].includes(currentPath)) {
+        setCurrentPath('/caregiver');
+      }
+    } else {
+      if (['/caregiver', '/patients', '/alerts', '/caregiver/performance'].includes(currentPath)) {
+        setCurrentPath('/dashboard');
+      }
     }
   }, [user, token, loading, currentPath]);
 
@@ -74,6 +80,10 @@ const AppContent: React.FC = () => {
       return;
     }
     const isCaregiverOrAdmin = user?.role === 'caregiver' || user?.role === 'admin';
+    if (isCaregiverOrAdmin && ['/games', '/gameplay', '/dashboard'].includes(path)) {
+      setCurrentPath('/caregiver');
+      return;
+    }
     if (!isCaregiverOrAdmin && ['/caregiver', '/patients', '/alerts', '/caregiver/performance'].includes(path)) {
       setCurrentPath('/dashboard');
       return;
@@ -82,6 +92,11 @@ const AppContent: React.FC = () => {
   };
 
   const handleStartGame = async (gameType: 'memory' | 'pattern' | 'routine' | 'object_rec') => {
+    if (user?.role === 'caregiver') {
+      setCurrentPath('/caregiver');
+      return;
+    }
+
     setActiveGameType(gameType);
     setCurrentPath('/gameplay');
 
@@ -118,18 +133,25 @@ const AppContent: React.FC = () => {
 
       if (apiRes && apiRes.aiRecommendation) {
         setAiRecommendation(apiRes.aiRecommendation);
-        setDifficulty(apiRes.aiRecommendation.recommended_difficulty);
       }
     } catch (e) {
       console.warn('[GAME FINISH SUBMIT ERROR]', e);
     }
   };
 
-  const handleModalNext = () => {
+  const handleModalContinue = (nextLevel: number) => {
+    const validLevel = Math.max(1, Math.min(100, nextLevel));
+    setDifficulty(validLevel);
     setGameResult(null);
     setAiRecommendation(null);
-    const isCaregiverOrAdmin = user?.role === 'caregiver' || user?.role === 'admin';
-    setCurrentPath(isCaregiverOrAdmin ? '/caregiver' : '/dashboard');
+    setAiBannerMessage(`AI Next Recommended Level: Level ${validLevel}`);
+    setCurrentPath('/gameplay');
+  };
+
+  const handleModalExit = () => {
+    setGameResult(null);
+    setAiRecommendation(null);
+    setCurrentPath('/games');
   };
 
   const handleTriggerVoice = () => {
@@ -308,7 +330,8 @@ const AppContent: React.FC = () => {
         <GameResultModal
           result={gameResult}
           aiRecommendation={aiRecommendation}
-          onNext={handleModalNext}
+          onContinue={handleModalContinue}
+          onExit={handleModalExit}
           lang={lang}
         />
       )}
