@@ -449,7 +449,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
+                    placeholder=""
                     style={{
                       width: '100%',
                       height: '48px',
@@ -476,7 +476,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder=""
                     style={{
                       width: '100%',
                       height: '48px',

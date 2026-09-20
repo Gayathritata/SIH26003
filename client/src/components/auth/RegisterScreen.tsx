@@ -117,25 +117,36 @@ export const RegisterScreen: React.FC<Props> = ({ onSuccess, onNavigateLogin, la
               {[
                 { key: 'elderly_user', label: 'Patient / Elderly 👵' },
                 { key: 'caregiver', label: 'Caregiver 👨‍⚕️' },
-              ].map((r) => (
-                <button
-                  key={r.key}
-                  type="button"
-                  onClick={() => setRole(r.key as any)}
-                  style={{
-                    padding: '12px 8px',
-                    borderRadius: '12px',
-                    border: role === r.key ? '2px solid var(--accent-primary)' : '1px solid var(--border-glass)',
-                    background: role === r.key ? 'var(--accent-primary-glow)' : '#F8FAFC',
-                    color: role === r.key ? 'var(--accent-primary)' : 'var(--text-primary)',
-                    fontWeight: '700',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {r.label}
-                </button>
-              ))}
+              ].map((r) => {
+                const isSelected = role === r.key;
+                return (
+                  <button
+                    key={r.key}
+                    type="button"
+                    onClick={() => setRole(r.key as any)}
+                    style={{
+                      padding: '12px 10px',
+                      borderRadius: '12px',
+                      border: isSelected ? '2px solid #0284C7' : '1px solid var(--border-glass)',
+                      background: isSelected
+                        ? 'linear-gradient(135deg, #0284C7, #0D9488)'
+                        : 'var(--bg-card-hover)',
+                      color: isSelected ? '#FFFFFF' : 'var(--text-primary)',
+                      fontWeight: '700',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      transition: 'all 0.2s ease',
+                      boxShadow: isSelected ? '0 4px 12px rgba(2, 132, 199, 0.25)' : 'none',
+                    }}
+                  >
+                    {r.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -149,14 +160,14 @@ export const RegisterScreen: React.FC<Props> = ({ onSuccess, onNavigateLogin, la
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Asha Devi"
+                placeholder=""
                 style={{
                   width: '100%',
                   height: '48px',
                   paddingLeft: '42px',
                   paddingRight: '14px',
                   borderRadius: '12px',
-                  background: '#F8FAFC',
+                  background: 'var(--bg-card-hover)',
                   border: '1px solid var(--border-glass)',
                   color: 'var(--text-primary)',
                   fontSize: '15px',
@@ -176,14 +187,14 @@ export const RegisterScreen: React.FC<Props> = ({ onSuccess, onNavigateLogin, la
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="asha.devi@example.com"
+                placeholder=""
                 style={{
                   width: '100%',
                   height: '48px',
                   paddingLeft: '42px',
                   paddingRight: '14px',
                   borderRadius: '12px',
-                  background: '#F8FAFC',
+                  background: 'var(--bg-card-hover)',
                   border: '1px solid var(--border-glass)',
                   color: 'var(--text-primary)',
                   fontSize: '15px',
@@ -203,14 +214,14 @@ export const RegisterScreen: React.FC<Props> = ({ onSuccess, onNavigateLogin, la
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder=""
                 style={{
                   width: '100%',
                   height: '48px',
                   paddingLeft: '42px',
                   paddingRight: '14px',
                   borderRadius: '12px',
-                  background: '#F8FAFC',
+                  background: 'var(--bg-card-hover)',
                   border: '1px solid var(--border-glass)',
                   color: 'var(--text-primary)',
                   fontSize: '15px',

@@ -121,14 +121,14 @@ export const ForgotPasswordScreen: React.FC<Props> = ({ onNavigateLogin }) => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="asha.devi@example.com"
+                placeholder=""
                 style={{
                   width: '100%',
                   height: '48px',
                   paddingLeft: '42px',
                   paddingRight: '14px',
                   borderRadius: '12px',
-                  background: '#F8FAFC',
+                  background: 'var(--bg-card-hover)',
                   border: '1px solid var(--border-glass)',
                   color: 'var(--text-primary)',
                   fontSize: '15px',
