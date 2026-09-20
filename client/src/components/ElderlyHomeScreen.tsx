@@ -202,7 +202,7 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
           }}
         >
           {/* Card 1 — Cognitive Activity */}
-          <div className="glass-panel" style={{ padding: '20px', background: '#FFFFFF', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div className="glass-panel" style={{ padding: '20px', background: 'var(--bg-card)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--accent-primary-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Brain size={22} color="var(--accent-primary)" />
@@ -218,7 +218,7 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
           </div>
 
           {/* Card 2 — AI Recommendation */}
-          <div className="glass-panel" style={{ padding: '20px', background: '#FFFFFF', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div className="glass-panel" style={{ padding: '20px', background: 'var(--bg-card)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--accent-amber-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Target size={22} color="var(--accent-amber)" />
@@ -234,7 +234,7 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
           </div>
 
           {/* Card 3 — Daily Streak */}
-          <div className="glass-panel" style={{ padding: '20px', background: '#FFFFFF', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div className="glass-panel" style={{ padding: '20px', background: 'var(--bg-card)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(225, 29, 72, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Flame size={22} color="var(--accent-rose)" />
@@ -250,7 +250,7 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
           </div>
 
           {/* Card 4 — Performance Trend */}
-          <div className="glass-panel" style={{ padding: '20px', background: '#FFFFFF', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div className="glass-panel" style={{ padding: '20px', background: 'var(--bg-card)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--accent-teal-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <TrendingUp size={22} color="var(--accent-teal)" />
@@ -277,7 +277,7 @@ export const ElderlyHomeScreen: React.FC<Props> = ({
           className="glass-panel"
           style={{
             padding: '24px',
-            background: '#FFFFFF',
+            background: 'var(--bg-card)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
