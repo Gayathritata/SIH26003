@@ -155,13 +155,13 @@ export const ProfileScreen: React.FC<Props> = ({ user, onBack }) => {
           {/* Caregiver Summary Cards */}
           {activeUser?.role === 'caregiver' && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-              <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-glass)' }}>
+              <div style={{ background: 'var(--bg-card-hover)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-glass)' }}>
                 <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>Assigned Patients</span>
                 <p style={{ fontSize: '24px', fontWeight: '800', color: 'var(--accent-primary)', marginTop: '2px' }}>
                   {caregiverInfo?.assignedPatientCount ?? 0}
                 </p>
               </div>
-              <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-glass)' }}>
+              <div style={{ background: 'var(--bg-card-hover)', padding: '14px', borderRadius: '12px', border: '1px solid var(--border-glass)' }}>
                 <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>Contact Info</span>
                 <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginTop: '6px', wordBreak: 'break-all' }}>
                   {caregiverInfo?.contactInfo || activeUser.email}
@@ -178,7 +178,7 @@ export const ProfileScreen: React.FC<Props> = ({ user, onBack }) => {
               </label>
               <div
                 style={{
-                  background: '#F8FAFC',
+                  background: 'var(--bg-card-hover)',
                   border: '1px solid var(--border-glass)',
                   borderRadius: '12px',
                   padding: '12px 16px',
@@ -197,7 +197,7 @@ export const ProfileScreen: React.FC<Props> = ({ user, onBack }) => {
               </label>
               <div
                 style={{
-                  background: '#F8FAFC',
+                  background: 'var(--bg-card-hover)',
                   border: '1px solid var(--border-glass)',
                   borderRadius: '12px',
                   padding: '12px 16px',
@@ -230,7 +230,7 @@ export const ProfileScreen: React.FC<Props> = ({ user, onBack }) => {
                       minHeight: '44px',
                       borderRadius: '10px',
                       border: selectedLanguage === l.code ? '2px solid var(--accent-primary)' : '1px solid var(--border-glass)',
-                      background: selectedLanguage === l.code ? 'var(--accent-primary-glow)' : '#F8FAFC',
+                      background: selectedLanguage === l.code ? 'var(--accent-primary-glow)' : 'var(--bg-card-hover)',
                       color: selectedLanguage === l.code ? 'var(--accent-primary)' : 'var(--text-primary)',
                       fontWeight: '700',
                       fontSize: '14px',

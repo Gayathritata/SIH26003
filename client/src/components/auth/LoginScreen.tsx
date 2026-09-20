@@ -97,7 +97,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
           flexWrap: 'wrap',
           gap: '12px',
           borderBottom: '1px solid var(--border-glass)',
-          background: '#FFFFFF',
+          background: 'var(--bg-surface)',
           position: 'sticky',
           top: 0,
           zIndex: 100,
@@ -214,34 +214,6 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                 </span>
               </div>
             </div>
-
-            {/* Quick Demo Access Bar */}
-            <div style={{ background: '#FFFFFF', border: '1px solid var(--border-glass)', borderRadius: '16px', padding: '18px', boxShadow: 'var(--shadow-soft)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--accent-primary)', letterSpacing: '0.5px' }}>
-                  ⚡ QUICK DEMO ACCESS
-                </span>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>No password required</span>
-              </div>
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoLogin('elderly_user')}
-                  className="btn-primary btn-emerald"
-                  style={{ flex: 1, minHeight: '44px', fontSize: '14px' }}
-                >
-                  Elderly User (Asha Devi 👵)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoLogin('caregiver')}
-                  className="btn-primary btn-glass-subtle"
-                  style={{ flex: 1, minHeight: '44px', fontSize: '14px', border: '1px solid var(--border-glass)' }}
-                >
-                  Caregiver Portal (Demo 👨‍⚕️)
-                </button>
-              </div>
-            </div>
           </div>
 
           {/* RIGHT COLUMN: VIDEO PLAYER FRAME */}
@@ -355,7 +327,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
               </div>
 
               {/* Video Footer Caption */}
-              <div style={{ padding: '14px 20px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ padding: '14px 20px', background: 'var(--bg-card-hover)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
                   <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500' }}>
@@ -484,7 +456,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                       paddingLeft: '42px',
                       paddingRight: '14px',
                       borderRadius: '12px',
-                      background: '#F8FAFC',
+                      background: 'var(--bg-card-hover)',
                       border: '1px solid var(--border-glass)',
                       color: 'var(--text-primary)',
                       fontSize: '15px',
@@ -511,7 +483,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
                       paddingLeft: '42px',
                       paddingRight: '14px',
                       borderRadius: '12px',
-                      background: '#F8FAFC',
+                      background: 'var(--bg-card-hover)',
                       border: '1px solid var(--border-glass)',
                       color: 'var(--text-primary)',
                       fontSize: '15px',
