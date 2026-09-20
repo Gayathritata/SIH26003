@@ -28,7 +28,7 @@ import { RoutineRecallGame } from './components/games/RoutineRecallGame';
 import { ObjectRecognitionGame } from './components/games/ObjectRecognitionGame';
 import { GameResultModal } from './components/GameResultModal';
 
-import { submitGameSession, fetchAiDifficultyRecommendation } from './services/api';
+import { submitGameSession, fetchAiDifficultyRecommendation, fetchPatientMyProfileApi } from './services/api';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 
 const AppContent: React.FC = () => {
@@ -102,24 +102,26 @@ const AppContent: React.FC = () => {
 
     try {
       const fullGameType = gameType === 'memory' ? 'memory_match' : (gameType === 'pattern' ? 'pattern_recognition' : (gameType === 'routine' ? 'daily_routine_recall' : 'object_recognition'));
-      const aiRes = await fetchAiDifficultyRecommendation(fullGameType);
 
-      let selectedLevel = 1;
-      if (aiRes && aiRes.numericDifficulty) {
-        selectedLevel = aiRes.numericDifficulty;
-      } else if (aiRes && aiRes.recommendedDifficulty) {
-        selectedLevel = aiRes.recommendedDifficulty === 'easy' ? 1 : (aiRes.recommendedDifficulty === 'medium' ? 2 : 3);
+      // Fetch patient's saved progression levels from MongoDB Atlas
+      const profileRes = await fetchPatientMyProfileApi().catch(() => null);
+      let savedLevel = 1;
+      if (profileRes && profileRes.gameLevels && profileRes.gameLevels[fullGameType as keyof typeof profileRes.gameLevels]) {
+        savedLevel = Number(profileRes.gameLevels[fullGameType as keyof typeof profileRes.gameLevels]) || 1;
       }
-      setDifficulty(selectedLevel);
 
-      if (aiRes && aiRes.difficultySource === 'xgboost') {
-        setAiBannerMessage(`XGBoost ML Model Recommended: Level ${selectedLevel} based on performance history.`);
-      } else {
-        setAiBannerMessage(`AI Fallback Adjustment (Local): Level ${selectedLevel} set based on recent accuracy.`);
+      // Also query AI recommendation endpoint
+      const aiRes = await fetchAiDifficultyRecommendation(fullGameType).catch(() => null);
+      if (aiRes && aiRes.numericDifficulty && aiRes.numericDifficulty > savedLevel) {
+        savedLevel = aiRes.numericDifficulty;
       }
+
+      setDifficulty(savedLevel);
+      setAiBannerMessage(`Continuing at saved Level ${savedLevel} from your progress history.`);
     } catch (e) {
       console.warn('[AI ADAPTIVE START ERROR]', e);
-      setAiBannerMessage('AI Fallback Adjustment (Local): Continuing at Level 1.');
+      setDifficulty(1);
+      setAiBannerMessage('Continuing at Level 1.');
     }
   };
 

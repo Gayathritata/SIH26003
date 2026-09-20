@@ -155,8 +155,8 @@ export const createGameSession = async (req: AuthenticatedRequest, res: Response
     if (isNaN(currentLevel) || currentLevel < 1) currentLevel = 1;
 
     let nextLevel = currentLevel;
-    if (numAccuracy >= 75) {
-      nextLevel = Math.min(100, currentLevel + 1);
+    if (numAccuracy >= 70) {
+      nextLevel = Math.min(100, Math.max(numDifficulty + 1, currentLevel + 1));
     } else if (numAccuracy < 40 && currentLevel > 1) {
       nextLevel = Math.max(1, currentLevel - 1);
     }
@@ -181,6 +181,12 @@ export const createGameSession = async (req: AuthenticatedRequest, res: Response
       previousLevel: currentLevel,
       nextLevel,
       gameLevels: updatedLevels,
+      aiRecommendation: {
+        recommended_difficulty: nextLevel,
+        numericDifficulty: nextLevel,
+        engine_used: 'MongoDB Atlas Progression',
+        reason: `Completed Level ${numDifficulty} with ${numAccuracy}% accuracy. Recommended Next: Level ${nextLevel}`,
+      },
     });
   } catch (error) {
     console.error('[CREATE GAME SESSION ERROR]', error);
@@ -223,7 +229,26 @@ export const recommendDifficultyController = async (req: AuthenticatedRequest, r
 
     // Identify user strictly from authenticated JWT
     const authenticatedUserId = req.user.mongoId || req.user.id || req.user.firebaseUid;
-    const requestedGameType = (req.body.gameType || req.query.gameType || 'memory_match').toString().toLowerCase().trim();
+    let requestedGameType = (req.body.gameType || req.query.gameType || 'memory_match').toString().toLowerCase().trim();
+    if (requestedGameType === 'memory') requestedGameType = 'memory_match';
+    if (requestedGameType === 'pattern') requestedGameType = 'pattern_recognition';
+    if (requestedGameType === 'routine') requestedGameType = 'daily_routine_recall';
+    if (requestedGameType === 'object_rec') requestedGameType = 'object_recognition';
+
+    // Fetch patient profile to get persistent game level from MongoDB Atlas
+    const profile = await PatientProfile.findOne({
+      $or: [{ userId: authenticatedUserId }, { firebaseUid: authenticatedUserId }],
+    });
+
+    const gameLevels = profile?.gameLevels || {
+      memory_match: 1,
+      pattern_recognition: 1,
+      daily_routine_recall: 1,
+      object_recognition: 1,
+    };
+
+    const gKey = requestedGameType as keyof typeof gameLevels;
+    const savedLevel = Math.max(1, Number(gameLevels[gKey] || 1));
 
     // Query recent completed sessions for this user from MongoDB Atlas
     const recentSessions = await GameSession.find({
@@ -233,16 +258,16 @@ export const recommendDifficultyController = async (req: AuthenticatedRequest, r
       .limit(5);
 
     if (recentSessions.length === 0) {
-      // Insufficient history handling
       res.json({
         success: true,
-        recommendedDifficulty: 'easy',
-        numericDifficulty: 1,
+        recommendedDifficulty: savedLevel,
+        numericDifficulty: savedLevel,
+        savedLevel,
+        gameLevels,
         confidence: 1.0,
-        probabilities: { easy: 1.0, medium: 0.0, hard: 0.0 },
         insufficientHistory: true,
-        message: 'Insufficient game history. Recommending baseline difficulty.',
-        explanation: 'No previous completed game history found. Starting at Easy difficulty.',
+        message: `Starting at Level ${savedLevel} from persistent MongoDB Atlas profile.`,
+        explanation: `Continuing at saved Level ${savedLevel}.`,
       });
       return;
     }
@@ -259,30 +284,39 @@ export const recommendDifficultyController = async (req: AuthenticatedRequest, r
     const mostRecentDiffNum = recentSessions[0]?.difficulty || 1;
     const previousDifficultyStr = mostRecentDiffNum === 1 ? 'easy' : (mostRecentDiffNum === 2 ? 'medium' : 'hard');
 
-    const { predictDifficultyFromML } = require('../services/mlClient');
+    let finalNumericLevel = savedLevel;
+    try {
+      const { predictDifficultyFromML } = require('../services/mlClient');
 
-    // Call FastAPI Python ML service
-    const mlResult = await predictDifficultyFromML({
-      accuracy: avgAccuracy > 1.0 ? avgAccuracy / 100.0 : avgAccuracy,
-      score: avgScore,
-      completionTime: avgCompletionTime,
-      attempts: avgAttempts,
-      incorrectAttempts: avgIncorrect,
-      correctAnswers: avgCorrect,
-      completionRate: avgCompletionRate > 1.0 ? avgCompletionRate / 100.0 : avgCompletionRate,
-      previousDifficulty: previousDifficultyStr,
-      gameType: requestedGameType,
-    });
+      // Call FastAPI Python ML service
+      const mlResult = await predictDifficultyFromML({
+        accuracy: avgAccuracy > 1.0 ? avgAccuracy / 100.0 : avgAccuracy,
+        score: avgScore,
+        completionTime: avgCompletionTime,
+        attempts: avgAttempts,
+        incorrectAttempts: avgIncorrect,
+        correctAnswers: avgCorrect,
+        completionRate: avgCompletionRate > 1.0 ? avgCompletionRate / 100.0 : avgCompletionRate,
+        previousDifficulty: previousDifficultyStr,
+        gameType: requestedGameType,
+      });
 
-    const numDiff = mlResult.recommendedDifficulty === 'easy' ? 1 : (mlResult.recommendedDifficulty === 'medium' ? 2 : 3);
+      if (mlResult && mlResult.recommendedDifficulty) {
+        const mlNum = mlResult.recommendedDifficulty === 'easy' ? 1 : (mlResult.recommendedDifficulty === 'medium' ? 2 : 3);
+        finalNumericLevel = Math.max(savedLevel, mlNum);
+      }
+    } catch (e) {
+      console.warn('[ML PREDICTION WARN]', e);
+    }
 
     res.json({
       success: true,
-      recommendedDifficulty: mlResult.recommendedDifficulty,
-      numericDifficulty: numDiff,
-      confidence: mlResult.confidence,
-      probabilities: mlResult.probabilities,
-      explanation: mlResult.explanation,
+      recommendedDifficulty: finalNumericLevel,
+      numericDifficulty: finalNumericLevel,
+      savedLevel,
+      gameLevels,
+      confidence: 1.0,
+      explanation: `Continuing at saved Level ${finalNumericLevel} from MongoDB Atlas progress.`,
       insufficientHistory: false,
     });
   } catch (error) {
