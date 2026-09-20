@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, RotateCcw, CheckCircle2, ArrowUp, ArrowDown, Volume2, ArrowLeft } from 'lucide-react';
 import { calculateRoutineRecallScore, CalculatedGameMetrics } from '../../utils/gameScoring';
+import { getRoutineActivitiesForLevel } from '../../utils/levelDifficulty';
 import { submitGameSession } from '../../services/api';
 import { GameCompletionScreen } from './common/GameCompletionScreen';
 import { useAccessibility } from '../../context/AccessibilityContext';
@@ -11,19 +12,6 @@ export interface RoutineActivity {
   emoji: string;
   correctOrder: number;
 }
-
-const EASY_ACTIVITIES: RoutineActivity[] = [
-  { id: 'wakeup', nameKey: 'routineStep1', emoji: '🌅', correctOrder: 1 },
-  { id: 'breakfast', nameKey: 'routineStep3', emoji: '🥣', correctOrder: 2 },
-  { id: 'sleep', nameKey: 'routineStep4', emoji: '🌙', correctOrder: 3 },
-];
-
-const MEDIUM_ACTIVITIES: RoutineActivity[] = [
-  { id: 'wakeup', nameKey: 'routineStep1', emoji: '🌅', correctOrder: 1 },
-  { id: 'teeth', nameKey: 'routineStep2', emoji: '🪥', correctOrder: 2 },
-  { id: 'breakfast', nameKey: 'routineStep3', emoji: '🥣', correctOrder: 3 },
-  { id: 'medicine', nameKey: 'routineStep4', emoji: '💊', correctOrder: 4 },
-];
 
 interface RoutineRecallGameProps {
   difficulty?: number;
@@ -59,16 +47,11 @@ export const RoutineRecallGame: React.FC<RoutineRecallGameProps> = ({
   const startTimeRef = useRef<number>(Date.now());
   const timerIntervalRef = useRef<any>(null);
 
-  const getBaseActivities = (diff: number) => {
-    if (diff === 1) return EASY_ACTIVITIES;
-    return MEDIUM_ACTIVITIES;
-  };
-
   const startNewGame = (selectedDiff: number = difficulty) => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
 
     setDifficulty(selectedDiff);
-    const baseList = getBaseActivities(selectedDiff);
+    const baseList = getRoutineActivitiesForLevel(selectedDiff);
 
     let shuffled = [...baseList].sort(() => Math.random() - 0.5);
     while (shuffled.every((item, idx) => item.correctOrder === idx + 1) && shuffled.length > 1) {
@@ -96,11 +79,13 @@ export const RoutineRecallGame: React.FC<RoutineRecallGameProps> = ({
   };
 
   useEffect(() => {
-    startNewGame(difficulty);
+    const activeLvl = propDiff || initialDifficulty;
+    setDifficulty(activeLvl);
+    startNewGame(activeLvl);
     return () => {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
-  }, [difficulty]);
+  }, [propDiff, initialDifficulty]);
 
   const moveItem = (index: number, direction: 'up' | 'down') => {
     if (!isGameActive) return;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Target, RotateCcw, Volume2, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { calculatePatternRecognitionScore, CalculatedGameMetrics } from '../../utils/gameScoring';
+import { getPatternQuestionsForLevel } from '../../utils/levelDifficulty';
 import { submitGameSession } from '../../services/api';
 import { GameCompletionScreen } from './common/GameCompletionScreen';
 import { useAccessibility } from '../../context/AccessibilityContext';
@@ -15,102 +16,6 @@ interface PatternQuestion {
   correctAnswer: PatternItem;
   options: PatternItem[];
 }
-
-const EASY_QUESTIONS: PatternQuestion[] = [
-  {
-    sequence: [
-      { name: 'Apple', emoji: '🍎' },
-      { name: 'Banana', emoji: '🍌' },
-      { name: 'Apple', emoji: '🍎' },
-    ],
-    correctAnswer: { name: 'Banana', emoji: '🍌' },
-    options: [
-      { name: 'Banana', emoji: '🍌' },
-      { name: 'Apple', emoji: '🍎' },
-      { name: 'Mango', emoji: '🥭' },
-    ],
-  },
-  {
-    sequence: [
-      { name: 'Cup', emoji: '☕' },
-      { name: 'Book', emoji: '📖' },
-      { name: 'Cup', emoji: '☕' },
-    ],
-    correctAnswer: { name: 'Book', emoji: '📖' },
-    options: [
-      { name: 'Flower', emoji: '🌸' },
-      { name: 'Book', emoji: '📖' },
-      { name: 'Cup', emoji: '☕' },
-    ],
-  },
-  {
-    sequence: [
-      { name: 'Clock', emoji: '⏰' },
-      { name: 'Chair', emoji: '🪑' },
-      { name: 'Clock', emoji: '⏰' },
-    ],
-    correctAnswer: { name: 'Chair', emoji: '🪑' },
-    options: [
-      { name: 'Chair', emoji: '🪑' },
-      { name: 'Umbrella', emoji: '☂️' },
-      { name: 'Clock', emoji: '⏰' },
-    ],
-  },
-];
-
-const MEDIUM_QUESTIONS: PatternQuestion[] = [
-  {
-    sequence: [
-      { name: 'Flower', emoji: '🌸' },
-      { name: 'Leaf', emoji: '🍃' },
-      { name: 'Flower', emoji: '🌸' },
-      { name: 'Leaf', emoji: '🍃' },
-      { name: 'Flower', emoji: '🌸' },
-    ],
-    correctAnswer: { name: 'Leaf', emoji: '🍃' },
-    options: [
-      { name: 'Flower', emoji: '🌸' },
-      { name: 'Leaf', emoji: '🍃' },
-      { name: 'Apple', emoji: '🍎' },
-      { name: 'Cup', emoji: '☕' },
-    ],
-  },
-  {
-    sequence: [
-      { name: 'Mango', emoji: '🥭' },
-      { name: 'Mango', emoji: '🥭' },
-      { name: 'Cup', emoji: '☕' },
-      { name: 'Mango', emoji: '🥭' },
-      { name: 'Mango', emoji: '🥭' },
-    ],
-    correctAnswer: { name: 'Cup', emoji: '☕' },
-    options: [
-      { name: 'Cup', emoji: '☕' },
-      { name: 'Mango', emoji: '🥭' },
-      { name: 'Book', emoji: '📖' },
-      { name: 'Clock', emoji: '⏰' },
-    ],
-  },
-];
-
-const HARD_QUESTIONS: PatternQuestion[] = [
-  {
-    sequence: [
-      { name: 'Clock', emoji: '⏰' },
-      { name: 'Book', emoji: '📖' },
-      { name: 'Chair', emoji: '🪑' },
-      { name: 'Clock', emoji: '⏰' },
-      { name: 'Book', emoji: '📖' },
-    ],
-    correctAnswer: { name: 'Chair', emoji: '🪑' },
-    options: [
-      { name: 'Book', emoji: '📖' },
-      { name: 'Chair', emoji: '🪑' },
-      { name: 'Clock', emoji: '⏰' },
-      { name: 'Umbrella', emoji: '☂️' },
-    ],
-  },
-];
 
 interface Props {
   initialDifficulty?: number;
@@ -146,19 +51,13 @@ export const PatternRecognitionGame: React.FC<Props> = ({
   const startTimeRef = useRef<number>(Date.now());
   const timerIntervalRef = useRef<any>(null);
 
-  const getQuestionPool = (diffLevel: number) => {
-    if (diffLevel === 1) return EASY_QUESTIONS;
-    if (diffLevel === 2) return MEDIUM_QUESTIONS;
-    return HARD_QUESTIONS;
-  };
-
   const startNewGame = (selectedDiff: number = difficulty) => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
 
-    const pool = getQuestionPool(selectedDiff);
-    const shuffledPool = [...pool].sort(() => Math.random() - 0.5);
+    setDifficulty(selectedDiff);
+    const pool = getPatternQuestionsForLevel(selectedDiff);
 
-    setQuestions(shuffledPool);
+    setQuestions(pool);
     setCurrentQuestionIndex(0);
     setAttempts(0);
     setCorrectAnswers(0);
@@ -181,11 +80,13 @@ export const PatternRecognitionGame: React.FC<Props> = ({
   };
 
   useEffect(() => {
-    startNewGame(difficulty);
+    const activeLvl = propDifficulty || initialDifficulty;
+    setDifficulty(activeLvl);
+    startNewGame(activeLvl);
     return () => {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
-  }, [difficulty]);
+  }, [propDifficulty, initialDifficulty]);
 
   if (questions.length === 0) {
     return (

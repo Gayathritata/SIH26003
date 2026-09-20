@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Brain, RotateCcw, ArrowLeft, Trophy, Clock, CheckCircle2, Award, Target, Play, Volume2 } from 'lucide-react';
 import { calculateMemoryMatchScore, CalculatedGameMetrics } from '../../utils/gameScoring';
+import { getMemoryMatchConfig } from '../../utils/levelDifficulty';
 import { submitGameSession } from '../../services/api';
 import { useAccessibility } from '../../context/AccessibilityContext';
 
@@ -46,7 +47,8 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
 }) => {
   const { t, speak, voiceEnabled } = useAccessibility();
 
-  const [difficulty, setDifficulty] = useState<number>(propDifficulty || initialDifficulty);
+  const currentLevel = propDifficulty || initialDifficulty;
+  const [difficulty, setDifficulty] = useState<number>(currentLevel);
   const [cards, setCards] = useState<CardState[]>([]);
   const [flippedKeys, setFlippedKeys] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -66,21 +68,16 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
   const startTimeRef = useRef<number>(Date.now());
   const timerIntervalRef = useRef<any>(null);
 
-  const calculatePairsForLevel = (lvl: number): number => {
-    if (lvl <= 2) return 3;
-    if (lvl <= 5) return 4;
-    if (lvl <= 10) return 5;
-    if (lvl <= 25) return 6;
-    if (lvl <= 50) return 7;
-    return 8;
-  };
-
-  const totalPairs = calculatePairsForLevel(difficulty);
+  const levelConfig = getMemoryMatchConfig(difficulty);
+  const totalPairs = levelConfig.totalPairs;
 
   const initializeGame = (selectedDiff: number = difficulty) => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
 
-    const pairsCount = calculatePairsForLevel(selectedDiff);
+    setDifficulty(selectedDiff);
+    const config = getMemoryMatchConfig(selectedDiff);
+    const pairsCount = config.totalPairs;
+
     const selectedObjects = [];
     for (let i = 0; i < pairsCount; i++) {
       selectedObjects.push(FAMILIAR_OBJECTS[i % FAMILIAR_OBJECTS.length]);
@@ -90,14 +87,14 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
     selectedObjects.forEach((obj, index) => {
       cardDeck.push({
         key: `${obj.id}-pairA-${index}`,
-        objectId: obj.id,
+        objectId: `${obj.id}-${index}`,
         emoji: obj.emoji,
         isFlipped: false,
         isMatched: false,
       });
       cardDeck.push({
         key: `${obj.id}-pairB-${index}`,
-        objectId: obj.id,
+        objectId: `${obj.id}-${index}`,
         emoji: obj.emoji,
         isFlipped: false,
         isMatched: false,
@@ -129,11 +126,13 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
   };
 
   useEffect(() => {
-    initializeGame(difficulty);
+    const activeLvl = propDifficulty || initialDifficulty;
+    setDifficulty(activeLvl);
+    initializeGame(activeLvl);
     return () => {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
-  }, [difficulty]);
+  }, [propDifficulty, initialDifficulty]);
 
   const handleCardClick = (card: CardState) => {
     if (!isGameActive || isProcessing || card.isFlipped || card.isMatched) return;
@@ -372,7 +371,7 @@ export const MemoryMatchGame: React.FC<MemoryMatchGameProps> = ({
       </div>
 
       {/* 2. CARDS GRID */}
-      <div className={`memory-cards-grid-l${difficulty}`}>
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${levelConfig.gridCols}, 1fr)`, gap: '14px' }}>
         {cards.map((card) => (
           <button
             key={card.key}

@@ -40,13 +40,16 @@ export interface CalculatedGameMetrics {
   completedAt: string;
 }
 
+import { getMemoryMatchConfig } from './levelDifficulty';
+
 /**
  * Calculates transparent, actual performance-based score and metrics for Memory Match game.
  */
 export const calculateMemoryMatchScore = (input: MemoryMatchGameInput): CalculatedGameMetrics => {
   const { difficulty, attempts, correctMatches, incorrectAttempts, completionTime, startedAt, completedAt } = input;
 
-  const totalPairs = difficulty === 1 ? 3 : (difficulty === 2 ? 4 : 6);
+  const config = getMemoryMatchConfig(difficulty);
+  const totalPairs = config.totalPairs;
   
   // Calculate accuracy percentage from actual attempts
   const rawAccuracy = attempts > 0 ? (correctMatches / attempts) * 100 : 0;
@@ -57,7 +60,7 @@ export const calculateMemoryMatchScore = (input: MemoryMatchGameInput): Calculat
   const completionRate = Number(Math.min(100, Math.max(0, rawCompletionRate)).toFixed(1));
 
   // Difficulty multiplier
-  const diffMultiplier = difficulty === 1 ? 1.0 : (difficulty === 2 ? 1.25 : 1.5);
+  const diffMultiplier = 1.0 + (difficulty - 1) * 0.15;
 
   // Score formula
   const matchPoints = correctMatches * 100;
@@ -99,7 +102,7 @@ const calculateQuizGameScore = (
   const rawCompletionRate = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
   const completionRate = Number(Math.min(100, Math.max(0, rawCompletionRate)).toFixed(1));
 
-  const diffMultiplier = difficulty === 1 ? 1.0 : (difficulty === 2 ? 1.25 : 1.5);
+  const diffMultiplier = 1.0 + (difficulty - 1) * 0.15;
 
   const basePoints = correctAnswers * 100;
   const penalty = incorrectAnswers * 20;

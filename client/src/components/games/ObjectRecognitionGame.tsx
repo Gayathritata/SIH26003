@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, RotateCcw, Mic, Volume2, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { calculateObjectRecognitionScore, CalculatedGameMetrics } from '../../utils/gameScoring';
+import { getObjectQuestionsForLevel } from '../../utils/levelDifficulty';
 import { submitGameSession } from '../../services/api';
 import { GameCompletionScreen } from './common/GameCompletionScreen';
 import { useAccessibility } from '../../context/AccessibilityContext';
@@ -13,47 +14,6 @@ interface ObjectQuestion {
   promptKey: string;
   options: string[];
 }
-
-const EASY_QUESTIONS: ObjectQuestion[] = [
-  {
-    objectName: 'Mango',
-    emoji: '🥭',
-    category: 'Fresh Fruit',
-    promptKey: 'objectInstructions',
-    options: ['Mango', 'Apple', 'Cup'],
-  },
-  {
-    objectName: 'Cup',
-    emoji: '☕',
-    category: 'Kitchenware',
-    promptKey: 'objectInstructions',
-    options: ['Book', 'Cup', 'Chair'],
-  },
-  {
-    objectName: 'Clock',
-    emoji: '⏰',
-    category: 'Household Item',
-    promptKey: 'objectInstructions',
-    options: ['Clock', 'Umbrella', 'Flower'],
-  },
-];
-
-const MEDIUM_QUESTIONS: ObjectQuestion[] = [
-  {
-    objectName: 'Book',
-    emoji: '📖',
-    category: 'Reading Item',
-    promptKey: 'objectInstructions',
-    options: ['Book', 'Paper', 'Magazine', 'Notebook'],
-  },
-  {
-    objectName: 'Umbrella',
-    emoji: '☂️',
-    category: 'Weather Gear',
-    promptKey: 'objectInstructions',
-    options: ['Hat', 'Raincoat', 'Umbrella', 'Towel'],
-  },
-];
 
 interface ObjectRecognitionGameProps {
   difficulty?: number;
@@ -73,6 +33,7 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
   const { t, speak, voiceEnabled, lang } = useAccessibility();
 
   const [difficulty, setDifficulty] = useState<number>(propDiff || initialDifficulty);
+  const [questionsList, setQuestionsList] = useState<ObjectQuestion[]>([]);
   const [questionIndex, setQuestionIndex] = useState<number>(0);
 
   const [correctAnswers, setCorrectAnswers] = useState<number>(0);
@@ -91,14 +52,16 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
   const startTimeRef = useRef<number>(Date.now());
   const timerIntervalRef = useRef<any>(null);
 
-  const questionsList = difficulty === 1 ? EASY_QUESTIONS : MEDIUM_QUESTIONS;
-  const currentQuestion = questionsList[questionIndex % questionsList.length];
-  const totalQuestions = questionsList.length;
+  const activeQuestions = questionsList.length > 0 ? questionsList : getObjectQuestionsForLevel(difficulty);
+  const currentQuestion = activeQuestions[questionIndex % activeQuestions.length];
+  const totalQuestions = activeQuestions.length;
 
   const startNewGame = (selectedDiff: number = difficulty) => {
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
 
     setDifficulty(selectedDiff);
+    const qList = getObjectQuestionsForLevel(selectedDiff);
+    setQuestionsList(qList);
     setQuestionIndex(0);
     setCorrectAnswers(0);
     setIncorrectAnswers(0);
@@ -121,11 +84,13 @@ export const ObjectRecognitionGame: React.FC<ObjectRecognitionGameProps> = ({
   };
 
   useEffect(() => {
-    startNewGame(difficulty);
+    const activeLvl = propDiff || initialDifficulty;
+    setDifficulty(activeLvl);
+    startNewGame(activeLvl);
     return () => {
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     };
-  }, [difficulty]);
+  }, [propDiff, initialDifficulty]);
 
   const handleSelectOption = (optionName: string) => {
     if (!isGameActive || feedback !== null) return;
