@@ -16,7 +16,7 @@ export const RegisterScreen: React.FC<Props> = ({ onSuccess, onNavigateLogin, la
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'elderly_user' | 'caregiver' | 'admin'>('elderly_user');
+  const [role, setRole] = useState<'elderly_user' | 'caregiver'>('elderly_user');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -113,24 +113,23 @@ export const RegisterScreen: React.FC<Props> = ({ onSuccess, onNavigateLogin, la
             <label style={{ display: 'block', fontSize: '14px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '8px' }}>
               Select User Role
             </label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
               {[
-                { key: 'elderly_user', label: 'Elderly 👵' },
+                { key: 'elderly_user', label: 'Patient / Elderly 👵' },
                 { key: 'caregiver', label: 'Caregiver 👨‍⚕️' },
-                { key: 'admin', label: 'Admin ⚙️' },
               ].map((r) => (
                 <button
                   key={r.key}
                   type="button"
                   onClick={() => setRole(r.key as any)}
                   style={{
-                    padding: '10px 6px',
+                    padding: '12px 8px',
                     borderRadius: '12px',
                     border: role === r.key ? '2px solid var(--accent-primary)' : '1px solid var(--border-glass)',
                     background: role === r.key ? 'var(--accent-primary-glow)' : '#F8FAFC',
                     color: role === r.key ? 'var(--accent-primary)' : 'var(--text-primary)',
                     fontWeight: '700',
-                    fontSize: '13px',
+                    fontSize: '14px',
                     cursor: 'pointer',
                   }}
                 >
