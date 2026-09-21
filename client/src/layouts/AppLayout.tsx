@@ -1,16 +1,11 @@
 import React, { ReactNode } from 'react';
 import {
   Brain,
-  Wifi,
-  WifiOff,
   UserCheck,
   User,
   Settings as SettingsIcon,
   LogOut,
   VolumeX,
-  Eye,
-  Type,
-  RefreshCw,
   Home,
   Gamepad2,
   Bell,
@@ -73,37 +68,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 
         {/* Action Controls & Badges */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          {/* Network Status Badge */}
-          <span className={`badge-pill ${isOffline ? 'badge-coral' : syncStatus === 'syncing' ? 'badge-amber' : 'badge-emerald'}`}>
-            {isOffline ? <WifiOff size={14} /> : <Wifi size={14} />}
-            {syncStatus === 'syncing'
-              ? 'Syncing...'
-              : syncStatus === 'synced'
-              ? 'All synced'
-              : isOffline
-              ? 'Offline'
-              : 'Online'}
-          </span>
-
-          {/* Manual Sync Now Button */}
-          {pendingCount > 0 && (
-            <button
-              onClick={syncNow}
-              disabled={isOffline || syncStatus === 'syncing'}
-              className="btn-primary btn-emerald"
-              style={{
-                minHeight: '36px',
-                padding: '0 12px',
-                fontSize: '13px',
-                borderRadius: '10px',
-              }}
-              title="Click to sync pending game sessions"
-            >
-              <RefreshCw size={14} className={syncStatus === 'syncing' ? 'pulse-mic' : ''} />
-              <span>{syncStatus === 'syncing' ? 'Syncing...' : `${pendingCount} to sync`}</span>
-            </button>
-          )}
-
           {/* Stop Voice Audio Button */}
           {isSpeaking && (
             <button
@@ -123,60 +87,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               <VolumeX size={15} /> {t('stopVoice')}
             </button>
           )}
-
-          {/* Language Selector */}
-          <div style={{ display: 'flex', gap: '2px', background: '#F1F5F9', padding: '3px', borderRadius: '10px', border: '1px solid var(--border-glass)' }}>
-            {(['en', 'hi', 'as'] as Language[]).map((l) => (
-              <button
-                key={l}
-                onClick={() => setLang(l)}
-                style={{
-                  padding: '5px 10px',
-                  borderRadius: '7px',
-                  border: 'none',
-                  background: lang === l ? 'var(--accent-primary)' : 'transparent',
-                  color: lang === l ? '#FFFFFF' : 'var(--text-secondary)',
-                  fontWeight: lang === l ? '700' : '600',
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-                aria-pressed={lang === l}
-              >
-                {l === 'as' ? 'অসমীয়া' : l === 'hi' ? 'हिन्दी' : 'ENG'}
-              </button>
-            ))}
-          </div>
-
-          {/* Text Size Quick Switcher */}
-          <button
-            onClick={() => setTextSize(textSize === 'normal' ? 'large' : (textSize === 'large' ? 'xlarge' : 'normal'))}
-            className="btn-primary btn-glass-subtle"
-            style={{ minHeight: '36px', padding: '0 10px', fontSize: '13px', borderRadius: '10px' }}
-            title={t('textSizeSetting')}
-            aria-label={t('textSizeSetting')}
-          >
-            <Type size={15} />
-            <span>{textSize === 'xlarge' ? 'XL' : (textSize === 'large' ? 'L' : 'M')}</span>
-          </button>
-
-          {/* High Contrast Mode Quick Toggle */}
-          <button
-            onClick={() => setHighContrast(!highContrast)}
-            className="btn-primary btn-glass-subtle"
-            style={{
-              minHeight: '36px',
-              padding: '0 10px',
-              fontSize: '13px',
-              borderRadius: '10px',
-              borderColor: highContrast ? '#FACC15' : undefined,
-              color: highContrast ? '#FACC15' : undefined,
-            }}
-            title={t('highContrastSetting')}
-            aria-label={t('highContrastSetting')}
-          >
-            <Eye size={15} />
-          </button>
 
           {/* Caregiver Dashboard Toggle */}
           {isCaregiverOrAdmin && (
