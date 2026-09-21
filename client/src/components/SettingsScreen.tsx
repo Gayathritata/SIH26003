@@ -39,7 +39,7 @@ export const SettingsScreen: React.FC<Props> = ({ onBack, onLogout }) => {
         <div style={{ width: '40px' }} />
       </div>
 
-      <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '24px', padding: '28px', background: '#FFFFFF' }}>
+      <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '24px', padding: '28px' }}>
         {/* Setting 1: Language Selection */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <label style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -60,7 +60,7 @@ export const SettingsScreen: React.FC<Props> = ({ onBack, onLogout }) => {
                   padding: '10px 14px',
                   borderRadius: '12px',
                   border: lang === l.code ? '2px solid var(--accent-primary)' : '1px solid var(--border-glass)',
-                  background: lang === l.code ? 'var(--accent-primary-glow)' : '#F8FAFC',
+                  background: lang === l.code ? 'var(--accent-primary-glow)' : 'var(--bg-card-hover)',
                   color: lang === l.code ? 'var(--accent-primary)' : 'var(--text-primary)',
                   fontWeight: '700',
                   fontSize: '15px',
@@ -99,7 +99,7 @@ export const SettingsScreen: React.FC<Props> = ({ onBack, onLogout }) => {
                   padding: '10px',
                   borderRadius: '12px',
                   border: textSize === ts.key ? '2px solid var(--accent-amber)' : '1px solid var(--border-glass)',
-                  background: textSize === ts.key ? 'var(--accent-amber-glow)' : '#F8FAFC',
+                  background: textSize === ts.key ? 'var(--accent-amber-glow)' : 'var(--bg-card-hover)',
                   color: textSize === ts.key ? 'var(--accent-amber)' : 'var(--text-primary)',
                   fontWeight: '700',
                   fontSize: '15px',
@@ -133,8 +133,8 @@ export const SettingsScreen: React.FC<Props> = ({ onBack, onLogout }) => {
               padding: '0 20px',
               borderRadius: '22px',
               border: 'none',
-              background: highContrast ? 'var(--accent-indigo)' : '#F1F5F9',
-              color: highContrast ? '#FFFFFF' : 'var(--text-secondary)',
+              background: highContrast ? 'var(--accent-indigo)' : 'var(--bg-card-hover)',
+              color: highContrast ? '#FFFFFF' : 'var(--text-primary)',
               fontWeight: '700',
               fontSize: '14px',
               cursor: 'pointer',
@@ -163,8 +163,8 @@ export const SettingsScreen: React.FC<Props> = ({ onBack, onLogout }) => {
               padding: '0 20px',
               borderRadius: '22px',
               border: 'none',
-              background: voiceEnabled ? 'var(--accent-teal)' : '#F1F5F9',
-              color: voiceEnabled ? '#FFFFFF' : 'var(--text-secondary)',
+              background: voiceEnabled ? 'var(--accent-teal)' : 'var(--bg-card-hover)',
+              color: voiceEnabled ? '#FFFFFF' : 'var(--text-primary)',
               fontWeight: '700',
               fontSize: '14px',
               cursor: 'pointer',
@@ -183,9 +183,9 @@ export const SettingsScreen: React.FC<Props> = ({ onBack, onLogout }) => {
               width: '100%',
               minHeight: '48px',
               borderRadius: '14px',
-              background: '#FFE4E6',
-              border: '1px solid #FECDD3',
-              color: '#BE123C',
+              background: highContrast ? '#881337' : '#FFE4E6',
+              border: highContrast ? '1px solid #F43F5E' : '1px solid #FECDD3',
+              color: highContrast ? '#FFE4E6' : '#BE123C',
               fontSize: '16px',
               fontWeight: '700',
               display: 'flex',
