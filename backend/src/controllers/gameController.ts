@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthenticatedRequest } from '../middleware/authMiddleware';
 import GameSession from '../models/GameSession';
 import GameContent from '../models/GameContent';
+import User from '../models/User';
 import PatientProfile from '../models/PatientProfile';
 import { getMLDifficultyRecommendation } from '../services/mlClient';
 import { checkAndUpdatePatientAlerts } from '../services/alertService';
@@ -130,6 +131,15 @@ export const createGameSession = async (req: AuthenticatedRequest, res: Response
       $or: [{ userId: authenticatedUserId }, { firebaseUid: authenticatedUserId }],
     });
 
+    if (!profile && req.user) {
+      const dbUser = await User.findById(authenticatedUserId).catch(() => null) || await User.findOne({ firebaseUid: authenticatedUserId });
+      if (dbUser) {
+        profile = await PatientProfile.findOne({
+          $or: [{ userId: dbUser._id }, { firebaseUid: dbUser.firebaseUid || dbUser._id.toString() }],
+        });
+      }
+    }
+
     if (!profile) {
       profile = new PatientProfile({
         userId: authenticatedUserId,
@@ -168,6 +178,7 @@ export const createGameSession = async (req: AuthenticatedRequest, res: Response
 
     profile.gameLevels = updatedLevels;
     profile.cognitiveLevel = nextLevel;
+    profile.markModified('gameLevels');
     await profile.save();
 
     // Evaluate caregiver alerts

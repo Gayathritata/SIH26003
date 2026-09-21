@@ -81,16 +81,6 @@ class AuthService {
     const cleanEmail = params.email.toLowerCase().trim();
     const cleanName = params.name.trim();
 
-    // Cache locally for instant availability
-    saveLocalUser({
-      email: cleanEmail,
-      pass: params.pass,
-      name: cleanName,
-      role: params.role,
-      language: params.language || 'en',
-      age: params.age || 74,
-    });
-
     try {
       const response = await apiClient.post('/api/auth/register', {
         email: cleanEmail,
@@ -110,28 +100,52 @@ class AuthService {
       }
       if (user) {
         localStorage.setItem('mindmate_user', JSON.stringify(user));
+        // Cache credentials locally for offline continuity after successful DB creation
+        saveLocalUser({
+          email: cleanEmail,
+          pass: params.pass,
+          name: cleanName,
+          role: params.role,
+          language: params.language || 'en',
+          age: params.age || 74,
+        });
       }
 
       return { user, token };
     } catch (err: any) {
-      console.warn('[AUTH SERVICE REGISTER API NOTICE] Backend registration fallback triggered:', err.message);
+      console.error('[AUTH SERVICE REGISTER ERROR]', err?.response?.data || err.message);
 
-      // Local fallback token & user profile creation
-      const mockToken = `jwt_local_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-      const fallbackUser: UserProfile = {
-        _id: `local_${Date.now()}`,
-        email: cleanEmail,
-        name: cleanName,
-        role: params.role,
-        preferredLanguage: params.language || 'en',
-        language: params.language || 'en',
-      };
+      const serverError = err.response?.data?.error || err.message;
+      // If network is completely offline, allow offline registration fallback with warning
+      if (!err.response && (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error'))) {
+        console.warn('[OFFLINE FALLBACK] Device is offline. Using local device account storage.');
+        saveLocalUser({
+          email: cleanEmail,
+          pass: params.pass,
+          name: cleanName,
+          role: params.role,
+          language: params.language || 'en',
+          age: params.age || 74,
+        });
 
-      localStorage.setItem('mindmate_token', mockToken);
-      localStorage.setItem('mindmate_role', params.role);
-      localStorage.setItem('mindmate_user', JSON.stringify(fallbackUser));
+        const mockToken = `jwt_local_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+        const fallbackUser: UserProfile = {
+          _id: `local_${Date.now()}`,
+          email: cleanEmail,
+          name: cleanName,
+          role: params.role,
+          preferredLanguage: params.language || 'en',
+          language: params.language || 'en',
+        };
 
-      return { user: fallbackUser, token: mockToken };
+        localStorage.setItem('mindmate_token', mockToken);
+        localStorage.setItem('mindmate_role', params.role);
+        localStorage.setItem('mindmate_user', JSON.stringify(fallbackUser));
+
+        return { user: fallbackUser, token: mockToken };
+      }
+
+      throw new Error(serverError || 'Registration failed. Please check your network connection.');
     }
   }
 
