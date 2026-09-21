@@ -155,7 +155,7 @@ export const createGameSession = async (req: AuthenticatedRequest, res: Response
     if (isNaN(currentLevel) || currentLevel < 1) currentLevel = 1;
 
     let nextLevel = currentLevel;
-    if (numAccuracy >= 70) {
+    if (numAccuracy >= 50) {
       nextLevel = Math.min(100, Math.max(numDifficulty + 1, currentLevel + 1));
     } else if (numAccuracy < 40 && currentLevel > 1) {
       nextLevel = Math.max(1, currentLevel - 1);

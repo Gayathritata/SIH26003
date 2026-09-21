@@ -105,11 +105,11 @@ export const getMLDifficultyRecommendation = async (
     let reason = '';
     let trend = 'stable';
 
-    if (scoreIdx >= 0.75 && params.accuracy >= 0.75 && params.mistakes <= 2) {
+    if (scoreIdx >= 0.50 && params.accuracy >= 0.50 && params.mistakes <= 4) {
       recLevel = Math.min(5, prevLevel + 1);
       reason = 'Accuracy and response speed improved. Increasing difficulty level.';
       trend = 'improving';
-    } else if (scoreIdx < 0.45 || params.accuracy < 0.5 || params.reaction_time > 8.0) {
+    } else if (scoreIdx < 0.35 || params.accuracy < 0.35 || params.reaction_time > 8.0) {
       recLevel = Math.max(1, prevLevel - 1);
       reason = 'Accuracy decreased or reaction time increased. Lowering difficulty for patient comfort.';
       trend = 'declining';

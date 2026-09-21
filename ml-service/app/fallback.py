@@ -13,12 +13,12 @@ def rule_based_recommendation(accuracy: float, reaction_time: float, mistakes: i
     
     composite_index = (accuracy * 0.50) + (speed_factor * 0.30) + (mistake_factor * 0.20)
     
-    if composite_index >= 0.75 and accuracy >= 0.75 and mistakes <= 2:
+    if composite_index >= 0.50 and accuracy >= 0.50 and mistakes <= 4:
         recommended = min(5, prev_level + 1)
         reason = "Accuracy improved during recent sessions and reaction time was swift."
         trend = "improving"
         confidence = 0.88
-    elif composite_index < 0.45 or accuracy < 0.50 or reaction_time > 8.0:
+    elif composite_index < 0.35 or accuracy < 0.35 or reaction_time > 8.0:
         recommended = max(1, prev_level - 1)
         reason = "Recent accuracy decreased or reaction time increased; lowering difficulty for patient comfort."
         trend = "declining"
