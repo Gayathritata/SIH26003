@@ -181,7 +181,7 @@ export const LoginScreen: React.FC<Props> = ({ onSuccess, onNavigateRegister, on
               </span>
             </div>
 
-            <h1 className="text-hero-title" style={{ fontSize: '36px', lineHeight: '1.2' }}>
+            <h1 className="text-hero-title" style={{ fontSize: '36px', lineHeight: '1.2', color: '#FFFFFF', textShadow: '0 2px 4px rgba(0, 0, 0, 0.4)' }}>
               Preserving Memories, Empowering Elders & Supporting Caregivers
             </h1>
 
