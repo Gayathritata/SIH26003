@@ -10,7 +10,7 @@
 
 | Component | Platform | Live URL | Status |
 | :--- | :--- | :--- | :---: |
-| **Mobile Frontend** | **Vercel** | [https://sih-26003-hazel.vercel.app/](https://sih-26003-hazel.vercel.app/) | 🟢 **Live** |
+| **Frontend** | **Vercel** | [https://sih-26003-hazel.vercel.app/](https://sih-26003-hazel.vercel.app/) | 🟢 **Live** |
 | **Backend REST API** | **Render** | [https://mindmate-backend-dopt.onrender.com/](https://mindmate-backend-dopt.onrender.com/) | 🟢 **Live** |
 | **Backend Health Check** | **Render** | [https://mindmate-backend-dopt.onrender.com/health](https://mindmate-backend-dopt.onrender.com/health) | 🟢 **Live** |
 | **GitHub Repository** | **GitHub** | [https://github.com/Gayathritata/SIH26003](https://github.com/Gayathritata/SIH26003) | 🟢 **Main** |
